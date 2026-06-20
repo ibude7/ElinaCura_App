@@ -1,0 +1,4596 @@
+{
+  "app": {
+    "name": "ElinaCura",
+    "tagline": "Wellness Safety Assistant",
+    "description": "Personalized wellness safety for people with chronic conditions"
+  },
+  "appShell": {
+    "primaryNav": "Primary",
+    "collapseNav": "Collapse navigation",
+    "expandNav": "Expand navigation",
+    "collapse": "Collapse",
+    "openProfile": "Open profile",
+    "openProfileNamed": "Open profile for {name}",
+    "themeToggle": {
+      "toLight": "Switch to light theme",
+      "toDark": "Switch to dark theme"
+    }
+  },
+  "dashboardPage": {
+    "title": "Dashboard",
+    "eyebrow": "Your health command center",
+    "ready": "Health overview updated",
+    "loading": "Loading your health overview…",
+    "glance": {
+      "readiness": "Readiness",
+      "planDone": "Plan done",
+      "adherence": "Med adherence",
+      "alerts": "Open alerts"
+    },
+    "quickActions": {
+      "title": "Quick actions",
+      "heading": "Daily shortcuts",
+      "hint": "Scroll for more",
+      "chat": "Care AI",
+      "chatDesc": "Ask questions, get guidance",
+      "reminders": "Reminders",
+      "remindersDesc": "Never miss a dose",
+      "meals": "Meals",
+      "mealsDesc": "Plan today's plates",
+      "scanner": "Food scanner",
+      "scannerShort": "Scanner",
+      "scannerDesc": "Check ingredients fast",
+      "health": "Health hub",
+      "healthShort": "Health",
+      "healthDesc": "Labs, meds & trends"
+    },
+    "sections_nav": {
+      "label": "Dashboard sections",
+      "jumpTo": "Jump to",
+      "today": "Today",
+      "metrics": "Metrics",
+      "care": "Care plan",
+      "insights": "Insights",
+      "planProgress": "{done}/{total} plan done"
+    },
+    "hero": {
+      "allDone": "You're all caught up for today",
+      "allDoneSub": "Nice work — keep the momentum with hydration and an easy wind-down tonight.",
+      "nextUp": "Up next: {title} at {time}",
+      "remaining": "{count} items left on today's plan",
+      "completePill": "Plan complete",
+      "planRing": "Today's plan: {done} of {total} complete",
+      "planRemaining": "{count} remaining",
+      "reviewPlan": "Review today's plan"
+    },
+    "weather": {
+      "loading": "Loading live weather…",
+      "errorTitle": "Live weather unavailable",
+      "errorBody": "We couldn't fetch current conditions for your location. Check your connection or location permission and try again.",
+      "retry": "Retry weather",
+      "feelsLike": "Feels like {{temp}}",
+      "humidity": "{{value}}% humidity",
+      "wind": "{{speed}} km/h",
+      "windWithDirection": "{{speed}} km/h {{direction}}",
+      "cloudCover": "{{value}}% clouds",
+      "precipitation": "{{value}} mm precip",
+      "liveSkyTitle": "Live weather map",
+      "windyAttribution": "Live map · Windy"
+    },
+    "priority": {
+      "title": "Priority actions",
+      "sub": "Focus areas and alerts"
+    },
+    "plan": {
+      "title": "Today's plan",
+      "sub": "Medications, meals & activity",
+      "progress": "{done}/{total} done",
+      "toggle": "Mark {title} at {time} complete",
+      "openReminders": "Open full reminders"
+    },
+    "footer": {
+      "nextUp": "Next up: {title} at {time}",
+      "allDone": "Today's plan is complete",
+      "hint": "Care AI can help adjust the rest of your day."
+    },
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "named": "{greeting}, {name}"
+    },
+    "error": {
+      "title": "We couldn't load your health overview",
+      "body": "Something went wrong while fetching your data. Your dashboard is still here — try again.",
+      "retry": "Try again"
+    },
+    "readiness": {
+      "badge": "Health readiness",
+      "seePlan": "See today's plan"
+    },
+    "metrics": {
+      "sleep": "Sleep",
+      "activity": "Activity",
+      "heart": "Heart",
+      "weight": "Weight",
+      "medications": "Medications"
+    },
+    "badges": {
+      "today": "Today",
+      "onTrack": "On track",
+      "medsDoses": "2 of 3 doses today"
+    },
+    "sleep": {
+      "caption": "Last 7 nights · target {min}–{max}h"
+    },
+    "activity": {
+      "activeMinutes": "{minutes} active min · avg {avg}"
+    },
+    "heart": {
+      "restingHr": "Resting HR",
+      "hrv": "HRV"
+    },
+    "weight": {
+      "caption": "Trending down ~4 lb over 6 weeks"
+    },
+    "meds": {
+      "caption": "92% adherence over the last 7 days. Evening doses are the most missed."
+    },
+    "rhythm": {
+      "title": "7-day health rhythm",
+      "sub": "Composite of sleep, activity and adherence",
+      "caption": "Your rhythm dipped Wednesday and Friday, driven by missed evening meds and shorter sleep. Weekends were your strongest days."
+    },
+    "recommended": {
+      "title": "Recommended today",
+      "sub": "Tuned to your conditions & medications",
+      "seeAll": "See all",
+      "meals": "Meals",
+      "avoid": "Foods to avoid"
+    },
+    "recovery": {
+      "title": "Recovery trend",
+      "sub": "HRV vs personal baseline"
+    },
+    "vitals": {
+      "title": "Key vitals",
+      "sub": "Your latest readings",
+      "viewAll": "View all"
+    },
+    "attention": {
+      "title": "Needs attention",
+      "sub": "{count} open",
+      "allClear": "Nothing needs your attention right now."
+    },
+    "conditions": {
+      "title": "Conditions",
+      "sub": "Chronic care tracking"
+    },
+    "appointment": {
+      "title": "Upcoming appointment",
+      "prep": "Before your visit"
+    },
+    "goals": {
+      "title": "Your goals",
+      "sub": "What we're working toward"
+    },
+    "recs": {
+      "title": "Recommended for you",
+      "sub": "Tuned to your conditions & medications",
+      "meals": "Meals to favor",
+      "avoid": "Foods to avoid",
+      "activities": "Activities",
+      "recovery": "Recovery"
+    },
+    "status": {
+      "onTrack": "On track",
+      "attention": "Needs attention",
+      "alert": "Alert",
+      "steady": "Steady"
+    },
+    "careAI": {
+      "badge": "Care AI",
+      "insight": "Your HRV dropped 10% overnight while your resting heart rate elevated slightly. I recommend a 15-minute active recovery walk today instead of high-intensity training.",
+      "followUp": "Let's adjust today's plan. I've rescheduled your HIIT workout to tomorrow.",
+      "inputPlaceholder": "Ask about your health…",
+      "open": "Ask Care AI",
+      "close": "Close chat",
+      "send": "Send message"
+    },
+    "bodyReadiness": {
+      "title": "Body readiness",
+      "sub": "Based on last 48h activity",
+      "lowerFatigue": "Lower body fatigue",
+      "upperPrime": "Upper body prime"
+    },
+    "medsSchedule": {
+      "title": "Medications",
+      "sub": "Today's schedule & 7-day adherence",
+      "nextDue": "Next due",
+      "adherenceLabel": "Last 7 days",
+      "active": "{count} active",
+      "dueToday": "{count} due today",
+      "dueTodayBadge": "Due today",
+      "adherenceSummary": "{pct}% avg adherence",
+      "adherenceShort": "adherence",
+      "upNext": "Up next",
+      "openReminders": "Open reminders",
+      "manageReminders": "Manage reminders",
+      "viewAll": "View all medications",
+      "adherence": {
+        "taken": "Taken",
+        "partial": "Partial",
+        "missed": "Missed"
+      }
+    },
+    "trends": {
+      "title": "This week",
+      "sub": "How your key metrics are moving",
+      "up": "up",
+      "down": "down",
+      "flat": "steady",
+      "vsAvg": "vs 7-day average"
+    },
+    "preferences": {
+      "allergies": "Allergies"
+    },
+    "onboarding": {
+      "eyebrow": "Welcome to ElinaCura",
+      "title": "Let's set up your health profile",
+      "lead": "You don't have a profile yet. Create one to unlock a dashboard tailored to your conditions, medications, and goals.",
+      "cta": "Create your profile",
+      "step1Title": "Create your profile",
+      "step1Body": "Share your goals, conditions, and medications so guidance fits you.",
+      "step2Title": "Get tailored guidance",
+      "step2Body": "Meal, grocery, and safety suggestions adapt to your health context.",
+      "step3Title": "Stay safe",
+      "step3Body": "Interaction checks and an emergency medical ID, ready when you need them."
+    },
+    "welcome": {
+      "lead": "Here's your profile at a glance. Connect a device or log your day to start seeing trends and a daily plan.",
+      "goalLabel": "Your goal",
+      "noConditions": "No conditions added.",
+      "noMeds": "No medications added.",
+      "noAllergies": "No allergies added.",
+      "analyticsTitle": "No health trends yet",
+      "analyticsBody": "Connect a device or log medications, meals, and vitals to see readiness, adherence, and trends here.",
+      "connect": "Connect data",
+      "editSection": "Edit {section}"
+    }
+  },
+  "healthPage": {
+    "title": "Health",
+    "subtitle": "Vitals, medications, conditions & recommendations",
+    "loading": "Loading health data…",
+    "loadError": "Couldn't refresh health data",
+    "retry": "Retry",
+    "live": "Live observations",
+    "tabs": {
+      "overview": "Overview",
+      "metrics": "Metrics",
+      "medications": "Medications",
+      "conditions": "Conditions",
+      "appointments": "Appointments",
+      "recommendations": "Recommendations",
+      "logs": "Logs"
+    },
+    "status": {
+      "onTrack": "On track",
+      "attention": "Needs attention",
+      "alert": "Alert",
+      "steady": "Steady"
+    },
+    "snapshot": {
+      "title": "Health snapshot",
+      "sub": "A quick read on where things stand today",
+      "readiness": "Readiness",
+      "adherence": "Meds adherence",
+      "upcomingVisit": "Upcoming visit",
+      "activeAlerts": "Active alerts"
+    },
+    "overview": {
+      "eyebrow": "Today's snapshot",
+      "quickNav": "Jump to",
+      "viewMetrics": "All metrics",
+      "actions": {
+        "log": "Log reading",
+        "metrics": "Metrics",
+        "meds": "Medications",
+        "visits": "Appointments"
+      }
+    },
+    "hub": {
+      "eyebrow": "Health hub",
+      "logReading": "Log a reading",
+      "overviewTitle": "Today's overview",
+      "coreMetrics": "Core metrics",
+      "today": "Today",
+      "stable": "Stable",
+      "viewAll": "View all",
+      "noVisits": "No upcoming visits.",
+      "desc": {
+        "overview": "Your daily health command center — vitals, meds, and what's next."
+      }
+    },
+    "keyVitals": {
+      "title": "Key vitals",
+      "sub": "Tap a vital to open its detail"
+    },
+    "openIssues": {
+      "title": "Open issues",
+      "sub": "Things worth attention"
+    },
+    "metricList": {
+      "heart": "Heart",
+      "sleep": "Sleep",
+      "activity": "Activity",
+      "weight": "Weight",
+      "energy": "Energy",
+      "hydration": "Hydration",
+      "soon": "Soon"
+    },
+    "log": "Log {name}",
+    "metrics": {
+      "eyebrow": "Trends",
+      "description": "Track vitals over time and log new readings.",
+      "tracked": "Tracked",
+      "select": "Select metric"
+    },
+    "medications": {
+      "eyebrow": "Prescriptions",
+      "description": "Adherence, schedules, and refill reminders.",
+      "adherence30": "Adherence · 30 days",
+      "adherence7": "Last 7 days",
+      "active": "Active medications",
+      "refills": "Refills due soon",
+      "taken": "Taken",
+      "next": "Next: {due}"
+    },
+    "conditions": {
+      "eyebrow": "Chronic care",
+      "description": "Conditions you're managing and how they're trending.",
+      "tracked": "Tracked"
+    },
+    "appointments": {
+      "upcoming": "Upcoming",
+      "upcomingSub": "Confirmed visits",
+      "prep": "Prep checklist",
+      "past": "Past visits",
+      "history": "History"
+    },
+    "recs": {
+      "eyebrow": "Personalized",
+      "description": "Meals, movement, and recovery tailored to your profile.",
+      "meals": "Meals",
+      "avoid": "Foods to avoid",
+      "activities": "Activities",
+      "recovery": "Recovery"
+    },
+    "logs": {
+      "eyebrow": "Manual readings",
+      "heroTitle": "Health log",
+      "quickTitle": "Quick log",
+      "quickSub": "Add a manual reading",
+      "historyTitle": "History",
+      "historySub": "Track sleep, vitals, and mood in one place",
+      "justNow": "Just now",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "older": "Earlier",
+      "todayAt": "Today {{time}}",
+      "yesterdayAt": "Yesterday {{time}}",
+      "dateAt": "{{day}} {{time}}",
+      "todayCount": "Logged today",
+      "totalRecent": "Recent entries",
+      "entryCount": "{{count}} entries",
+      "loading": "Syncing your timeline…",
+      "retry": "Retry sync",
+      "saveFailed": "Saved locally — sync failed",
+      "live": "Live",
+      "emptyTitle": "No readings yet",
+      "emptyBody": "Tap a quick-log card to record your first entry.",
+      "lastReading": "Last: {{value}}",
+      "saved": "Saved to your timeline",
+      "saveReading": "Save reading",
+      "saving": "Saving…",
+      "kindHint": {
+        "sleep": "Duration and quality",
+        "weight": "Morning weigh-in",
+        "bloodPressure": "Systolic / diastolic",
+        "energyMood": "How you feel right now"
+      },
+      "metrics": {
+        "blood_pressure": "Blood pressure",
+        "weight": "Weight",
+        "mood": "Energy / mood",
+        "custom": "Sleep"
+      },
+      "kinds": {
+        "sleep": "Sleep",
+        "weight": "Weight",
+        "bloodPressure": "Blood pressure",
+        "energyMood": "Energy / mood"
+      }
+    },
+    "fields": {
+      "duration": "Duration",
+      "quality": "Quality",
+      "weight": "Weight",
+      "systolic": "Systolic",
+      "diastolic": "Diastolic",
+      "energy": "Energy",
+      "restingHr": "Resting HR",
+      "steps": "Steps"
+    },
+    "qualityOpts": {
+      "poor": "Poor",
+      "fair": "Fair",
+      "good": "Good",
+      "excellent": "Excellent"
+    },
+    "energyOpts": {
+      "veryLow": "Very low",
+      "low": "Low",
+      "okay": "Okay",
+      "good": "Good",
+      "great": "Great"
+    },
+    "stats": {
+      "low": "Low",
+      "avg": "Avg",
+      "high": "High"
+    }
+  },
+  "profilePage": {
+    "title": "Profile",
+    "subtitle": "Your health identity, goals, and the preferences that shape your guidance",
+    "eyebrow": "Health identity",
+    "editProfile": "Edit profile",
+    "edit": "Edit",
+    "identity": "{age} · {sex} · {location}",
+    "intentLabel": "Care intent",
+    "readinessPill": "Readiness {score}",
+    "completeness": {
+      "label": "Profile completeness",
+      "sub": "A fuller profile sharpens your guidance",
+      "complete": "Complete",
+      "pill": "{pct}% complete",
+      "count": "{done} of {total} fields",
+      "tip": "Add an emergency contact to reach 100%"
+    },
+    "glance": {
+      "complete": "Complete",
+      "goals": "Goals",
+      "conditions": "Conditions",
+      "readiness": "Readiness"
+    },
+    "nav": {
+      "label": "Profile sections",
+      "jumpTo": "Jump to",
+      "progress": "{done} / {total} filled",
+      "goals": "Goals",
+      "preferences": "Preferences",
+      "health": "Health",
+      "tuning": "Tuning",
+      "privacy": "Privacy"
+    },
+    "checklist": {
+      "title": "Finish your profile",
+      "sub": "Quick wins that improve personalization",
+      "items": {
+        "intent": "Add your care intent",
+        "metrics": "Confirm body metrics",
+        "blood": "Set blood type on Medical ID",
+        "emergency": "Add emergency contact",
+        "goals": "Review your goals",
+        "allergies": "Confirm allergies",
+        "conditions": "Review conditions",
+        "tuning": "Tune recommendation style"
+      }
+    },
+    "bodyMetrics": {
+      "title": "Body metrics",
+      "height": "Height",
+      "weight": "Weight",
+      "bmi": "BMI",
+      "trend": "Trend",
+      "bloodType": "Blood type",
+      "organDonor": "Organ donor"
+    },
+    "goals": {
+      "title": "Goals & targets",
+      "sub": "What ElinaCura optimizes toward",
+      "progress": "Progress"
+    },
+    "preferences": {
+      "title": "Preferences & lifestyle",
+      "sub": "How you like to eat, move and be reminded",
+      "dietary": "Dietary",
+      "avoided": "Avoided foods",
+      "allergies": "Allergies",
+      "activities": "Activities",
+      "limitations": "Limitations",
+      "schedule": "Schedule",
+      "reminders": "Reminders"
+    },
+    "context": {
+      "title": "Health context",
+      "sub": "Feeds your recommendations directly",
+      "priorities": "Care priorities",
+      "prioritiesValue": "Energy, independence, pain management",
+      "status": {
+        "on-track": "On track",
+        "attention": "Needs focus"
+      }
+    },
+    "tuning": {
+      "title": "Recommendation tuning",
+      "sub": "Shapes how guidance and alerts behave"
+    },
+    "privacy": {
+      "title": "Privacy & trust",
+      "body": "Your conditions, goals and preferences are used only to personalize recommendations and reminders. They're never shown to other members of your circle without your consent.",
+      "manage": "Manage data settings"
+    },
+    "sidebar": {
+      "idTitle": "Medical ID",
+      "idSub": "Emergency-ready summary",
+      "updated": "Updated {date}",
+      "emergency": "ICE: {name}",
+      "viewId": "View Medical ID",
+      "tipEyebrow": "Related",
+      "tipTitle": "Keep identity current",
+      "tipBody": "Update Medical ID and your care circle when medications or contacts change.",
+      "medicalId": "Medical ID",
+      "medicalIdDesc": "Blood type, allergies, and ICE contact",
+      "circle": "Family circle",
+      "circleDesc": "{count} members in your care team",
+      "settings": "Settings",
+      "settingsDesc": "Account, notifications, and data"
+    },
+    "footer": {
+      "title": "Profile powers your care plan",
+      "sub": "Goals and preferences flow into meals, activity, and AI guidance.",
+      "health": "Open health hub"
+    },
+    "untitled": "Your profile",
+    "ageYears": "{age} yrs",
+    "noDemographics": "Add your details below",
+    "loadError": "We couldn't load your profile. Check your connection and try again.",
+    "meds": {
+      "title": "Medications",
+      "sub": "Used to check interactions and tailor reminders."
+    },
+    "empty": {
+      "conditions": "No conditions added yet.",
+      "medications": "No medications added yet.",
+      "dietary": "No dietary preferences yet.",
+      "allergies": "No allergies added yet.",
+      "emergency": "No emergency contact set."
+    }
+  },
+  "mealsPage": {
+    "title": "Meals",
+    "subtitle": "Condition-aware meal guidance tuned to your goals",
+    "eyebrow": "Nutrition hub",
+    "heroHeadline": "Today's meal plan",
+    "openGrocery": "Grocery list",
+    "allRecommendations": "All recommendations",
+    "kcalUnit": "kcal",
+    "now": "Up next",
+    "statPlanned": "Meals planned",
+    "budget": {
+      "label": "Calorie budget",
+      "ringLabel": "{{planned}} of {{daily}} planned calories",
+      "on-track": "On track",
+      "under": "Room left",
+      "over": "Over budget"
+    },
+    "glance": {
+      "planned": "Meals",
+      "kcal": "Planned kcal",
+      "favor": "Favor",
+      "avoid": "Avoid",
+      "now": "Current slot",
+      "items": "items"
+    },
+    "targets": {
+      "title": "Daily nutrition targets",
+      "sub": "Estimated from today's planned meals",
+      "sodium": "Sodium",
+      "fiber": "Fiber",
+      "protein": "Protein",
+      "goal": "goal {{goal}}g"
+    },
+    "insight": {
+      "title": "Condition-aware guidance",
+      "sub": "Meals are tuned to your active conditions and medication interactions.",
+      "onTrack": "On track",
+      "focus": "Needs focus",
+      "viewCondition": "View condition"
+    },
+    "readiness": {
+      "pill": "{{score}}% ready"
+    },
+    "logged": {
+      "mark": "Mark {{slot}} as eaten",
+      "unmark": "Unmark {{slot}}",
+      "markShort": "Mark eaten",
+      "done": "Logged",
+      "count": "{{count}} / {{total}} logged"
+    },
+    "timeline": {
+      "title": "Calories by meal",
+      "total": "{{planned}} / {{daily}} kcal planned"
+    },
+    "medTiming": {
+      "title": "Medication & meals",
+      "sub": "Align food timing with your prescription schedule",
+      "notes": {
+        "morning": "Take with breakfast for steady absorption.",
+        "withFood": "Take with food to reduce stomach upset.",
+        "evening": "Take with dinner — avoid grapefruit."
+      }
+    },
+    "slotSelect": {
+      "label": "Select a meal slot"
+    },
+    "detail": {
+      "prep": "{{time}} prep",
+      "ingredients": "Ingredients",
+      "shop": "Add to grocery"
+    },
+    "swap": {
+      "action": "Swap for {{alt}}",
+      "altWhy": "Alternative pick aligned with your dietary goals."
+    },
+    "share": {
+      "title": "Today's meal plan",
+      "action": "Share plan",
+      "copy": "Copy plan",
+      "copied": "Copied!"
+    },
+    "groceryPreview": {
+      "title": "From your grocery list",
+      "count": "{{count}} items",
+      "link": "View full list"
+    },
+    "sections_nav": {
+      "label": "Meals sections",
+      "jumpTo": "Jump to",
+      "progress": "{{done}} / {{total}} reviewed",
+      "kcalPill": "{{pct}}% of budget",
+      "readiness": "{{score}}% ready",
+      "plan": "Today's plan",
+      "nutrition": "Nutrition",
+      "recommended": "Dishes",
+      "guide": "Guide",
+      "actions": "Next steps",
+      "desc": {
+        "plan": "Breakfast, lunch & dinner",
+        "nutrition": "Targets & med timing",
+        "recommended": "Condition-aware picks",
+        "guide": "Favor & avoid lists",
+        "actions": "Shop & scan"
+      }
+    },
+    "preferences": {
+      "title": "Your avoid list"
+    },
+    "todayPlan": {
+      "title": "Today's plan",
+      "sub": "Tap a slot to review, swap, or log a meal"
+    },
+    "recommended": {
+      "title": "Recommended dishes",
+      "inPlan": "In plan",
+      "alt": "Alternative",
+      "assign": "Add to plan"
+    },
+    "favor": {
+      "title": "Foods to favor"
+    },
+    "avoid": {
+      "title": "Foods to avoid"
+    },
+    "slots": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner"
+    },
+    "footnote": "Suggestions adapt to your conditions, medications and dietary preferences.",
+    "footer": {
+      "eyebrow": "Take it further",
+      "title": "Shop and stay safe",
+      "readyTitle": "Plan is ready to share",
+      "sub": "Turn today's plan into a grocery run, or scan labels before you buy.",
+      "readySub": "Your calorie budget looks balanced — share with a caregiver or take it shopping.",
+      "explore": "Explore",
+      "kcalPill": "{{planned}} / {{daily}} kcal",
+      "grocery": "Grocery list",
+      "groceryDesc": "Aisles grouped from your meal plan",
+      "groceryMeta": "{{count}} items ready",
+      "scanner": "Food scanner",
+      "scannerDesc": "Check products against your profile",
+      "scannerMeta": "Medication-aware",
+      "conditions": "Your conditions",
+      "conditionsDesc": "See how diet ties to health goals",
+      "conditionsMeta": "Hypertension · Diabetes"
+    }
+  },
+  "remindersPage": {
+    "title": "Reminders",
+    "subtitle": "Your day's reminders and medication schedule",
+    "eyebrow": "Care schedule",
+    "heroHeadline": "Today's reminders",
+    "allDone": "All caught up!",
+    "allDoneSub": "Every reminder for today is complete. Review your medication schedule for what's ahead.",
+    "completePill": "Complete",
+    "now": "Up next",
+    "openMeals": "Meal plan",
+    "progress": "{done} of {total} done",
+    "progressRing": "{done} of {total} reminders completed",
+    "statRemaining": "Still due",
+    "nextUpPill": "{time} · {title}",
+    "medsDue": "{count, plural, one {# med due today} other {# meds due today}}",
+    "insightNext": "Next up at {time}: {title}. Tap to mark done as you go.",
+    "insightMeds": "{count, plural, one {# medication dose is still due today} other {# medication doses are still due today}}.",
+    "insightDefault": "Stay on track with meds, meals, and activity — one reminder at a time.",
+    "types": {
+      "meds": "Medication",
+      "meals": "Meal",
+      "activity": "Activity"
+    },
+    "adherence": {
+      "taken": "Taken",
+      "partial": "Partial",
+      "missed": "Missed"
+    },
+    "today": {
+      "title": "Today",
+      "sub": "Tap each item when you've completed it",
+      "remaining": "{count} remaining",
+      "markAll": "Mark all done",
+      "clearAll": "Reset"
+    },
+    "medications": {
+      "title": "Medication schedule",
+      "sub": "Upcoming doses and weekly adherence",
+      "nextDue": "Next due"
+    },
+    "schedule": {
+      "dueToday": "Due today",
+      "week": "7-day",
+      "adherenceLabel": "Weekly adherence dots"
+    },
+    "preferences": {
+      "title": "Reminder preferences",
+      "sub": "How nudges are delivered",
+      "style": "Reminder tone",
+      "schedule": "Schedule",
+      "edit": "Adjust in Settings"
+    },
+    "glance": {
+      "total": "Today's items",
+      "completed": "Completed",
+      "remaining": "Remaining",
+      "adherence": "Med adherence"
+    },
+    "sections_nav": {
+      "label": "Reminders sections",
+      "jumpTo": "Jump to",
+      "progress": "{done} / {total} reviewed",
+      "today": "Today",
+      "schedule": "Schedule",
+      "settings": "Preferences",
+      "desc": {
+        "today": "Interactive checklist",
+        "schedule": "Medication doses",
+        "settings": "Tone and timing"
+      }
+    },
+    "sidebar": {
+      "nextTitle": "Coming up",
+      "explore": "Related",
+      "meals": "Meal plan",
+      "mealsDesc": "Condition-aware meals aligned with your meds",
+      "health": "Health hub",
+      "healthDesc": "Medications, conditions, and vitals",
+      "shopping": "Shopping list",
+      "shoppingDesc": "Refills and essentials in one place",
+      "settings": "Settings",
+      "settingsDesc": "Notifications and reminder tone"
+    },
+    "share": {
+      "title": "Today's reminders",
+      "action": "Share progress",
+      "copy": "Copy list",
+      "copied": "Copied!",
+      "empty": "No reminders scheduled today.",
+      "progress": "{done} of {total} completed",
+      "footer": "Generated from your ElinaCura care plan."
+    },
+    "footer": {
+      "eyebrow": "Stay on track",
+      "title": "Keep your day on schedule",
+      "readyTitle": "Day complete",
+      "sub": "Share your progress with a caregiver or adjust reminder timing in Settings.",
+      "readySub": "Everything is done for today — review refills and tomorrow's schedule.",
+      "remainingPill": "{count} left",
+      "adjust": "Reminder settings",
+      "explore": "Go further",
+      "meals": "Meal plan",
+      "mealsDesc": "See today's condition-aware meals",
+      "health": "Health hub",
+      "healthDesc": "Review medications and adherence",
+      "refills": "Refill calendar",
+      "refillsDesc": "See what's due at the pharmacy"
+    },
+    "footnote": "Reminders follow your preferred tone and timing. Adjust them anytime in Settings."
+  },
+  "settingsPage": {
+    "title": "Settings",
+    "subtitle": "Appearance, language, notifications and privacy — tuned to how you use ElinaCura",
+    "eyebrow": "Preferences hub",
+    "heroHeadline": "Your settings",
+    "account": {
+      "title": "Account",
+      "sub": "Profile and identity",
+      "manage": "Manage profile"
+    },
+    "display": {
+      "title": "Display & language",
+      "sub": "Theme and locale preferences"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "sub": "Choose your theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": {
+      "title": "Language",
+      "sub": "Display language",
+      "rtl": "RTL"
+    },
+    "glance": {
+      "theme": "Theme",
+      "alerts": "Alerts",
+      "lang": "Language",
+      "version": "Version"
+    },
+    "readiness": {
+      "label": "Setup completeness",
+      "ringLabel": "Settings {{score}} percent complete",
+      "complete": "Fully configured",
+      "strong": "Nearly complete",
+      "needs-attention": "Needs attention"
+    },
+    "sections_nav": {
+      "label": "Settings sections",
+      "jumpTo": "Jump to",
+      "progress": "{{done}} / {{total}} reviewed",
+      "readiness": "{{score}}% ready",
+      "account": "Account",
+      "display": "Display",
+      "notifications": "Alerts",
+      "privacy": "Privacy",
+      "support": "Support",
+      "desc": {
+        "account": "Profile & identity",
+        "display": "Theme & language",
+        "notifications": "Reminders & digests",
+        "privacy": "Data controls",
+        "support": "Help & legal"
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "sub": "What you'd like to hear about",
+      "enabledPill": "{{count}} / {{total}} on",
+      "enableAll": "Enable all",
+      "disableAll": "Disable all",
+      "items": {
+        "medications": "Medication reminders",
+        "appointments": "Appointment alerts",
+        "insights": "Health insights",
+        "digest": "Weekly digest"
+      },
+      "desc": {
+        "medications": "Dose reminders and missed-dose nudges",
+        "appointments": "Upcoming visits and prep checklists",
+        "insights": "Personalized trends and suggestions",
+        "digest": "A summary of your week, every Monday"
+      }
+    },
+    "privacy": {
+      "title": "Privacy & account",
+      "sub": "Control your data",
+      "body": "Your data is used only to personalize your care. You can export or manage it anytime.",
+      "manageData": "Manage data",
+      "exportData": "Export data",
+      "actions": {
+        "local": "Stored on this device",
+        "export": "Export your data",
+        "delete": "Delete account data"
+      },
+      "actionsDesc": {
+        "local": "Preferences sync locally until you connect a cloud account.",
+        "export": "Download a copy of your profile and preferences.",
+        "delete": "Permanently remove your data from ElinaCura."
+      }
+    },
+    "sidebar": {
+      "title": "Quick links",
+      "profile": "Profile",
+      "profileDesc": "Edit personal details",
+      "health": "Health hub",
+      "healthDesc": "Conditions, meds & logs",
+      "emergency": "Emergency ID",
+      "emergencyDesc": "Medical ID & SOS",
+      "circle": "Care circle",
+      "circleDesc": "Family & caregivers",
+      "tipTitle": "Settings sync locally",
+      "tipBody": "Theme, language, and notification choices are saved on this device."
+    },
+    "export": {
+      "title": "ElinaCura settings",
+      "header": "ELINACURA SETTINGS EXPORT",
+      "account": "Account",
+      "action": "Share settings",
+      "copy": "Copy summary",
+      "copied": "Copied!",
+      "on": "On",
+      "off": "Off"
+    },
+    "about": {
+      "title": "About & support",
+      "sub": "Help, version and legal",
+      "help": "Help center",
+      "privacy": "Privacy policy",
+      "terms": "Terms of service"
+    },
+    "footer": {
+      "eyebrow": "Your preferences",
+      "title": "Export your settings",
+      "readyTitle": "Settings are ready to share",
+      "sub": "Copy a summary of your preferences for backup or caregiver handoff.",
+      "readySub": "Your profile looks well configured — share a summary with your care circle if helpful.",
+      "explore": "Explore",
+      "readinessPill": "{{score}}% configured",
+      "profile": "Profile",
+      "profileDesc": "Update personal details",
+      "health": "Health hub",
+      "healthDesc": "Review conditions and meds",
+      "reminders": "Reminders",
+      "remindersDesc": "Medication schedule"
+    },
+    "version": "ElinaCura v{version}"
+  },
+  "chatPage": {
+    "title": "Care AI",
+    "subtitle": "Personal guidance grounded in your health profile, medications, and daily plan.",
+    "eyebrow": "AI companion",
+    "heroHeadline": "Ask anything about your care",
+    "assistant": "Care AI",
+    "greeting": "Hi {name}! I'm your Care AI. Ask about sleep, medications, meals, activity, or when to reach out for help.",
+    "contextPill": "{count} meds on file",
+    "readinessPill": "Readiness {score}",
+    "transcriptLabel": "Care AI conversation",
+    "inputLabel": "Message Care AI",
+    "placeholder": "Ask about your health, medications, or plan…",
+    "send": "Send message",
+    "copy": "Copy response",
+    "clear": "Clear chat",
+    "online": "Online",
+    "thinking": "Care AI is thinking",
+    "welcomeTitle": "Start with a question",
+    "welcomeSub": "Tap a prompt or type your own below",
+    "suggestionsTitle": "Suggested prompts",
+    "suggestionsSub": "Based on your profile",
+    "disclaimer": "Care AI offers general guidance and isn't a substitute for professional medical advice.",
+    "glance": {
+      "questions": "Questions",
+      "topics": "Topics",
+      "messages": "Messages"
+    },
+    "topics": {
+      "label": "Chat topics",
+      "all": "All topics",
+      "sleep": "Sleep",
+      "meds": "Medications",
+      "nutrition": "Nutrition",
+      "activity": "Activity",
+      "safety": "Safety"
+    },
+    "suggestions": {
+      "sleepTonight": "How can I sleep better tonight?",
+      "sleepDebt": "Am I carrying sleep debt?",
+      "windDown": "What's a good wind-down routine?",
+      "missedMeds": "Did I miss any medications this week?",
+      "refillSoon": "Which refills are coming up?",
+      "sideEffects": "What should I watch for with my meds?",
+      "mealTonight": "What should I eat tonight?",
+      "sodiumCheck": "Am I on track with sodium today?",
+      "avoidFoods": "What foods should I avoid?",
+      "activityToday": "What activity suits today?",
+      "readiness": "Why is my readiness score lower?",
+      "hydration": "How much water should I drink?",
+      "symptoms": "When should I worry about symptoms?",
+      "whenToCall": "When should I call my doctor?",
+      "medicalId": "What's on my Medical ID?"
+    },
+    "replies": {
+      "sleep": "Your readiness is {score}% today. {insight} A good start: {tip}. Keep screens off 30 minutes before bed and aim for your 7.5h sleep goal.",
+      "meds": "You have {count} active medications ({meds}). Over the last 7 days I see {missed} missed dose(s). Keep evening meds consistent — that's where slips tend to happen.",
+      "nutrition": "{insight} Watch out for: {avoid}. Your meal plan favors leafy greens, lean protein, and whole grains — want a dinner suggestion from today's plan?",
+      "activity": "Readiness is {score}% — {insight} I'd suggest: {tip}. Add an extra glass of water if you're heading out.",
+      "safety": "If you have chest pain, trouble breathing, sudden weakness, or symptoms that feel urgent, call emergency services. For non-urgent concerns, note your symptoms and reach your care team through Telehealth.",
+      "default": "Thanks, {name}. I'm looking at your profile focused on {intent}. Ask me about sleep, meds, meals, activity, or safety and I'll tailor guidance to your data."
+    },
+    "sidebar": {
+      "contextTitle": "What I know",
+      "contextSub": "Pulled from your care profile",
+      "goal": "Your goal",
+      "meds": "Medications",
+      "medCount": "{count} active",
+      "readiness": "Readiness",
+      "avoid": "Foods to avoid",
+      "avoidCount": "{count} flagged",
+      "coversTitle": "I can help with",
+      "coversSub": "Topics I'm tuned for",
+      "tipEyebrow": "Need a clinician?",
+      "tipTitle": "Escalate when it matters",
+      "tipBody": "Care AI is for day-to-day guidance. Book telehealth or call your provider for clinical decisions.",
+      "health": "Health hub",
+      "healthDesc": "Vitals, conditions, and adherence",
+      "meals": "Meal plan",
+      "mealsDesc": "Today's dishes and nutrition targets",
+      "scanner": "Food scanner",
+      "scannerDesc": "Check products for interaction flags"
+    },
+    "footer": {
+      "title": "Questions for your clinician?",
+      "sub": "Save chat takeaways and follow up in a telehealth visit.",
+      "telehealth": "Open telehealth"
+    },
+    "noResponse": "I couldn't generate a response. Please try again.",
+    "blocked": "I can't help with that message. Please rephrase and try again.",
+    "needsReview": "This message needs review before I can respond. Please rephrase.",
+    "errorReply": "Something went wrong reaching Care AI. Please try again in a moment.",
+    "noProfileTitle": "Create a profile to start chatting",
+    "noProfileBody": "Care AI tailors its guidance to your conditions, medications, and goals. Set up your profile first.",
+    "noProfileCta": "Create your profile"
+  },
+  "safetyPage": {
+    "title": "Safety",
+    "subtitle": "Your safety net: contacts, check-ins and devices",
+    "eyebrow": "Safety hub",
+    "heroHeadline": "Your safety net",
+    "protectionLabel": "Protection score",
+    "scorePill": "{score}% protected",
+    "scoreRing": "Protection score {score} percent",
+    "medicalIdCta": "Medical ID",
+    "emergencyCta": "Emergency",
+    "nextCheckIn": "Up next: {label} at {time}",
+    "grade": {
+      "protected": "You're protected",
+      "attention": "Needs attention",
+      "at-risk": "Review your safety setup"
+    },
+    "status": {
+      "monitored": "You're protected",
+      "lastCheckIn": "Last check-in {time}"
+    },
+    "glance": {
+      "protection": "Protection",
+      "checkIns": "Check-ins",
+      "devices": "Devices",
+      "caregivers": "Care team"
+    },
+    "nav": {
+      "label": "Safety sections",
+      "jumpTo": "Jump to",
+      "progress": "{done} / {total} reviewed",
+      "contacts": "Contacts",
+      "checkins": "Check-ins",
+      "devices": "Devices",
+      "actions": "Actions"
+    },
+    "contacts": {
+      "title": "Emergency contacts",
+      "sub": "One tap to call — 911 is always first",
+      "call": "Call {name}"
+    },
+    "checkIns": {
+      "title": "Daily check-ins",
+      "sub": "Wellness confirmations throughout the day",
+      "progress": "{done} / {total} done",
+      "markDone": "I'm OK",
+      "ok": "Done",
+      "due": "Due",
+      "missed": "Missed"
+    },
+    "devices": {
+      "title": "Connected devices",
+      "sub": "Your safety hardware and monitors",
+      "onlinePill": "{online} / {total} online",
+      "offlineAlert": "{count} offline",
+      "alertTitle": "Device needs attention",
+      "alertBody": "{names} — reconnect to restore full protection.",
+      "reconnect": "Reconnect device",
+      "active": "Active",
+      "offline": "Offline"
+    },
+    "sidebar": {
+      "medicalIdTitle": "Medical ID",
+      "medicalIdSub": "Shown to first responders",
+      "bloodType": "Blood type",
+      "allergies": "Allergies",
+      "medications": "Medications",
+      "circleTitle": "Family circle",
+      "circleSub": "{count} caregivers watching",
+      "circleBody": "Your circle can see check-in status and receive alerts if something looks off.",
+      "manageCircle": "Manage circle",
+      "tipEyebrow": "If you need help",
+      "tipTitle": "Emergency is one tap away",
+      "tipBody": "Call 911 or open your Medical ID to share conditions, allergies, and medications with responders.",
+      "emergencyDesc": "Call for help and share your Medical ID"
+    },
+    "footer": {
+      "eyebrow": "Stay prepared",
+      "title": "Keep your safety net strong",
+      "readyTitle": "Safety net is active",
+      "sub": "Complete due check-ins and reconnect offline devices to improve your protection score.",
+      "readySub": "Contacts, devices, and check-ins look good. Your caregivers are connected.",
+      "medicalId": "Medical ID",
+      "medicalIdDesc": "Blood type, allergies, and medications",
+      "circle": "Family circle",
+      "circleDesc": "Manage who can see your safety status",
+      "devices": "Device connections",
+      "devicesDesc": "Reconnect offline safety hardware"
+    },
+    "stats": {
+      "contacts": "Contacts",
+      "devices": "Devices online",
+      "checkIns": "Check-ins"
+    }
+  },
+  "messagesPage": {
+    "title": "Messages",
+    "subtitle": "Secure messaging with your care team and circle",
+    "eyebrow": "Care inbox",
+    "heroHeadline": "Your care conversations",
+    "heroUnread": "You have unread messages",
+    "openCircle": "Family circle",
+    "progress": "{unread} unread",
+    "activePill": "Viewing {name}",
+    "unreadPill": "{count} conversations",
+    "readRing": "{read} of {total} conversations caught up",
+    "readLabel": "Inbox",
+    "unreadShort": "unread",
+    "securePill": "Encrypted",
+    "insightUnread": "{count, plural, one {# unread message waiting — tap a conversation to reply} other {# unread messages waiting — tap a conversation to reply}}.",
+    "insightActive": "You're chatting with {name}. Replies are shared securely with your care team.",
+    "insightDefault": "Message your clinicians and caregivers in one secure inbox.",
+    "inbox": "Inbox",
+    "inboxSub": "Care team and family",
+    "search": "Search conversations",
+    "online": "Online",
+    "emptyTitle": "No matches",
+    "empty": "Try a different search or filter to find a conversation.",
+    "selectPrompt": "Select a conversation",
+    "selectSub": "Choose someone from your inbox to read and reply securely.",
+    "back": "Back to inbox",
+    "inputLabel": "Type a message",
+    "placeholder": "Type a message…",
+    "send": "Send message",
+    "now": "Now",
+    "glance": {
+      "total": "Conversations",
+      "unread": "Unread",
+      "caregivers": "Caregivers",
+      "clinicians": "Clinicians"
+    },
+    "filter": {
+      "label": "Filter conversations",
+      "all": "All",
+      "unread": "Unread",
+      "caregivers": "Caregivers",
+      "clinicians": "Clinicians"
+    },
+    "categories": {
+      "caregiver": "Caregiver",
+      "clinician": "Clinician",
+      "team": "Care team"
+    },
+    "roles": {
+      "owner": "Owner",
+      "caregiver": "Caregiver",
+      "viewer": "Viewer"
+    },
+    "quick": {
+      "thanks": "Thanks — I'll follow up",
+      "schedule": "Can we schedule a call?",
+      "done": "Done — thanks for checking"
+    },
+    "share": {
+      "title": "Conversation",
+      "action": "Share thread",
+      "copy": "Copy thread",
+      "copied": "Copied!",
+      "me": "You",
+      "footer": "Exported from your ElinaCura secure inbox."
+    },
+    "sidebar": {
+      "circleTitle": "Your circle",
+      "circleSub": "People in your care network",
+      "viewCircle": "View family circle",
+      "tipsTitle": "Messaging tips",
+      "tip1": "Replies are encrypted and visible only to your care team",
+      "tip2": "Share vitals or concerns before a telehealth visit",
+      "tip3": "Caregivers see updates you choose to share",
+      "explore": "Related",
+      "circle": "Family circle",
+      "circleDesc": "Manage who can message you",
+      "telehealth": "Telehealth",
+      "telehealthDesc": "Prep for your next video visit",
+      "report": "Clinical report",
+      "reportDesc": "Export notes for your clinician"
+    },
+    "footer": {
+      "eyebrow": "Stay connected",
+      "title": "Your secure care inbox",
+      "unreadTitle": "Catch up on messages",
+      "sub": "All conversations are encrypted. Share threads with a caregiver when needed.",
+      "unreadSub": "Reply to unread messages or filter by caregivers and clinicians.",
+      "explore": "Go further",
+      "circle": "Family circle",
+      "circleDesc": "Roles and access for your network",
+      "telehealth": "Telehealth",
+      "telehealthDesc": "Join your next video visit",
+      "reminders": "Reminders",
+      "remindersDesc": "Doses and timing for today"
+    },
+    "footnote": "Messages are encrypted in transit and only visible to people in your care circle."
+  },
+  "emergencyPage": {
+    "title": "Emergency",
+    "subtitle": "One tap to call for help and share your Medical ID with responders",
+    "eyebrow": "Safety hub",
+    "heroHeadline": "Emergency Medical ID",
+    "callEmergency": "Call emergency services",
+    "tapHint": "Press the button above to call for help right away",
+    "idCard": "Emergency Medical ID",
+    "organDonor": "Organ donor",
+    "offlineReady": "Offline ready",
+    "hospitalPref": "Preferred hospital",
+    "primaryContact": "Primary contact",
+    "idUpdated": "Updated {{date}}",
+    "viewSafety": "Safety dashboard",
+    "medicalId": {
+      "title": "Medical ID",
+      "sub": "Shown to responders"
+    },
+    "glance": {
+      "bloodType": "Blood type",
+      "critical": "Critical facts",
+      "contacts": "Contacts",
+      "ready": "ID ready",
+      "items": "listed"
+    },
+    "readiness": {
+      "label": "Medical ID completeness",
+      "ringLabel": "Medical ID {{score}} percent complete",
+      "complete": "Complete",
+      "strong": "Nearly complete",
+      "needs-attention": "Needs attention"
+    },
+    "critical": {
+      "title": "Critical information",
+      "sub": "Allergies, conditions, and medications for first responders"
+    },
+    "alerts": {
+      "title": "Responder alerts"
+    },
+    "allergies": "Allergies",
+    "conditions": "Conditions",
+    "medications": "Medications",
+    "contacts": {
+      "title": "Emergency contacts",
+      "sub": "Tap to call",
+      "call": "Call {{name}}"
+    },
+    "share": {
+      "title": "Emergency Medical ID",
+      "header": "EMERGENCY MEDICAL ID",
+      "name": "Name",
+      "ageSex": "Age / Sex",
+      "bloodType": "Blood type",
+      "notes": "Notes",
+      "hospital": "Preferred hospital",
+      "action": "Share Medical ID",
+      "copyId": "Copy Medical ID",
+      "copied": "Copied!"
+    },
+    "sections_nav": {
+      "label": "Emergency sections",
+      "jumpTo": "Jump to",
+      "progress": "{{done}} / {{total}} reviewed",
+      "readiness": "{{score}}% ready",
+      "sos": "SOS",
+      "id": "Medical ID",
+      "critical": "Critical info",
+      "contacts": "Contacts",
+      "handoff": "Share",
+      "desc": {
+        "sos": "Call emergency services",
+        "id": "Wallet card for responders",
+        "critical": "Allergies & meds",
+        "contacts": "Tap to call",
+        "handoff": "Share with caregivers"
+      }
+    },
+    "footer": {
+      "eyebrow": "Hand off to responders",
+      "title": "Share your Medical ID",
+      "readyTitle": "Medical ID is ready to share",
+      "sub": "Copy or share critical details with caregivers, family, or first responders.",
+      "readySub": "Your profile is complete — share offline-ready details before an emergency happens.",
+      "explore": "Explore",
+      "readinessPill": "{{score}}% complete",
+      "safety": "Safety dashboard",
+      "safetyDesc": "Check-ins, devices, and monitoring",
+      "safetyMeta": "Monitored",
+      "conditions": "Your conditions",
+      "conditionsDesc": "Review active health conditions",
+      "conditionsMeta": "Hypertension · Diabetes",
+      "circle": "Care circle",
+      "circleDesc": "Family and caregivers who can help",
+      "circleMeta": "4 members"
+    },
+    "footnote": "Your Medical ID can help responders treat you quickly."
+  },
+  "groceryPage": {
+    "title": "Grocery",
+    "subtitle": "A smart list from your meal guidance, grouped by aisle",
+    "eyebrow": "Shopping hub",
+    "heroHeadline": "Your grocery run",
+    "allDone": "All picked up!",
+    "allDoneSub": "Every item from your meal plan is in the bag. Scan labels on anything new before you put it away.",
+    "completePill": "Complete",
+    "progress": "{done} of {total} picked up",
+    "progressRing": "{done} of {total} items picked up",
+    "statRemaining": "Still need",
+    "groupProgress": "{done} / {total} in aisle",
+    "aisleComplete": "Done",
+    "openMeals": "View meal plan",
+    "footnote": "Items are seeded from your condition-aware meal guidance and dietary preferences.",
+    "clearChecked": "Uncheck all",
+    "checkAisle": "Check aisle",
+    "uncheckAisle": "Uncheck aisle",
+    "collapseAisle": "Collapse aisle",
+    "expandAisle": "Expand aisle",
+    "customBadge": "Yours",
+    "remove": "Remove {name}",
+    "nextAisle": "Up next: {aisle} · {count} left",
+    "route": {
+      "title": "Store route",
+      "progress": "{done} / {total} aisles done"
+    },
+    "nav": {
+      "label": "Aisle navigation",
+      "jumpTo": "Jump to aisle"
+    },
+    "mealPlan": {
+      "title": "Today's meals",
+      "sub": "Items linked to these dishes"
+    },
+    "filter": {
+      "all": "All aisles"
+    },
+    "search": {
+      "label": "Search grocery list",
+      "placeholder": "Search items…",
+      "clear": "Clear search"
+    },
+    "shoppingMode": {
+      "on": "Shopping mode",
+      "off": "Show all"
+    },
+    "add": {
+      "placeholder": "Add your own item…",
+      "action": "Add item"
+    },
+    "empty": {
+      "title": "Nothing to show",
+      "sub": "Try a different search, turn off shopping mode, or pick another aisle."
+    },
+    "glance": {
+      "total": "Total items",
+      "pickedUp": "Picked up",
+      "remaining": "Remaining",
+      "aisles": "Aisles",
+      "mode": "View"
+    },
+    "share": {
+      "title": "Grocery list",
+      "action": "Share list",
+      "copy": "Copy list",
+      "copied": "Copied!",
+      "footer": "Generated from your ElinaCura meal guidance."
+    },
+    "sidebar": {
+      "avoidTitle": "Skip at the store",
+      "avoidSub": "Conflicts with your medications or conditions",
+      "preferences": "Your avoid list",
+      "tipEyebrow": "While you shop",
+      "tipTitle": "Scan before you buy",
+      "tipBody": "Use the food scanner to check sodium, sugar, and medication interactions on unfamiliar labels.",
+      "meals": "Meal plan",
+      "mealsDesc": "Review today's dishes and swap options",
+      "scanner": "Food scanner",
+      "scannerDesc": "Check labels against your conditions"
+    },
+    "footer": {
+      "eyebrow": "At the store",
+      "title": "Take your list shopping",
+      "readyTitle": "Cart is complete",
+      "sub": "Share what's left with a caregiver or open the scanner before you checkout.",
+      "readySub": "Everything is picked up — scan any new items before you put them away.",
+      "remainingPill": "{count} left",
+      "scan": "Open scanner",
+      "hintTitle": "Synced with meals",
+      "hintSub": "This list updates from your condition-aware meal plan."
+    },
+    "categories": {
+      "produce": "Produce",
+      "protein": "Protein",
+      "pantry": "Pantry",
+      "dairy": "Dairy"
+    }
+  },
+  "shoppingListPage": {
+    "title": "Smart Shopping",
+    "subtitle": "Pharmacy refills and anything else you need — synced across sessions",
+    "eyebrow": "Shopping hub",
+    "heroHeadline": "Your shopping run",
+    "allDone": "All picked up!",
+    "allDoneSub": "Everything on your list is checked off. Review refills before your next pharmacy visit.",
+    "completePill": "Complete",
+    "insightRefills": "{count, plural, one {# refill due soon — add it before you head out} other {# refills due soon — add them before you head out}}",
+    "progress": "{done} of {total} picked up",
+    "progressRing": "{done} of {total} items picked up",
+    "statRemaining": "Still need",
+    "statDone": "Picked up",
+    "groupProgress": "{done} / {total} in group",
+    "groupComplete": "Done",
+    "refillsDue": "{count} refills due",
+    "openRefills": "View refill calendar",
+    "listTitle": "Your list",
+    "addPlaceholder": "Add an item…",
+    "add": "Add item",
+    "remaining": "{count} remaining",
+    "refill": "Refill: {name}",
+    "clearDone": "Clear done",
+    "remove": "Remove {name}",
+    "startRun": "Start shopping",
+    "nextUp": "Up next",
+    "checkGroup": "Check all",
+    "uncheckGroup": "Uncheck all",
+    "collapseGroup": "Collapse group",
+    "expandGroup": "Expand group",
+    "runEta": "~{minutes} min",
+    "runType": {
+      "pharmacy": "Pharmacy run",
+      "errands": "Errand run",
+      "mixed": "Mixed trip"
+    },
+    "nextStop": {
+      "label": "Next stop",
+      "count": "{count} left"
+    },
+    "route": {
+      "title": "Your route",
+      "progress": "{done} / {total} stops done"
+    },
+    "urgency": {
+      "critical": "Urgent",
+      "soon": "Due soon"
+    },
+    "staples": {
+      "title": "Quick add",
+      "sub": "Common items you might need"
+    },
+    "dock": {
+      "label": "Grab next",
+      "check": "Got it",
+      "exit": "Exit"
+    },
+    "handoff": {
+      "eyebrow": "Care circle",
+      "title": "Send list to {name}",
+      "sub": "Your {relation} can pick these up for you",
+      "action": "Send to caregiver",
+      "sent": "Sent!",
+      "shareTitle": "Shopping list for pickup",
+      "greeting": "Hi {name},",
+      "intro": "Could you help pick up these items?",
+      "footer": "Thanks! — via ElinaCura"
+    },
+    "filter": {
+      "all": "All groups"
+    },
+    "search": {
+      "label": "Search shopping list",
+      "placeholder": "Search items…"
+    },
+    "shoppingMode": {
+      "on": "Shopping mode",
+      "off": "Show all"
+    },
+    "categories": {
+      "refill": "Refills",
+      "essentials": "Essentials",
+      "general": "General"
+    },
+    "empty": {
+      "title": "Nothing to show",
+      "sub": "Try a different search, turn off shopping mode, or add a new item."
+    },
+    "glance": {
+      "total": "Total items",
+      "pickedUp": "Picked up",
+      "remaining": "Remaining",
+      "groups": "Groups",
+      "stops": "At this stop",
+      "mode": "View"
+    },
+    "suggestions": {
+      "title": "Suggested refills",
+      "sub": "Based on your refill calendar",
+      "refill": "{name} · {days}d left"
+    },
+    "share": {
+      "title": "Shopping list",
+      "action": "Share list",
+      "copy": "Copy list",
+      "copied": "Copied!",
+      "empty": "All items picked up!",
+      "footer": "Generated from your ElinaCura care plan."
+    },
+    "sidebar": {
+      "nextTitle": "Next refill",
+      "nextSub": "Soonest on your calendar",
+      "refillBy": "Refill by {date} · {days} days left",
+      "scheduleTitle": "Refill schedule",
+      "scheduleSub": "Upcoming pharmacy pickups",
+      "daysLeft": "{count}d",
+      "tipEyebrow": "While you shop",
+      "tipTitle": "Keep refills on track",
+      "tipBody": "Add pharmacy pickups here and share the list with a caregiver before you head out.",
+      "grocery": "Grocery list",
+      "groceryDesc": "Condition-aware items from your meal plan",
+      "refills": "Refill calendar",
+      "refillsDesc": "See what's due and request pickups",
+      "scanner": "Food scanner",
+      "scannerDesc": "Check labels against your conditions"
+    },
+    "footer": {
+      "eyebrow": "At the store",
+      "title": "Take your list shopping",
+      "readyTitle": "List is complete",
+      "sub": "Share what's left with a caregiver or check your refill calendar.",
+      "readySub": "Everything is picked up — review upcoming refills before your next visit.",
+      "remainingPill": "{count} left",
+      "refills": "Open refills",
+      "hintTitle": "Synced with care plan",
+      "hintSub": "Refills and custom items persist across sessions."
+    }
+  },
+  "refillCalendarPage": {
+    "title": "Refill calendar",
+    "subtitle": "Upcoming medication refills, soonest first",
+    "eyebrow": "Pharmacy hub",
+    "heroHeadline": "{name} refill in {days} days",
+    "allHandled": "Refills requested!",
+    "allHandledSub": "Every urgent refill has been requested. Add them to your shopping list before you head out.",
+    "handledPill": "Requested",
+    "next": "{name} refill in {days} days",
+    "nextUp": "Next up",
+    "none": "No refills scheduled",
+    "dueSoon": "{count} due within 7 days",
+    "refillBy": "Refill by {date}",
+    "daysLeft": "{count} days left",
+    "request": "Request refill",
+    "requested": "Requested",
+    "openShopping": "Shopping list",
+    "progress": "{requested} of {total} requested",
+    "criticalPill": "{count, plural, one {# critical} other {# critical}}",
+    "readinessRing": "{score}% refill readiness",
+    "readinessLabel": "Readiness",
+    "readinessPill": "{score}% ready",
+    "insightCritical": "{count, plural, one {# refill is critically low — request it today} other {# refills are critically low — request them today}}.",
+    "insightSoon": "{count, plural, one {# refill is due within a week} other {# refills are due within a week}}. Mark each as requested when you've ordered.",
+    "insightDefault": "Track upcoming pharmacy pickups and stay ahead of running out.",
+    "statSoon": "Due soon",
+    "statTotal": "Total refills",
+    "sectionSoon": "Due within 7 days",
+    "sectionSoonSub": "{count, plural, one {# refill needs attention} other {# refills need attention}}",
+    "sectionLater": "Later this month",
+    "sectionLaterSub": "{count, plural, one {# refill on the horizon} other {# refills on the horizon}}",
+    "glance": {
+      "total": "Total refills",
+      "dueSoon": "Due soon",
+      "critical": "Critical",
+      "requested": "Requested",
+      "laterPill": "{count} later"
+    },
+    "filter": {
+      "label": "Filter by urgency",
+      "all": "All",
+      "critical": "Critical",
+      "soon": "Due soon",
+      "later": "Later"
+    },
+    "timeline": {
+      "title": "Refill horizon"
+    },
+    "sections_nav": {
+      "label": "Refill sections",
+      "jumpTo": "Jump to",
+      "progress": "{done} / {total} reviewed",
+      "urgent": "Due soon",
+      "schedule": "Later",
+      "actions": "Next steps",
+      "desc": {
+        "urgent": "Within 7 days",
+        "schedule": "Rest of month",
+        "actions": "Share & shop"
+      }
+    },
+    "sidebar": {
+      "nextTitle": "Soonest refill",
+      "pharmacyTitle": "Your pharmacies",
+      "pharmacySub": "Where you pick up",
+      "progressTitle": "Urgent progress",
+      "progressSub": "Refills requested within 7 days",
+      "explore": "Related",
+      "shopping": "Shopping list",
+      "shoppingDesc": "Add refills before your pharmacy run",
+      "reminders": "Reminders",
+      "remindersDesc": "Medication doses and timing",
+      "health": "Health hub",
+      "healthDesc": "Prescriptions and adherence"
+    },
+    "share": {
+      "title": "Refill calendar",
+      "action": "Share schedule",
+      "copy": "Copy schedule",
+      "copied": "Copied!",
+      "summary": "{soon} due within 7 days · {total} total",
+      "footer": "Generated from your ElinaCura care plan."
+    },
+    "footer": {
+      "eyebrow": "Before you run out",
+      "title": "Stay ahead of refills",
+      "readyTitle": "All set for now",
+      "sub": "Share your refill schedule with a caregiver or add items to your shopping list.",
+      "readySub": "Every urgent refill is requested — review your shopping list before pickup.",
+      "remainingPill": "{count} to request",
+      "explore": "Go further",
+      "shopping": "Shopping list",
+      "shoppingDesc": "Track pharmacy pickups in one place",
+      "reminders": "Reminders",
+      "remindersDesc": "Keep doses on schedule",
+      "health": "Health hub",
+      "healthDesc": "Review prescriptions and supply"
+    },
+    "empty": {
+      "sub": "When refills are scheduled they'll appear here, sorted by urgency."
+    },
+    "footnote": "Request refills a few days before you run out. Add them to your shopping list to track pickup."
+  },
+  "travelModePage": {
+    "title": "Travel mode",
+    "subtitle": "Prepare your medications and routine for the trip",
+    "eyebrow": "Upcoming trip",
+    "heroEyebrow": "Upcoming trip",
+    "allReady": "You're travel-ready",
+    "allReadySub": "Supply, packing, and dose timing are covered. Safe travels — your care plan travels with you.",
+    "completePill": "Ready",
+    "progress": "{done} of {total} packed",
+    "departsIn": "Departs in {days} days",
+    "openReminders": "Adjust reminders",
+    "tzShift": "Time zone {shift}",
+    "readinessLabel": "Trip readiness",
+    "readinessRing": "Trip readiness {score} percent",
+    "insightReady": "Everything is packed and your supply covers the trip.",
+    "insightSupply": "Medication supply is short for this trip — request refills before you leave.",
+    "insightChecklist": "{remaining, plural, one {# packing item left} other {# packing items left}} before you're travel-ready.",
+    "insightDefault": "Review supply, pack essentials, and preview dose times in the destination time zone.",
+    "categories": {
+      "pack": "Packing",
+      "docs": "Documents",
+      "schedule": "Schedule",
+      "safety": "Safety"
+    },
+    "supply": {
+      "title": "Medication supply",
+      "sub": "Enough to cover your trip?",
+      "days": "days",
+      "tripLength": "Trip is {days} days",
+      "covered": "Covered",
+      "short": "Short",
+      "buffer": "{days} days spare",
+      "gap": "Need {days} more days of supply",
+      "byMed": "By medication",
+      "packFor": "Pack for {days} days",
+      "refillTitle": "Refill before you go",
+      "refillSub": "{names} may run low — request refills early.",
+      "openRefills": "Open refill calendar"
+    },
+    "checklist": {
+      "title": "Packing checklist",
+      "progress": "{done} of {total} done",
+      "markAll": "Mark all done",
+      "reset": "Reset"
+    },
+    "schedule": {
+      "title": "Dose timing",
+      "sub": "Preview home vs destination dose times",
+      "origin": "From",
+      "destination": "To",
+      "strategyLabel": "Dose timing strategy",
+      "strategy": {
+        "keep": "Keep home time",
+        "shift": "Gradual shift"
+      },
+      "strategyDesc": {
+        "keep": "Take doses at the same absolute time — shown on the destination clock.",
+        "shift": "Shift toward your home schedule by up to 2 hours per day after arrival."
+      },
+      "med": "Medication",
+      "homeTime": "Home",
+      "day": "Day {n}",
+      "empty": "Add medication reminders to preview a travel dose plan.",
+      "advisory": "Advisory only — confirm timing changes with your care team before you travel."
+    },
+    "resources": {
+      "title": "Local care",
+      "sub": "Saved for your destination",
+      "pharmacy": "Pharmacy",
+      "hospital": "Hospital"
+    },
+    "documents": {
+      "title": "Travel documents",
+      "sub": "Keep these accessible in carry-on"
+    },
+    "glance": {
+      "trip": "Trip days",
+      "supply": "Supply days",
+      "packed": "Packed",
+      "remaining": "Checklist left",
+      "tz": "Time shift"
+    },
+    "stats": {
+      "supply": "Supply days",
+      "trip": "Trip days",
+      "packed": "Packed"
+    },
+    "sections_nav": {
+      "label": "Travel sections",
+      "jumpTo": "Jump to",
+      "progress": "{done} / {total} reviewed",
+      "supply": "Supply",
+      "checklist": "Checklist",
+      "schedule": "Schedule",
+      "desc": {
+        "supply": "Coverage by medication",
+        "checklist": "Pack and prepare",
+        "schedule": "Time zone doses"
+      }
+    },
+    "sidebar": {
+      "explore": "Related",
+      "reminders": "Reminders",
+      "remindersDesc": "Adjust nudges for local time",
+      "refills": "Refill calendar",
+      "refillsDesc": "Top up before departure",
+      "emergency": "Emergency card",
+      "emergencyDesc": "Contacts and critical info"
+    },
+    "share": {
+      "title": "Travel prep checklist",
+      "action": "Share plan",
+      "copy": "Copy plan",
+      "copied": "Copied!",
+      "readiness": "Readiness: {score}%",
+      "supplyOk": "Supply: {supply} days for a {trip}-day trip ({spare} spare)",
+      "supplyShort": "Supply: {supply} days for a {trip}-day trip — need {gap} more days",
+      "checklistProgress": "Checklist: {done} of {total} done",
+      "pharmacy": "Pharmacy: {name}",
+      "footer": "Generated from your ElinaCura travel plan."
+    },
+    "footer": {
+      "eyebrow": "Before you go",
+      "title": "Finish your travel prep",
+      "readyTitle": "Ready to travel",
+      "sub": "Share your plan with a caregiver or double-check refills and reminders.",
+      "readySub": "You're packed and covered — enjoy the trip with confidence.",
+      "remainingPill": "{count} left",
+      "explore": "Go further",
+      "reminders": "Reminders",
+      "remindersDesc": "Set local-time nudges",
+      "refills": "Refill calendar",
+      "refillsDesc": "Request refills before departure",
+      "emergency": "Emergency card",
+      "emergencyDesc": "Quick access to critical info"
+    },
+    "footnote": "Travel mode is advisory. Confirm medication timing and travel documentation with your clinician."
+  },
+  "familyCirclePage": {
+    "title": "Family circle",
+    "subtitle": "The people who help with your care",
+    "eyebrow": "Care circle",
+    "heroDescription": "{name}'s circle has {count} members helping with daily care, safety, and wellness.",
+    "circleStrength": "Circle strength",
+    "scorePill": "{score}% connected",
+    "scoreRing": "Circle strength {score} percent",
+    "memberCount": "{count} members",
+    "you": "You",
+    "invite": "Invite someone",
+    "manage": "Manage access",
+    "message": "Message",
+    "accessTitle": "What each role can see",
+    "filter": {
+      "all": "Everyone"
+    },
+    "glance": {
+      "strength": "Strength",
+      "members": "Members",
+      "caregivers": "Caregivers",
+      "viewers": "Viewers",
+      "total": "Total"
+    },
+    "grade": {
+      "strong": "A strong care circle",
+      "building": "Building your circle",
+      "starter": "Grow your circle"
+    },
+    "nav": {
+      "label": "Circle sections",
+      "jumpTo": "Jump to",
+      "progress": "{done} / {total} reviewed",
+      "members": "Members",
+      "roles": "Roles",
+      "privacy": "Privacy",
+      "actions": "Actions"
+    },
+    "members": {
+      "title": "Circle members",
+      "sub": "Family, caregivers, and care team"
+    },
+    "rolesSection": {
+      "sub": "Choose the right access level for each person"
+    },
+    "rolesDesc": {
+      "owner": "Account holder",
+      "caregiver": "Trusted helper",
+      "viewer": "Read-only access"
+    },
+    "pending": {
+      "title": "Pending invites"
+    },
+    "invitePanel": {
+      "title": "Invite to your circle",
+      "close": "Close invite form",
+      "name": "Name",
+      "namePlaceholder": "Full name",
+      "email": "Email",
+      "emailPlaceholder": "email@example.com",
+      "send": "Send invite"
+    },
+    "privacy": {
+      "title": "Privacy & trust",
+      "sub": "You're always in control of what's shared",
+      "body": "Your health data is shared only with people you invite. Each role has clear boundaries — and you can change or revoke access anytime.",
+      "manage": "Manage privacy settings",
+      "points": {
+        "consent": {
+          "title": "Consent first",
+          "body": "Nothing is shared until you explicitly invite someone."
+        },
+        "control": {
+          "title": "Role-based access",
+          "body": "Caregivers see more than viewers — you pick the level."
+        },
+        "audit": {
+          "title": "Revoke anytime",
+          "body": "Remove a member or downgrade their role in one tap."
+        }
+      }
+    },
+    "sidebar": {
+      "caregiverTitle": "Primary caregiver",
+      "caregiverSub": "Your closest helper",
+      "messageCaregiver": "Message caregiver",
+      "momentsTitle": "Recent moments",
+      "momentsSub": "From your circle feed",
+      "viewMoments": "View all moments",
+      "messages": "Messages",
+      "messagesDesc": "Chat with your care team",
+      "moments": "Moments",
+      "momentsDesc": "Milestones and updates",
+      "safety": "Safety",
+      "safetyDesc": "Check-ins and emergency contacts"
+    },
+    "share": {
+      "title": "Family circle",
+      "action": "Share circle",
+      "copy": "Copy list",
+      "copied": "Copied!",
+      "footer": "Shared from ElinaCura."
+    },
+    "footer": {
+      "eyebrow": "Keep connected",
+      "title": "Strengthen your care circle",
+      "readyTitle": "Your circle is well connected",
+      "sub": "Invite a caregiver or care-team viewer to improve coverage when you need help.",
+      "readySub": "Caregivers, family, and your care team are connected. Keep sharing moments and updates.",
+      "messages": "Messages",
+      "messagesDesc": "Reach your circle directly",
+      "moments": "Moments",
+      "momentsDesc": "Share milestones and updates",
+      "safety": "Safety net",
+      "safetyDesc": "Check-ins and emergency tools"
+    },
+    "shares": {
+      "health": "Health",
+      "medications": "Medications",
+      "safety": "Safety",
+      "moments": "Moments",
+      "reminders": "Reminders",
+      "digest": "Digest"
+    },
+    "access": {
+      "owner": "Full control of the care plan and circle",
+      "caregiver": "Views health data and manages reminders",
+      "viewer": "Sees shared updates and moments"
+    },
+    "roles": {
+      "owner": "Owner",
+      "caregiver": "Caregiver",
+      "viewer": "Viewer"
+    }
+  },
+  "connectionsPage": {
+    "title": "Connections",
+    "subtitle": "Devices, pharmacies and providers linked to ElinaCura",
+    "eyebrow": "Data hub",
+    "heroDescription": "{connected} of {total} sources are linked and syncing with your care plan.",
+    "syncLabel": "Sync health",
+    "scorePill": "{score}% synced",
+    "scoreRing": "Sync health {score} percent",
+    "summaryTitle": "Linked sources",
+    "summary": "{connected} of {total} connected",
+    "offlinePill": "{count} offline",
+    "reconnectNext": "Reconnect {name}",
+    "lastSync": "Last sync {time}",
+    "groupProgress": "{done} / {total} linked",
+    "grade": {
+      "synced": "Fully connected",
+      "partial": "Partially connected",
+      "needs-attention": "Link more sources"
+    },
+    "glance": {
+      "sync": "Sync health",
+      "connected": "Connected",
+      "offline": "Offline",
+      "total": "Total"
+    },
+    "nav": {
+      "label": "Connection sections",
+      "jumpTo": "Jump to",
+      "progress": "{done} / {total} reviewed",
+      "devices": "Devices",
+      "pharmacies": "Pharmacies",
+      "providers": "Providers",
+      "actions": "Actions"
+    },
+    "filter": {
+      "all": "All",
+      "connected": "Connected",
+      "disconnected": "Offline"
+    },
+    "search": {
+      "label": "Search connections",
+      "placeholder": "Search sources…",
+      "clear": "Clear search"
+    },
+    "empty": {
+      "title": "No matches",
+      "sub": "Try a different search or filter to find a linked source."
+    },
+    "feeds": {
+      "steps": "Steps",
+      "heartRate": "Heart rate",
+      "sleep": "Sleep",
+      "glucose": "Glucose",
+      "refills": "Refills",
+      "reminders": "Reminders",
+      "labs": "Labs",
+      "visits": "Visits"
+    },
+    "sidebar": {
+      "offlineTitle": "Needs reconnecting",
+      "offlineSub": "Restore full data coverage",
+      "tipTitle": "Why connect sources?",
+      "tipSub": "Better recommendations",
+      "tipBody": "Linked devices and providers give ElinaCura richer vitals, refill timing, and visit context for safer guidance.",
+      "health": "Health hub",
+      "healthDesc": "See synced vitals and trends",
+      "refills": "Refill calendar",
+      "refillsDesc": "Pharmacy-linked refill dates",
+      "safety": "Safety devices",
+      "safetyDesc": "Reconnect offline hardware"
+    },
+    "share": {
+      "title": "ElinaCura connections",
+      "action": "Share status",
+      "copy": "Copy list",
+      "copied": "Copied!",
+      "footer": "Generated from your ElinaCura linked sources."
+    },
+    "footer": {
+      "eyebrow": "Keep data flowing",
+      "title": "Link the rest of your care stack",
+      "readyTitle": "Your sources are synced",
+      "sub": "Connect offline devices and pharmacies so reminders, vitals, and refills stay current.",
+      "readySub": "Devices, pharmacy, and clinic are linked. ElinaCura has the context it needs.",
+      "health": "Health hub",
+      "healthDesc": "Review synced vitals",
+      "refills": "Refill calendar",
+      "refillsDesc": "Upcoming pharmacy refills",
+      "safety": "Safety net",
+      "safetyDesc": "Device status and check-ins"
+    },
+    "groups": {
+      "device": "Devices",
+      "pharmacy": "Pharmacies",
+      "provider": "Providers"
+    },
+    "status": {
+      "connected": "Connected",
+      "disconnected": "Not linked"
+    },
+    "connect": "Connect",
+    "disconnect": "Disconnect"
+  },
+  "momentsPage": {
+    "title": "Moments",
+    "subtitle": "Wellness moments and milestones from your circle",
+    "eyebrow": "Care circle feed",
+    "heroHeadline": "Celebrate progress together",
+    "heroDescription": "Share milestones, photos, and notes with the people who support your care journey.",
+    "heroFeatured": "Most loved: {author} — \"{caption}\"",
+    "momentCount": "{count, plural, one {# moment} other {# moments}}",
+    "circleCount": "{count, plural, one {# member} other {# members}}",
+    "reactionCount": "{count, plural, one {# heart} other {# hearts}}",
+    "ephemeralHint": "Moments are visible to your circle for 24 hours, then fade away.",
+    "openCircle": "Manage circle",
+    "shareFeed": "Share highlight",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "sharePrompt": "Share a moment with your circle",
+    "share": {
+      "empty": "No moments to share yet.",
+      "text": "From ElinaCura Moments — {author}: \"{caption}\""
+    },
+    "cancel": "Cancel",
+    "like": "Like",
+    "featured": "Most loved this week",
+    "photoPlaceholder": "Photo preview",
+    "empty": "No moments yet",
+    "emptySub": "Be the first to share a win, a walk, or a family meal with your circle.",
+    "composerTitle": "Share a moment",
+    "composerSub": "Celebrate a win or check in with your circle",
+    "captionLabel": "Moment caption",
+    "livePhotoHint": "Live sharing requires a photo — use your device camera when connected.",
+    "filterLabel": "Filter moments",
+    "filters": {
+      "all": "All",
+      "milestone": "Milestones",
+      "photo": "Photos",
+      "note": "Notes"
+    },
+    "glance": {
+      "total": "Total moments",
+      "milestones": "Milestones",
+      "hearts": "Hearts given"
+    },
+    "placeholders": {
+      "milestone": "Share a milestone — e.g. a streak, appointment, or goal reached…",
+      "note": "Write a quick check-in your circle will appreciate…",
+      "photo": "Describe the photo you're sharing…"
+    },
+    "circleTitle": "Your circle",
+    "circleSub": "Who sees your moments",
+    "circleDescription": "{count} people can view and react to shared moments.",
+    "activeTitle": "Recently active",
+    "activeSub": "Posted this week",
+    "tipsTitle": "Sharing tips",
+    "tipsSub": "Make moments meaningful",
+    "tips": {
+      "tip1": "Lead with the win — adherence streaks and small victories matter most.",
+      "tip2": "Keep captions short so caregivers scanning the feed catch the highlight fast.",
+      "tip3": "Photos of meals or walks help your circle stay connected between visits."
+    },
+    "relatedTitle": "Related",
+    "relatedSub": "Stay connected",
+    "sidebar": {
+      "circle": "Family circle",
+      "circleDesc": "Manage roles and invites",
+      "digest": "Weekly digest",
+      "digestDesc": "See the week's bigger picture",
+      "connections": "Connections",
+      "connectionsDesc": "Linked providers and devices"
+    },
+    "footer": {
+      "eyebrow": "Keep the circle close",
+      "title": "Small updates build big trust",
+      "sub": "Regular moments help caregivers spot patterns early and celebrate progress with you.",
+      "circle": "Open family circle",
+      "digest": "View weekly digest"
+    },
+    "kinds": {
+      "milestone": "Milestone",
+      "photo": "Photo",
+      "note": "Note"
+    }
+  },
+  "digestPage": {
+    "title": "Weekly digest",
+    "subtitle": "Your week in review · {period}",
+    "eyebrow": "Week in review",
+    "heroHeadline": "{period}",
+    "heroDescription": "A calm summary of what moved, what slipped, and what to focus on next.",
+    "summaryLabel": "Weekly insight",
+    "scoreTrend": "4-week trend",
+    "share": "Share",
+    "rhythmTapHint": "Tap a day on the chart or pills below",
+    "sections": {
+      "overview": "Overview",
+      "rhythm": "Rhythm",
+      "wins": "Wins & flags",
+      "focus": "Focus"
+    },
+    "sections_nav": {
+      "label": "Digest sections",
+      "jumpTo": "Jump to",
+      "progress": "{{done}} / {{total}} explored",
+      "score": "Score {{score}}",
+      "overview": "Overview",
+      "rhythm": "Rhythm",
+      "wins": "Wins",
+      "focus": "Focus",
+      "forward": "Next steps",
+      "desc": {
+        "overview": "Score & summary",
+        "rhythm": "Daily breakdown",
+        "wins": "Highlights & flags",
+        "focus": "Next week priorities",
+        "forward": "Share & follow up"
+      }
+    },
+    "scoreLabel": "Weekly score",
+    "gradeLabel": "Grade",
+    "grades": {
+      "strong": "Strong week",
+      "steady": "Steady week",
+      "building": "Building momentum"
+    },
+    "sidebar": {
+      "priority": "Top priority",
+      "quickLinks": "Quick links",
+      "adherenceHint": "This week's med schedule"
+    },
+    "scoreNarrative": "Strongest on {{best}}; watch {{lowest}} for recovery dips.",
+    "highlights": "Highlights",
+    "highlightsSub": "Wins worth celebrating",
+    "improved": "What improved",
+    "improvedSub": "Trending in the right direction",
+    "attention": "Needs attention",
+    "attentionSub": "Patterns to watch this week",
+    "focus": "Next week's focus",
+    "focusSub": "Three things to prioritize",
+    "outOf": "/ 100",
+    "vsLast": "vs last week",
+    "flaggedDays": "Flagged days",
+    "viewHealth": "Open health hub",
+    "logFromDigest": "Log a reading",
+    "adherenceDays": "Days on track",
+    "rhythmTitle": "Daily rhythm",
+    "rhythmSub": "Wellbeing across the week",
+    "rhythmLegend": {
+      "rhythm": "Daily rhythm",
+      "flag": "Needs attention"
+    },
+    "bestDay": "Best",
+    "lowestDay": "Lowest",
+    "adherenceTitle": "Medication adherence",
+    "adherenceSub": "{count} of 7 days on track",
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "nextWeekLabel": "Current",
+    "currentWeek": "This week",
+    "pastWeek": "Past week",
+    "pastWeekHint": "Historical digest — switch back to the current week for highlights and focus items.",
+    "backToCurrent": "Back to this week",
+    "weekCompare": "Week over week",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "metricsSnapshot": "Weekly averages",
+    "metricsSnapshotSub": "How the week averaged out",
+    "selectDay": "Select a day",
+    "attentionAction": "Take action",
+    "focusAction": "Open in health hub",
+    "avgLabels": {
+      "sleep": "Sleep avg",
+      "steps": "Steps avg",
+      "heart": "Resting HR",
+      "weight": "Weight"
+    },
+    "day": {
+      "title": "{{day}} breakdown",
+      "rhythm": "Rhythm {{score}}",
+      "sleep": "Sleep",
+      "activity": "Activity",
+      "meds": "Meds",
+      "flagHint": "Sleep or meds dipped — a lighter day may help recovery."
+    },
+    "footer": {
+      "eyebrow": "Take this forward",
+      "title": "Carry the week into action",
+      "sub": "Turn insights into a provider report or keep tracking day to day.",
+      "readyTitle": "Strong week — ready to share",
+      "readySub": "Create a care-team report or share your weekly summary.",
+      "explore": "Keep going",
+      "scorePill": "{{score}} / 100",
+      "flaggedPill": "{{count}} flagged days",
+      "adherencePill": "{{pct}}% adherence",
+      "report": "Create report",
+      "reportDesc": "Build a PDF for your provider",
+      "reportMeta": "Pre-filled from this digest",
+      "logDesc": "Capture a new reading",
+      "logMeta": "BP, weight, symptoms & more",
+      "healthDesc": "Review full health hub",
+      "healthMeta": "Metrics, meds & appointments"
+    },
+    "empty": {
+      "title": "No weekly digest yet",
+      "body": "Your weekly summary builds from logged medications, meals, and activity. Once you start tracking your week, your digest will appear here.",
+      "cta": "Start tracking"
+    }
+  },
+  "scannerPage": {
+    "title": "Scanner",
+    "eyebrow": "Food & medication check",
+    "subtitle": "Scan a medication or product for safety flags",
+    "heroHeadline": "Check products against your profile",
+    "heroDescription": "Scan barcodes in the store or at home to surface medication interactions, sodium limits, and allergen flags before you buy.",
+    "noProfileHint": "Scanning works in demo mode. Connect a care profile for personalized safety analysis.",
+    "demoMode": "Demo mode",
+    "scanCount": "{count, plural, one {# scan} other {# scans}}",
+    "viewportTitle": "Live scanner",
+    "viewportSub": "Point your camera at a barcode",
+    "viewportHint": "Center the barcode within the frame",
+    "cameraIdle": "Open the camera to scan a barcode in real time",
+    "openCamera": "Open camera",
+    "stopCamera": "Stop camera",
+    "captureLabel": "Capture label",
+    "analyzing": "Analyzing barcode…",
+    "checkingProfile": "Checking against your profile",
+    "cameraBlocked": "Camera access blocked",
+    "enableCamera": "To enable: tap the camera icon in your browser address bar, then allow access.",
+    "manualFallback": "You can still type the barcode below.",
+    "manualTitle": "Enter manually",
+    "manualSub": "No camera? Type the barcode",
+    "manualPlaceholder": "Barcode number or product name",
+    "manualHint": "Try grapefruit juice, ibuprofen, or atorvastatin for demo results.",
+    "lookup": "Look up",
+    "noInteractions": "No interactions detected",
+    "safetyFlags": "Safety flags",
+    "ingredients": "Ingredients",
+    "scanAnother": "Scan another",
+    "openGrocery": "Open grocery list",
+    "dismissResult": "Dismiss result",
+    "recent": "Recent scans",
+    "recentSub": "Tap a scan to review it again",
+    "clearHistory": "Clear history",
+    "confirmClear": "Confirm clear",
+    "emptyHistory": "No scans yet",
+    "emptyHistorySub": "Your checked products will appear here.",
+    "profileTitle": "Your watch-outs",
+    "profileSub": "Based on meds and conditions",
+    "allergies": "Allergies: {list}",
+    "tipsTitle": "Scanner tips",
+    "tipsSub": "Get better results",
+    "tips": {
+      "tip1": "Hold the barcode 6–8 inches away and keep the label flat.",
+      "tip2": "In bright stores, tilt the package to reduce glare on the code.",
+      "tip3": "For medication bottles, use Capture label when the barcode is worn."
+    },
+    "relatedTitle": "Related tools",
+    "relatedSub": "Keep shopping safely",
+    "sidebar": {
+      "grocery": "Grocery list",
+      "groceryDesc": "Condition-aware aisle picks",
+      "meals": "Meals",
+      "mealsDesc": "Plan around your restrictions",
+      "capture": "Capture label",
+      "captureDesc": "OCR for worn barcodes"
+    },
+    "glance": {
+      "safe": "Safe scans",
+      "caution": "Caution flags",
+      "avoid": "Avoid flags"
+    },
+    "footer": {
+      "eyebrow": "Shop with confidence",
+      "title": "Turn scans into safer choices",
+      "sub": "Pair the scanner with your grocery list and meal plan so every trip stays aligned with your care goals.",
+      "grocery": "Open grocery list",
+      "meals": "Plan meals"
+    },
+    "flags": {
+      "safe": "Safe",
+      "caution": "Caution",
+      "avoid": "Avoid",
+      "unknown": "Unknown"
+    },
+    "demo": {
+      "grapefruitNote": "Interacts with atorvastatin — avoid while on your evening statin.",
+      "ibuprofenNote": "May affect blood pressure — monitor if you take Lisinopril.",
+      "atorvastatinNote": "Matches your current statin with no new interaction flags.",
+      "brothNote": "Sodium level fits your low-sodium grocery plan.",
+      "soupNote": "Higher sodium than your daily target — consider a lower-salt option.",
+      "genericName": "Scanned product {barcode}",
+      "unknownCategory": "Packaged product"
+    },
+    "notFoundTitle": "Product not found",
+    "notFoundNote": "We couldn't find this barcode in the product database. Try scanning again or enter it manually.",
+    "lookupUnavailable": "Lookup unavailable",
+    "lookupUnavailableNote": "We couldn't reach the product database. Check your connection and try again.",
+    "needBarcode": "Enter a numeric barcode (the digits beneath the bars) to look up a product.",
+    "noProfileSafety": "Select a profile to get personalized safety checks for your medications and conditions."
+  },
+  "ocrCapturePage": {
+    "title": "Scan Med Label",
+    "subtitle": "Capture a medication's label, bottle, pill, or barcode — we extract the details and nothing is saved until you confirm.",
+    "eyebrow": "Label reader",
+    "heroHeadline": "Read any medication label",
+    "savedTitle": "Medication saved",
+    "savedSub": "The label details are on file. Review your med list or scan another bottle.",
+    "savedPill": "Saved",
+    "savedMed": "{name} added",
+    "privacyPill": "Nothing saved until you confirm",
+    "previewAlt": "Captured medication label",
+    "reviewImageHint": "We read the details from this photo. Edit anything that looks off.",
+    "saveTo": "Save to",
+    "unnamedProfile": "Profile",
+    "barcodeFound": "Found from barcode ({code}). Review and save.",
+    "drugBarcodeFound": "Identified from barcode: {name}. Review and save.",
+    "chooser": {
+      "title": "Multiple matches found",
+      "sub": "This barcode matched more than one product",
+      "hint": "{count} medications share this code. Select the one that matches your package.",
+      "manual": "Enter manually instead",
+      "listLabel": "Medication candidates",
+      "selectAria": "Select {name}",
+      "unknownMed": "Unknown medication"
+    },
+    "camera": {
+      "starting": "Starting camera…",
+      "hint": "Point at the label, bottle, pill, or barcode",
+      "barcodeHint": "Barcode detected — looking it up…",
+      "shutter": "Take photo",
+      "cancel": "Cancel"
+    },
+    "moderation": {
+      "title": "Some text was hidden",
+      "body": "We hid content that looked unsafe in: {fields}. Check those fields before saving."
+    },
+    "nafdac": {
+      "title": "NAFDAC registration (Nigeria)",
+      "sub": "Check this medication against NAFDAC's Green Book of registered products.",
+      "button": "Check NAFDAC",
+      "registered": "Registered",
+      "nrn": "NRN {nrn}",
+      "notFound": "No NAFDAC match for this name. Check the spelling or enter details manually.",
+      "unavailable": "NAFDAC lookup is unavailable right now. Try again later."
+    },
+    "captureHint": "Point at the label, bottle, pill, or barcode, then capture or upload a photo",
+    "fileTypes": "JPEG, PNG, HEIC, or WebP · up to 10 MB",
+    "fileReady": "Ready to read — tap capture to scan",
+    "demoCapture": "Label photo",
+    "capture": "Capture label",
+    "upload": "Upload photo",
+    "scanning": "Reading the label…",
+    "scanningHint": "This usually takes a few seconds.",
+    "reviewTitle": "Review extracted details",
+    "reviewSub": "Edit anything that looks off before saving",
+    "reviewFlags": "{count, plural, one {# field needs a look} other {# fields need a look}}",
+    "avgConfidence": "Average confidence {pct} percent",
+    "lowConfidence": "Low confidence",
+    "editField": "Edit {field}",
+    "fields": {
+      "medication": "Medication",
+      "dose": "Dose",
+      "frequency": "Frequency",
+      "prescriber": "Prescriber",
+      "quantity": "Quantity",
+      "instructions": "Instructions"
+    },
+    "match": {
+      "new": "New medication",
+      "duplicate": "Already on your list",
+      "update": "Dose may have changed",
+      "existing": "Matches {name} in your med list",
+      "doseChange": "Current dose is {from} — label shows {to}"
+    },
+    "workflow": {
+      "label": "Label scan steps",
+      "capture": "Capture",
+      "read": "Read",
+      "confirm": "Confirm"
+    },
+    "enterManually": "Enter details manually instead →",
+    "manualTitle": "Enter label details",
+    "manualSub": "Skip the camera and type what you see",
+    "manualContinue": "Continue to review",
+    "manualCancel": "Back to camera",
+    "confirm": "Confirm & save",
+    "saving": "Saving…",
+    "retake": "Retake",
+    "scanAnother": "Scan another label",
+    "viewMeds": "View medications",
+    "tips": {
+      "title": "Better reads",
+      "sub": "Small changes that help accuracy",
+      "light": "Use bright, even light — avoid glare on glossy labels",
+      "focus": "Hold steady until the label text is sharp",
+      "flat": "Lay the bottle flat so the full label fits the frame"
+    },
+    "history": {
+      "title": "Recent scans",
+      "sub": "Labels you've confirmed",
+      "empty": "No confirmed scans yet.",
+      "justNow": "Just now"
+    },
+    "sidebar": {
+      "tipEyebrow": "Also helpful",
+      "tipTitle": "Check interactions too",
+      "tipBody": "After saving, use the barcode scanner to verify food and supplement interactions.",
+      "scanner": "Food scanner",
+      "scannerDesc": "Scan products for interaction flags",
+      "meds": "Medication list",
+      "medsDesc": "Review doses and schedules",
+      "refills": "Refill calendar",
+      "refillsDesc": "Track pharmacy pickup dates"
+    },
+    "footer": {
+      "title": "Keep your med list current",
+      "sub": "Scan new prescriptions as they arrive so doses stay accurate."
+    },
+    "errors": {
+      "noProfile": "Set up a profile first — that's where saved medications are stored.",
+      "noName": "Add a medication name before saving.",
+      "cameraBlocked": "Camera access is blocked. Allow camera access in your browser, or upload a photo instead.",
+      "cameraUnsupported": "This browser can't open the camera here. Upload a photo instead.",
+      "cameraUnavailable": "We couldn't start the camera. Upload a photo instead.",
+      "barcodeNotFound": "We couldn't match that barcode. Enter the medication details manually.",
+      "lookupUnavailable": "The barcode lookup is unavailable right now. Try again or enter the details manually.",
+      "unavailable": "The label reader is unavailable right now. You can enter the details manually below.",
+      "tooLarge": "That image is over 10 MB. Try a smaller photo.",
+      "unsupported": "That file type isn't supported. Use a JPEG, PNG, HEIC, or WebP image.",
+      "emptyImage": "That file looked empty. Capture or upload the label again.",
+      "rateLimited": "You've scanned a lot of labels recently. Wait a little while and try again.",
+      "auth": "Your session expired. Sign in again to scan labels.",
+      "accountRequired": "Scanning saves to your medication list, so it needs a full account. Sign in or create one (guest sessions can't scan).",
+      "invalid": "We couldn't process that image. Try another photo or enter the details manually.",
+      "saveFailed": "We couldn't save that medication. Please try again.",
+      "generic": "Something went wrong reading the label. Try again or enter the details manually."
+    }
+  },
+  "reportPage": {
+    "title": "Health report",
+    "subtitle": "Assemble a shareable report for your provider",
+    "eyebrow": "Care team export",
+    "heroHeadline": "Build your health report",
+    "heroDescription": "Choose a date range and sections, preview the document, then generate a PDF or share directly with your provider.",
+    "openHealth": "Open health hub",
+    "fromDigest": "View weekly digest",
+    "readinessLabel": "Report readiness",
+    "viewInHub": "View in health hub",
+    "dateSpan": "Covers {{span}}",
+    "printToast": "Opening print dialog — save as PDF from your browser.",
+    "grades": {
+      "strong": "Ready to share",
+      "steady": "Almost there",
+      "building": "Keep building"
+    },
+    "sections_nav": {
+      "label": "Report builder sections",
+      "jumpTo": "Jump to",
+      "progress": "{{done}} / {{total}} complete",
+      "templates": "Templates",
+      "build": "Configure",
+      "preview": "Preview",
+      "export": "Export",
+      "desc": {
+        "templates": "Quick-start presets",
+        "build": "Date range & sections",
+        "preview": "Live document mock",
+        "export": "Share, copy & print"
+      }
+    },
+    "steps": {
+      "range": "Date range",
+      "sections": "Sections",
+      "export": "Export"
+    },
+    "templates": {
+      "title": "Quick templates",
+      "sub": "Start from a common visit type",
+      "sectionsShort": "sections",
+      "pcp": {
+        "title": "Primary care",
+        "desc": "Standard follow-up with vitals, meds, and adherence"
+      },
+      "cardiology": {
+        "title": "Cardiology",
+        "desc": "90-day view with conditions and care notes"
+      },
+      "visit": {
+        "title": "Pre-visit",
+        "desc": "Light recap before an upcoming appointment"
+      }
+    },
+    "checklist": {
+      "title": "Export checklist",
+      "range": "Date range set · {{range}}",
+      "sections": "{{count}} sections selected",
+      "minimum": "At least 3 sections included",
+      "ready": "Readiness score looks good"
+    },
+    "recipient": {
+      "label": "Prepared for",
+      "hint": "Name shown on the report cover — your provider or care team",
+      "placeholder": "Dr. Smith or care team name",
+      "recent": "Recent providers"
+    },
+    "coverNote": {
+      "label": "Note to provider",
+      "hint": "Optional message included on the cover page",
+      "placeholder": "e.g. Focusing on blood pressure trends since our last visit…",
+      "counter": "{{count}} / {{max}} characters",
+      "previewLabel": "Provider note"
+    },
+    "dataStrip": {
+      "rhythm": "Weekly rhythm",
+      "bp": "Blood pressure",
+      "adherence": "Adherence",
+      "nextVisit": "Next visit"
+    },
+    "insight": {
+      "title": "From digest · {{period}}",
+      "link": "See full weekly digest"
+    },
+    "sectionProgress": "Section coverage",
+    "expandHint": "Tap a section to expand full details",
+    "copy": "Copy summary",
+    "copyToast": "Report summary copied to clipboard",
+    "copyError": "Could not copy — try again",
+    "templateApplied": "Applied {{name}} template",
+    "footer": {
+      "eyebrow": "Step 4 · Export",
+      "title": "Need more context?",
+      "sub": "Finish configuring your report, or pull extra insights before you share.",
+      "readyTitle": "Your report is ready",
+      "readySub": "Print, share, or copy the summary — then explore related health views below.",
+      "preparedFor": "Prepared for",
+      "sectionsPill": "{{count}} sections",
+      "readinessPill": "{{score}}% readiness",
+      "explore": "Explore related",
+      "digest": "Weekly digest",
+      "digestDesc": "Review wins, flags, and rhythm trends",
+      "digestMeta": "Score {{score}} / 100 this week",
+      "appointments": "Upcoming visits",
+      "appointmentsDesc": "Next with {{provider}}",
+      "appointmentsEmpty": "No upcoming visits scheduled",
+      "health": "Health hub",
+      "healthDesc": "Update vitals, meds, and logs",
+      "healthMeta": "Keep data fresh before sharing"
+    },
+    "glance": {
+      "sections": "Sections",
+      "range": "Period",
+      "pages": "Est. pages",
+      "days": "Days covered",
+      "daysUnit": "days",
+      "pageUnit": "page",
+      "pagesUnit": "pages",
+      "readiness": "Readiness"
+    },
+    "highlights": {
+      "secure": "Your data stays on your device until you share",
+      "provider": "Formatted for clinicians and care teams",
+      "saved": "Section choices are remembered"
+    },
+    "range": "Date range",
+    "rangeSub": "Period to include",
+    "rangeHints": {
+      "7d": "Best for a quick visit recap — covers the last {{days}} days.",
+      "30d": "Standard follow-up window — covers the last {{days}} days.",
+      "90d": "Longitudinal view for specialists — covers the last {{days}} days."
+    },
+    "ranges": {
+      "7d": "7 days",
+      "30d": "30 days",
+      "90d": "90 days"
+    },
+    "sections": "Sections",
+    "sectionsSub": "Choose what to include",
+    "selectAll": "Select all",
+    "clearAll": "Clear all",
+    "sectionNames": {
+      "vitals": "Vitals",
+      "medications": "Medications",
+      "conditions": "Conditions",
+      "adherence": "Adherence",
+      "appointments": "Appointments",
+      "notes": "Notes"
+    },
+    "sectionDesc": {
+      "vitals": "Latest readings and trends",
+      "medications": "Active prescriptions and schedules",
+      "conditions": "Diagnoses with status and targets",
+      "adherence": "Medication schedule compliance",
+      "appointments": "Upcoming and recent visits",
+      "notes": "Open issues and care notes"
+    },
+    "preview": "Preview",
+    "previewSub": "What you'll share",
+    "summary": "{count} sections · {range} · ~{pages} pages",
+    "shareText": "Health summary for {name}: {count} sections over {range}.",
+    "generate": "Generate PDF",
+    "share": "Share",
+    "documentTitle": "Health Summary",
+    "preparedFor": "Prepared for",
+    "generatedOn": "Generated {date}",
+    "contents": "Report contents",
+    "emptyTitle": "Nothing selected yet",
+    "emptyState": "Toggle at least one section to preview your report.",
+    "sectionsIncluded": "{count} / {total}",
+    "tips": {
+      "title": "Before you share",
+      "tip1": "Include vitals and adherence for most follow-up visits.",
+      "tip2": "Use 30 days unless your provider asked for a longer window.",
+      "tip3": "Review the preview — you can adjust sections anytime."
+    }
+  },
+  "voicePage": {
+    "title": "Voice",
+    "subtitle": "Speak naturally to log meds, check your plan, or ask Care AI — hands-free.",
+    "eyebrow": "Voice assistant",
+    "heroHeadline": "Talk to ElinaCura",
+    "assistant": "Voice assistant",
+    "start": "Start listening",
+    "stop": "Stop listening",
+    "listening": "Listening…",
+    "idle": "Tap to speak",
+    "ready": "Ready",
+    "processing": "Processing…",
+    "processingSub": "Understanding your request and checking your care profile.",
+    "tip": "Tap the orb to simulate listening, or choose a command below.",
+    "handsFreePill": "Hands-free",
+    "contextPill": "{count} meds on file",
+    "transcriptLabel": "Voice conversation",
+    "emptyTitle": "No voice turns yet",
+    "emptySub": "Tap a suggested command or use the mic orb to start your first hands-free request.",
+    "commandsTitle": "Try saying",
+    "commandsSub": "Tap to simulate a voice command",
+    "clear": "Clear transcript",
+    "disclaimer": "Voice guidance is informational and not a substitute for professional medical advice.",
+    "glance": {
+      "turns": "Turns",
+      "actions": "Actions",
+      "chats": "Questions"
+    },
+    "topics": {
+      "label": "Voice topics",
+      "all": "All topics",
+      "meds": "Medications",
+      "vitals": "Vitals",
+      "wellness": "Wellness",
+      "chat": "Care AI"
+    },
+    "commands": {
+      "logTaken": "I took my Lisinopril",
+      "nextMeds": "When are my next meds?",
+      "missedDose": "Did I miss any doses this week?",
+      "logBp": "Log my blood pressure",
+      "readiness": "How is my readiness today?",
+      "howSleep": "How did I sleep?",
+      "activityToday": "What activity suits today?",
+      "mealIdea": "What should I eat tonight?",
+      "whenToCall": "When should I call my doctor?"
+    },
+    "intents": {
+      "log_taken": "Logged",
+      "chat": "Guidance",
+      "unknown": "Unclear"
+    },
+    "replies": {
+      "genericMed": "your medication",
+      "logTaken": "Logged {med} as taken. I'll reflect that in your adherence log.",
+      "nextMeds": "Your next dose is {med} at {time}. I'll keep nudging you at the usual reminder time.",
+      "missedDose": "You had two missed evening doses this week — mostly Atorvastatin. Want me to tighten those reminders?",
+      "logBp": "Blood pressure logging by voice is coming soon. For now, open Health to record today's reading.",
+      "readiness": "Your readiness is {score}% today. Sleep was a little inconsistent — keep intensity moderate.",
+      "activity": "With today's readiness, a 30–40 minute easy walk would fit well. Hydrate a little extra afterward.",
+      "lowConfidence": "I didn't catch that clearly enough to act. Try again a little slower, or tap a suggested command.",
+      "unknown": "I didn't understand that. Try a medication or wellness command from the list below.",
+      "default": "Got it — I'm looking at your care profile now."
+    },
+    "capabilities": {
+      "title": "What voice can do",
+      "sub": "Hands-free actions today",
+      "logMeds": "Log medications",
+      "logMedsDesc": "Say you took a dose and we'll update adherence.",
+      "checkPlan": "Check your plan",
+      "checkPlanDesc": "Ask about sleep, activity, meals, and readiness.",
+      "safety": "Safety guidance",
+      "safetyDesc": "Get general guidance on when to escalate to a clinician."
+    },
+    "privacy": {
+      "title": "Privacy",
+      "sub": "Your voice, your control",
+      "body": "Raw audio is never stored. Only text transcripts are saved — and only if you opt in below.",
+      "consent": "Save voice transcripts",
+      "consentSub": "Stored under your account with the same retention as chat history."
+    },
+    "sidebar": {
+      "explore": "Related",
+      "chat": "Care AI chat",
+      "chatDesc": "Type instead of speaking",
+      "reminders": "Reminders",
+      "remindersDesc": "Review today's medication schedule",
+      "health": "Health hub",
+      "healthDesc": "Vitals, conditions, and adherence"
+    },
+    "share": {
+      "title": "Voice transcript",
+      "action": "Share transcript",
+      "copy": "Copy transcript",
+      "copied": "Copied!",
+      "empty": "No voice turns to share yet.",
+      "footer": "Generated from your ElinaCura voice session."
+    },
+    "footer": {
+      "eyebrow": "Prefer typing?",
+      "title": "Switch to Care AI chat",
+      "sub": "The same profile-aware guidance is available in text when voice isn't convenient.",
+      "openChat": "Open Care AI"
+    },
+    "ack": "Got it — I'm on it. (Live voice arrives in a later update.)"
+  },
+  "telehealthPage": {
+    "title": "Telehealth",
+    "subtitle": "Get ready for your video visit",
+    "eyebrow": "Video visit",
+    "heroEyebrow": "Upcoming visit",
+    "heroHeadline": "Pre-visit handoff",
+    "startsIn": "Starts in {minutes} min",
+    "readyPill": "Ready to join",
+    "notReadyPill": "Not ready yet",
+    "sharingPill": "Sharing {count} items",
+    "readinessRing": "{score}% visit readiness",
+    "readinessLabel": "Readiness",
+    "readinessPill": "{score}% ready",
+    "insightReady": "Everything is set — join when your provider opens the room.",
+    "insightChecks": "Run the device checks so camera, mic, and connection are good to go.",
+    "insightPrep": "Complete the prep checklist before you join the visit.",
+    "insightDefault": "Prepare your space and review what you'll share with your provider.",
+    "join": "Join visit",
+    "joinDisabled": "Complete prep first",
+    "joinToast": "Your visit room will open when the clinician starts the session.",
+    "stats": {
+      "ready": "Ready",
+      "sharing": "Sharing"
+    },
+    "glance": {
+      "checks": "Device checks",
+      "prep": "Prep steps",
+      "sharing": "Sharing",
+      "starts": "Starts"
+    },
+    "sections_nav": {
+      "label": "Telehealth sections",
+      "jumpTo": "Jump to",
+      "progress": "{done} / {total} reviewed",
+      "prep": "Prep",
+      "ready": "Device check",
+      "handoff": "Handoff",
+      "actions": "Join",
+      "desc": {
+        "prep": "Before you connect",
+        "ready": "Camera, mic, network",
+        "handoff": "What to share",
+        "actions": "Join & export"
+      }
+    },
+    "prep": {
+      "title": "Visit prep",
+      "sub": "Get your space and records ready",
+      "progress": "{done} of {total} complete",
+      "markAll": "Mark all done",
+      "allDone": "Prep complete — you're organized for the visit"
+    },
+    "check": {
+      "title": "Device readiness",
+      "sub": "Confirm your setup before joining",
+      "camera": "Camera",
+      "mic": "Microphone",
+      "network": "Connection",
+      "ready": "Ready",
+      "test": "Test",
+      "runAll": "Run all checks",
+      "running": "Testing…",
+      "allReady": "You're all set to join",
+      "needsWork": "{passed} of {total} checks passed"
+    },
+    "share": {
+      "title": "What you'll share",
+      "sub": "Sent securely to your provider",
+      "enabled": "{count} of {total} items enabled",
+      "vitals": "Recent vitals and trends",
+      "medications": "Current medications and adherence",
+      "recentChanges": "Changes since your last visit",
+      "concerns": "Questions and concerns to discuss",
+      "concernsPreview": "Topics to discuss",
+      "concernsHeading": "Concerns to discuss",
+      "action": "Share handoff",
+      "copy": "Copy summary",
+      "copied": "Copied!",
+      "checksLine": "Device checks: {passed}/{total} passed",
+      "prepLine": "Prep checklist: {done}/{total} complete",
+      "footer": "Generated from your ElinaCura care plan."
+    },
+    "vitals": {
+      "title": "Vitals preview"
+    },
+    "sidebar": {
+      "visitTitle": "Today's visit",
+      "tipsTitle": "Before you join",
+      "tip1": "Use headphones to reduce echo and protect privacy",
+      "tip2": "Keep medications and your BP log within reach",
+      "tip3": "Join 2–3 minutes early to test audio",
+      "explore": "Related",
+      "report": "Clinical report",
+      "reportDesc": "Export a PDF for your clinician",
+      "health": "Health hub",
+      "healthDesc": "Medications, conditions, and vitals",
+      "reminders": "Reminders",
+      "remindersDesc": "Doses and timing for today"
+    },
+    "footer": {
+      "eyebrow": "Almost there",
+      "title": "Finish prep, then join",
+      "readyTitle": "You're ready to join",
+      "sub": "Complete device checks and prep, then share your handoff summary if needed.",
+      "readySub": "Your handoff bundle is ready — join when your provider opens the room.",
+      "explore": "Go further",
+      "report": "Clinical report",
+      "reportDesc": "PDF export for clinicians",
+      "health": "Health hub",
+      "healthDesc": "Review meds and conditions",
+      "chat": "Care AI",
+      "chatDesc": "Ask questions before your visit"
+    },
+    "footnote": "Complete prep and device checks before joining. Your handoff only shares what you enable.",
+    "footnoteReady": "You're ready. Join opens when your clinician starts the session."
+  },
+  "caregiverPage": {
+    "title": "Caregiver view",
+    "monitoring": "Monitoring overview",
+    "loading": "Loading the dashboard…",
+    "daysSince": "Last update {count} days ago",
+    "sampleBanner": "Showing sample data — couldn't reach the server.",
+    "retry": "Retry",
+    "message": "Message",
+    "call": "Call",
+    "alerts": {
+      "title": "Needs attention",
+      "sub": "{count} open items",
+      "none": "Nothing needs attention right now."
+    },
+    "today": "Today",
+    "adherence": "Adherence (7d)",
+    "missed": "Missed doses",
+    "noData": "No adherence data yet in this window.",
+    "meds": {
+      "title": "Active medications",
+      "sub": "{count} active",
+      "none": "No medications on file."
+    },
+    "clinician": {
+      "title": "Clinician summary",
+      "conditions": "Conditions",
+      "allergies": "Allergies"
+    },
+    "monitoredProfile": "Monitored profile"
+  },
+  "medicationProof": {
+    "settingsKicker": "Accountability",
+    "settingsHeading": "Medication Proof",
+    "settingsDescription": "When on, recording a dose as taken requires a photo of the medication in your hand and a short video of you swallowing it, verified before the dose counts.",
+    "statusOn": "On",
+    "statusOff": "Off",
+    "sourceSelf": "Turned on by you",
+    "sourceCaregiver": "Turned on by a caregiver",
+    "enableButton": "Turn on Medication Proof",
+    "disableButton": "Turn off Medication Proof",
+    "enabling": "Turning on…",
+    "disabling": "Turning off…",
+    "lockedExplanation": "A caregiver turned this on for accountability, so it can't be turned off from your account. Ask your caregiver to turn it off.",
+    "accountRequired": "Sign in with an account to manage Medication Proof.",
+    "noProfile": "Select a profile to manage Medication Proof.",
+    "loadError": "Couldn't load the Medication Proof setting.",
+    "enabledToast": "Medication Proof is on.",
+    "disabledToast": "Medication Proof is off.",
+    "enableError": "Couldn't turn on Medication Proof.",
+    "disableError": "Couldn't turn off Medication Proof.",
+    "captureTitle": "Prove this dose",
+    "captureIntro": "Take a photo of the medication in your hand and record a short video of you taking it.",
+    "photoStep": "Photo of the medication",
+    "videoStep": "Video of you taking it",
+    "capturePhoto": "Add photo",
+    "captureVideo": "Add video",
+    "photoReady": "Photo ready",
+    "videoReady": "Video ready",
+    "retakePhoto": "Retake photo",
+    "retakeVideo": "Retake video",
+    "submit": "Submit proof",
+    "submitting": "Verifying…",
+    "pending": "Verifying your proof…",
+    "verifiedToast": "Verified — dose recorded.",
+    "rejectedTitle": "We couldn't verify this proof",
+    "rejectedHelp": "Please try again with a clearer photo and video.",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "verifierUnavailable": "Verification is temporarily unavailable. Please try again in a moment.",
+    "invalidMedia": "That photo or video couldn't be used. Please capture them again.",
+    "submitError": "Couldn't submit your proof. Please try again.",
+    "noCameraTitle": "Camera unavailable",
+    "noCameraBody": "We couldn't access a camera, so proof can't be captured. The dose was not recorded as taken.",
+    "permissionDeniedBody": "Camera access was denied, so proof can't be captured. The dose was not recorded as taken.",
+    "missingMedia": "Add both a photo and a video before submitting.",
+    "caregiverHeading": "Medication Proof",
+    "caregiverEmpty": "No proof submissions yet.",
+    "caregiverStatusVerified": "Verified",
+    "caregiverStatusConsumed": "Verified",
+    "caregiverStatusRejected": "Rejected",
+    "caregiverStatusPending": "Pending",
+    "caregiverDecisionValid": "Valid",
+    "caregiverDecisionInvalid": "Invalid",
+    "caregiverDecisionUncertain": "Uncertain"
+  },
+  "nav": {
+    "overview": "Overview",
+    "dailyCare": "Daily Care",
+    "safety": "Safety",
+    "engage": "Engage",
+    "careNetwork": "Care Network",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "grocery": "Grocery",
+    "meals": "Meals",
+    "scanner": "Scanner",
+    "chat": "AI Chat",
+    "reminders": "Reminders",
+    "health": "Health Log",
+    "shoppingList": "Smart Shopping",
+    "refillCalendar": "Refill Calendar",
+    "travelMode": "Travel Mode",
+    "voice": "Voice",
+    "emergency": "Emergency",
+    "report": "Report",
+    "telehealth": "Telehealth",
+    "digest": "Weekly Digest",
+    "familyCircle": "Family Circle",
+    "caregiverDashboard": "Caregiver View",
+    "settings": "Settings",
+    "home": "Home",
+    "more": "More",
+    "ocrCapture": "Scan Med Label",
+    "messages": "Messages",
+    "moments": "Moments",
+    "connections": "Connections"
+  },
+  "auth": {
+    "signIn": "Sign in securely",
+    "signUp": "Create secure account",
+    "forgotPassword": "Forgot password?",
+    "guest": "Continue as guest",
+    "welcomeBack": "Welcome back.",
+    "beginJourney": "Begin your journey.",
+    "signOut": "Sign out",
+    "emailLabel": "Email address",
+    "passwordLabel": "Password",
+    "nameLabel": "Full name",
+    "resetSent": "Check your email for a reset link.",
+    "invalidCredentials": "Invalid email or password.",
+    "accountExists": "An account with this email already exists.",
+    "guestWarning": "Guest data expires after 7 days.",
+    "termsConsent": "By continuing, you agree to our Terms of Service and Privacy Policy."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "careOverview": "Care overview",
+    "careScore": "Care score",
+    "hydration": "Hydration",
+    "hydrationUnit": "glasses today",
+    "addWater": "Add a glass",
+    "removeWater": "Remove a glass",
+    "stayHydrated": "Goal reached — nicely done",
+    "goal": "Goal",
+    "increaseGoal": "Increase goal",
+    "decreaseGoal": "Decrease goal",
+    "waterLogged": "{count} of {goal} glasses logged",
+    "moodAnnounce": "Mood logged: {mood}",
+    "moodNotePlaceholder": "Add a note (optional)",
+    "moodCheckIn": "How are you feeling?",
+    "moodLogged": "Logged for today",
+    "mood1": "Rough",
+    "mood2": "Low",
+    "mood3": "Okay",
+    "mood4": "Good",
+    "mood5": "Great",
+    "thisWeek": "This week",
+    "vitals": "Vitals",
+    "vitalsLog": "Log",
+    "vitalsEmpty": "Track blood pressure, glucose, weight and more.",
+    "vitalsStart": "Start tracking",
+    "vitalsEmptyTitle": "Track your vitals",
+    "careMapEmptyTitle": "Map your care",
+    "adherenceEmptyTitle": "Track adherence",
+    "refillsEmptyTitle": "Plan refills",
+    "inRange": "In range",
+    "adherence": "Adherence",
+    "adherenceWindow": "Last 7 days",
+    "adherenceEmpty": "Mark doses as taken to track your adherence here.",
+    "dosesTaken": "{count} taken",
+    "dosesMissed": "{count} missed",
+    "onTrack": "On track",
+    "keepGoing": "Keep going",
+    "needsAttention": "Needs attention",
+    "refillsOverdueN": "{count} overdue",
+    "refillsDueSoonN": "{count} due soon",
+    "refills": "Refills",
+    "refillsView": "View",
+    "refillsEmpty": "Set a refill cadence on your medications to see run-out dates.",
+    "refillOverdue": "Overdue",
+    "refillToday": "Today",
+    "refillInDays": "in {days}d",
+    "refillsSummary": "{overdue} overdue · {soon} due soon",
+    "bloodType": "Blood type",
+    "view": "View",
+    "noAllergiesShort": "None known",
+    "noEmergencyContact": "Add an emergency contact",
+    "customize": "Customize",
+    "customizeTitle": "Customize dashboard",
+    "customizeHint": "Show, hide, and reorder your widgets.",
+    "customizeDone": "Done",
+    "customizeReset": "Reset",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "showWidget": "Show {name}",
+    "hideWidget": "Hide {name}",
+    "now": "Now",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "dosesToday": "{count} scheduled today",
+    "scans": "Scans",
+    "signalsShort": "{count} signals",
+    "todaysMedications": "Today's medications",
+    "nextDose": "Next dose",
+    "scheduledToday": "{count} scheduled today",
+    "noMeds": "No medication reminders yet",
+    "setReminders": "Set up reminders",
+    "careMap": "Care map",
+    "noSignalsYet": "Add conditions, allergies, and medications to map your care.",
+    "yourCircle": "Your circle",
+    "conditions": "Conditions",
+    "allergies": "Allergies",
+    "medications": "Medications",
+    "careSignals": "Care signals",
+    "tracked": "tracked",
+    "greeting": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "safetyScore": "Safety Score",
+    "profileComplete": "Profile Complete",
+    "recentScans": "Recent Scans",
+    "noProfile": "Create a profile to start tracking",
+    "quickActions": "Quick Actions",
+    "scanProduct": "Scan a Product",
+    "checkGrocery": "Check Grocery List",
+    "viewSafety": "View Safety Report",
+    "askAI": "Ask AI Assistant",
+    "principles": "Wellness Principle",
+    "viewAll": "View all",
+    "kicker": "ElinaCura · Dashboard",
+    "heroEmptyTitle": "Your wellness,",
+    "heroEmptyTitleEm": "on autopilot.",
+    "heroEmptyBody": "Personalized safety coverage, meal plans, and daily wellness — built around your conditions, not around averages.",
+    "beginProfile": "Begin your profile",
+    "featureSafetyTitle": "Safety First",
+    "featureSafetyDesc": "Continuous medication & allergy monitoring.",
+    "featureNutritionTitle": "Smart Nutrition",
+    "featureNutritionDesc": "Meal plans tailored to your conditions.",
+    "featureAITitle": "AI Guidance",
+    "featureAIDesc": "Context-aware health assistant, 24/7.",
+    "safetyStreak": "{count}-day safety streak",
+    "safetyStreakStart": "Start your streak today",
+    "careSignalsActive": "{count} care signals active",
+    "coverageStrong": "Your safety coverage is strong today. All systems active.",
+    "coverageGood": "Good coverage — a few more details would tighten things up.",
+    "coverageEmpty": "Add your conditions, allergies, and medications to activate safety checks.",
+    "coverageBuilding": "Profile building in progress. Keep adding details.",
+    "generatePlan": "Generate plan",
+    "addField": "Add {field}",
+    "emergencyContact": "emergency contact",
+    "safetyDetails": "Safety details",
+    "coverageLabel": "Coverage",
+    "coverageActivate": "Add conditions & medications to activate",
+    "strong": "Strong",
+    "moderate": "Moderate",
+    "buildingShort": "Building",
+    "medsMonitored": "{count} med monitored",
+    "medsMonitoredPlural": "{count} meds monitored",
+    "todayGuidanceKicker": "Today's guidance",
+    "todayGuidanceTitle": "A meaningful next step for today",
+    "todayGuidanceStrong": "You are in a strong zone. Keep momentum with a quick grocery safety check or log one nutrition win.",
+    "todayGuidanceUnlock": "Your biggest unlock is adding {field}. This improves guidance quality across meals, scanner, and safety checks.",
+    "todayGuidanceComplete": "Complete one small care task now. A single update compounds into better recommendations and safer choices.",
+    "anEmergencyContact": "an emergency contact",
+    "reviewProfile": "Review profile",
+    "quickProductScan": "Quick product scan",
+    "askElina": "Ask Elina AI",
+    "profileHealth": "Profile Health",
+    "signalsTracked": "{count} signals tracked",
+    "profileComplete100": "Profile complete ✓",
+    "todayPrinciple": "Today's Principle",
+    "medicationsTracked": "Medications tracked",
+    "interactionsCheck": "Cross-checked for interactions",
+    "last7Days": "Last 7 days",
+    "scannerActivity": "Scanner activity",
+    "safetyCheckActivity": "Safety check activity",
+    "productsScannedTotal": "{count} product scanned total",
+    "productsScannedTotalPlural": "{count} products scanned total",
+    "scanFirstHint": "Scan a product barcode to see activity here",
+    "allClear": "All clear",
+    "scanFirstCta": "Scan your first product →",
+    "dailyNutrition": "Daily Nutrition",
+    "mealsAndMacros": "Meals & Macros",
+    "mealsForConditions": "Personalized for your conditions",
+    "viewPlan": "View plan",
+    "productSafety": "Product Safety",
+    "barcodeScanner": "Barcode Scanner",
+    "checkAnyFood": "Check any food instantly",
+    "weeklyPlanning": "Weekly Planning",
+    "groceryBoard": "Grocery Board",
+    "smartShoppingList": "Smart shopping list",
+    "aiConcierge": "AI Concierge",
+    "aiSubtitle": "Personalized health guidance and safety checks.",
+    "emergencyKicker": "Emergency",
+    "medicalId": "Medical ID",
+    "medicalIdSub": "Critical health info, always accessible.",
+    "statAllergies": "Allergies",
+    "statAllergiesSub": "tracked",
+    "statConditions": "Conditions",
+    "statConditionsSub": "monitored",
+    "statProfiles": "Profiles",
+    "statProfilesSubSingle": "active",
+    "statProfilesSubMulti": "in family",
+    "cmdkHint": "Press ⌘K (or Ctrl+K) for quick navigation",
+    "principleAttribution": "— ElinaCura"
+  },
+  "profile": {
+    "title": "Care Profile",
+    "addProfile": "Add Profile",
+    "editProfile": "Edit Profile",
+    "deleteProfile": "Delete Profile",
+    "name": "Full Name",
+    "dateOfBirth": "Date of Birth",
+    "conditions": "Medical Conditions",
+    "allergies": "Allergies",
+    "medications": "Medications",
+    "supplements": "Supplements",
+    "dietaryPreferences": "Dietary Preferences",
+    "emergencyContact": "Emergency Contact",
+    "primaryGoal": "Primary Wellness Goal",
+    "clinicianNotes": "Clinician Notes",
+    "profilePhoto": "Profile Photo",
+    "complete": "Complete",
+    "incomplete": "Incomplete",
+    "noData": "Not specified",
+    "save": "Save Profile",
+    "unsavedChanges": "You have unsaved changes."
+  },
+  "scanner": {
+    "title": "Scan & Check",
+    "subtitle": "Check food safety against your health profile",
+    "openCamera": "Open Camera",
+    "stopCamera": "Stop Camera",
+    "manualEntry": "Manual Entry",
+    "barcodePlaceholder": "Enter barcode number…",
+    "scanning": "Scanning…",
+    "analyzing": "Analyzing barcode…",
+    "checkingProfile": "Checking against your profile",
+    "recentScans": "Recent scans",
+    "clearHistory": "Clear history",
+    "confirmClear": "Confirm clear?",
+    "scanAnother": "Scan another",
+    "safe": "Safe",
+    "moderate": "Moderate",
+    "high": "High Risk",
+    "noProfile": "Select a care profile for personalized safety analysis.",
+    "cameraBlocked": "Camera access blocked",
+    "cameraUnavailable": "Camera unavailable",
+    "enableCamera": "To enable: tap the camera icon in your browser's address bar → Allow",
+    "manualFallback": "You can still type the barcode below",
+    "noResult": "No result found for this barcode.",
+    "flags": "Safety Flags",
+    "ingredients": "Ingredients"
+  },
+  "chat": {
+    "title": "AI Chat",
+    "subtitle": "Ask me about safety, nutrition, or your wellness plan",
+    "placeholder": "Ask about your health, meals, or medications...",
+    "send": "Send message",
+    "clear": "Clear conversation",
+    "confirmClear": "Clear this conversation?",
+    "noProfile": "Create a profile to personalize AI responses",
+    "disclaimer": "AI responses are informational only. Always consult your healthcare provider for medical advice.",
+    "typing": "ElinaCura is thinking…",
+    "charCount": "{count}/2000",
+    "quickPrompts": "Quick prompts",
+    "copyMessage": "Copy message",
+    "regenerate": "Regenerate response"
+  },
+  "safety": {
+    "title": "Safety Report",
+    "subtitle": "AI-powered risk analysis based on your profile",
+    "run": "Run Safety Check",
+    "running": "Checking safety…",
+    "noProfile": "Set up a profile to run a safety check",
+    "noData": "Add medications, allergies, or conditions to your profile first.",
+    "overall": "Overall Risk",
+    "low": "Low Risk",
+    "moderate": "Moderate Risk",
+    "high": "High Risk",
+    "interactions": "Drug Interactions",
+    "allergenWarnings": "Allergen Warnings",
+    "dietaryConflicts": "Dietary Conflicts",
+    "redFlags": "Red Flags",
+    "recommendations": "Recommendations",
+    "disclaimer": "This is decision support, not medical advice. Consult your pharmacist or physician."
+  },
+  "emergency": {
+    "title": "Emergency Medical ID",
+    "subtitle": "Critical information for first responders",
+    "print": "Print / Save PDF",
+    "share": "Share",
+    "localResources": "Local Emergency Resources",
+    "callEmergency": "Call Emergency Services",
+    "conditions": "Active Conditions",
+    "medications": "Current Medications",
+    "allergies": "Known Allergies",
+    "bloodType": "Blood Type",
+    "contact": "Emergency Contact",
+    "noProfile": "Create a profile to generate your Emergency Medical ID",
+    "tip": "Keep this page accessible even when offline by adding to your home screen."
+  },
+  "grocery": {
+    "title": "Grocery Safety",
+    "subtitle": "Plan meals that fit your health profile",
+    "addItem": "Add item",
+    "checkItem": "Mark safe",
+    "removeItem": "Remove",
+    "clearList": "Clear list",
+    "generate": "Generate safe list",
+    "generating": "Generating personalized list…",
+    "noProfile": "Add a profile to get personalized grocery recommendations",
+    "safe": "Safe",
+    "caution": "Check label",
+    "avoid": "Avoid"
+  },
+  "meals": {
+    "title": "Meal Planner",
+    "subtitle": "Nutritionally balanced meals for your conditions",
+    "generate": "Generate meal plan",
+    "generating": "Creating your personalized plan…",
+    "noProfile": "Add a profile to get personalized meal suggestions",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "snacks": "Snacks",
+    "calories": "Calories",
+    "protein": "Protein",
+    "carbs": "Carbohydrates",
+    "fat": "Fat",
+    "fiber": "Fiber"
+  },
+  "report": {
+    "title": "Health Report",
+    "subtitle": "Share with your care team",
+    "generate": "Generate Report",
+    "generating": "Generating your health summary…",
+    "download": "Download PDF",
+    "share": "Share with clinician",
+    "noProfile": "Create a profile to generate health reports",
+    "sections": {
+      "overview": "Health Overview",
+      "medications": "Medication Summary",
+      "safety": "Safety Analysis",
+      "nutrition": "Nutrition Notes"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "english": "English",
+    "spanish": "Español",
+    "notifications": "Safety notifications",
+    "enableNotifications": "Enable push alerts",
+    "disableNotifications": "Disable alerts",
+    "notificationsHint": "Get notified for moderate and high safety alerts when the app is closed.",
+    "testNotification": "Send test notification",
+    "theme": "Appearance",
+    "dark": "Dark mode",
+    "light": "Light mode",
+    "system": "System default",
+    "caregivers": "Caregiver Access",
+    "manageCaregivers": "Manage caregivers",
+    "inviteCaregiver": "Invite a caregiver",
+    "deleteAccount": "Delete Account",
+    "deleteWarning": "This will permanently delete all your data.",
+    "confirmDelete": "Type DELETE to confirm",
+    "exportData": "Export my data",
+    "about": "About ElinaCura",
+    "version": "Version",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "feedback": "Send feedback"
+  },
+  "caregiver": {
+    "title": "Caregiver Access",
+    "invite": "Invite Caregiver",
+    "role": "Role",
+    "observer": "Observer",
+    "planner": "Planner",
+    "fullAccess": "Full Access",
+    "pending": "Pending",
+    "active": "Active",
+    "revoke": "Revoke access",
+    "noInvites": "No active caregivers",
+    "inviteHint": "Caregivers can view or manage this profile based on their assigned role."
+  },
+  "notifications": {
+    "categoriesTitle": "Notification categories",
+    "categoriesDescription": "Choose which kinds of push notifications you want to receive.",
+    "categories": {
+      "safety": "Safety alerts",
+      "meal-reminder": "Meal reminders",
+      "caregiver": "Caregiver updates",
+      "app-updates": "App updates"
+    },
+    "categoryDescriptions": {
+      "safety": "Critical safety notifications such as drug interactions and allergen warnings.",
+      "meal-reminder": "Scheduled reminders for meals and hydration.",
+      "caregiver": "Activity from people you have invited as caregivers.",
+      "app-updates": "Product changes, new features, and maintenance notices."
+    },
+    "prompt": {
+      "title": "Stay on top of your safety",
+      "body": "Turn on push notifications to receive timely safety alerts, medication reminders, and caregiver updates — even when ElinaCura is closed.",
+      "frequency": "We only send what matters. Expect a few notifications per week, never more than a couple per day.",
+      "manageCategories": "Manage notification categories",
+      "announcement": "Notification permission prompt available",
+      "dismissLabel": "Dismiss notification prompt",
+      "cta": {
+        "enable": "Enable",
+        "notNow": "Not now"
+      }
+    }
+  },
+  "common": {
+    "loading": "Loading…",
+    "retry": "Retry",
+    "offline": "You are offline",
+    "offlineBanner": "You're offline — some features may be unavailable",
+    "offlineRouteTitle": "You're offline",
+    "offlineRouteBody": "We can't load this page right now. Check your connection and try again.",
+    "offlineRouteRetry": "Retry",
+    "offlineRouteRetryLabel": "Retry loading the page",
+    "offlineRouteAnnouncement": "You're offline. Check your connection.",
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "remove": "Remove",
+    "select": "Select",
+    "search": "Search",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "yes": "Yes",
+    "no": "No",
+    "optional": "Optional",
+    "required": "Required",
+    "error": "Something went wrong. Please try again.",
+    "noData": "No data available",
+    "comingSoon": "Coming soon"
+  },
+  "errors": {
+    "networkError": "Connection error. Check your internet and try again.",
+    "authError": "Authentication failed. Please sign in again.",
+    "notFound": "This page could not be found.",
+    "serverError": "Server error. Our team has been notified.",
+    "forbidden": "You don't have permission to access this.",
+    "tooManyRequests": "Too many requests. Please wait a moment and try again.",
+    "appCheckRequired": "App attestation required — please reload"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "heading": "Page not found",
+    "body": "The page you're looking for doesn't exist or has been moved.",
+    "goHome": "Go to Dashboard"
+  },
+  "principles": {
+    "p1": "Nourish gently. Every small choice compounds into lasting wellness.",
+    "p2": "Independence isn't luck — it's a thousand quiet, intentional choices.",
+    "p3": "She never had an app. She had consistency, awareness, and care.",
+    "p4": "Living well isn't a destination. It's a practice.",
+    "p5": "The body remembers what the mind forgets. Feed it well.",
+    "p6": "Small intentions, sustained daily, become long lives."
+  },
+  "a11y": {
+    "skipToMain": "Skip to main content",
+    "mainNavigation": "Main navigation",
+    "primaryMobileNavigation": "Primary mobile navigation",
+    "moreNavigation": "More navigation options",
+    "moreOptions": "More options",
+    "goToDashboard": "Go to dashboard",
+    "settings": "Settings",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "toggleTheme": "Toggle color theme",
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode",
+    "profileMenu": "Profile menu",
+    "loading": "Loading content",
+    "required": "Required field",
+    "dismiss": "Dismiss",
+    "extendSession": "Extend session",
+    "sessionExpiringSoon": "Your session is expiring soon. Extend it to keep working without losing your progress."
+  },
+  "install": {
+    "banner": {
+      "title": "Install ElinaCura",
+      "body": "Add ElinaCura to your home screen for faster access and offline support.",
+      "announcement": "Install ElinaCura banner shown.",
+      "dismissLabel": "Dismiss install banner",
+      "cta": {
+        "install": "Install",
+        "notNow": "Not now"
+      }
+    },
+    "ios": {
+      "title": "Add to Home Screen",
+      "body": "Tap the Share icon in Safari, then choose Add to Home Screen to install ElinaCura.",
+      "announcement": "Add to Home Screen instructions shown.",
+      "dismiss": "Got it"
+    }
+  },
+  "pageTitles": {
+    "dashboard": "Dashboard",
+    "profile": "Care Profile",
+    "grocery": "Grocery Board",
+    "meals": "Meal Plan",
+    "scanner": "Barcode Scanner",
+    "chat": "AI Chat",
+    "safety": "Safety Report",
+    "emergency": "Emergency Medical ID",
+    "reminders": "Reminders",
+    "shoppingList": "Shopping List",
+    "health": "Health Log",
+    "refillCalendar": "Refill Calendar",
+    "travelMode": "Travel Mode",
+    "voice": "Voice Mode",
+    "digest": "Weekly Digest",
+    "familyCircle": "Family Circle",
+    "telehealth": "Telehealth Handoff",
+    "report": "Clinical Report",
+    "settings": "Settings",
+    "caregiverDashboard": "Caregiver Dashboard",
+    "auth": "Sign In",
+    "landing": "ElinaCura — Live like Elina",
+    "messages": "Messages",
+    "moments": "Moments",
+    "connections": "Connections"
+  },
+  "offline": {
+    "backOnlineSyncing": "Back online. Syncing changes…",
+    "allChangesSynced": "All changes synced."
+  },
+  "character": {
+    "settings": {
+      "title": "Character settings",
+      "description": "Pick how the on-screen character behaves on each route.",
+      "cancel": "Cancel",
+      "global_default_label": "Global default",
+      "route_default_label": "Route default",
+      "use_route_default": "Use route default",
+      "no_character": "No character",
+      "static_character_toggle": "Show static character",
+      "static_character_description": "Render the character without animation. Saves battery on older devices.",
+      "captions_always_on_toggle": "Always show captions",
+      "captions_always_on_description": "Display captions even when audio is enabled.",
+      "per_route_section": "Per-route overrides",
+      "storage_section": "Storage",
+      "clear_cache_label": "Clear character cache",
+      "clear_cache_description": "Remove cached character bundles. They will be re-downloaded on next use.",
+      "clear_cache_freed": "Cleared {size} of cached character data.",
+      "reset_to_defaults_label": "Reset to defaults",
+      "reset_confirmation": "Reset all character settings to their defaults?",
+      "confirm_reset": "Reset",
+      "reset_announcement": "Character settings reset to defaults."
+    },
+    "nurse": {
+      "name": "Elina",
+      "role": "Your wellness nurse",
+      "alt": "Elina the nurse character — warm and caring wellness guide",
+      "greeting_morning": "Good morning! Ready to start your day strong?",
+      "greeting_afternoon": "Good afternoon! How are you feeling today?",
+      "greeting_evening": "Good evening! Time to wind down and reflect.",
+      "tip_safety": "I'm checking your safety profile now. Stay informed.",
+      "tip_reminders": "Your medication reminders are set. I'll keep you on track.",
+      "tip_default": "Here to keep you safe and well. Ask me anything."
+    },
+    "doctor": {
+      "name": "Dr. Marcus",
+      "role": "Your health advisor",
+      "alt": "Dr. Marcus the doctor character — authoritative and calm health guide",
+      "greeting_morning": "Let's review your health status for today.",
+      "greeting_afternoon": "Your health data looks good. Anything to discuss?",
+      "greeting_evening": "A good day for reflecting on your health choices.",
+      "tip_report": "Your health report is ready to review.",
+      "tip_chat": "Ask me about your medications, symptoms, or test results.",
+      "tip_telehealth": "Ready to connect with your care team?",
+      "tip_default": "Your health is my priority. What would you like to know?"
+    },
+    "dietician": {
+      "name": "Maya",
+      "role": "Your nutrition specialist",
+      "alt": "Maya the dietician character — energetic and bright nutrition guide",
+      "greeting_morning": "Let's fuel your day with the right foods!",
+      "greeting_afternoon": "Halfway through the day — how's your nutrition?",
+      "greeting_evening": "Great time to plan tomorrow's meals.",
+      "tip_grocery": "Your grocery list is optimized for your health profile.",
+      "tip_meals": "I've planned meals that work perfectly with your conditions.",
+      "tip_default": "Good nutrition is powerful medicine. Let's eat well together."
+    },
+    "pharmacist": {
+      "name": "Sam",
+      "role": "Your medication specialist",
+      "alt": "Sam the pharmacist character — precise and trustworthy medication guide",
+      "greeting_morning": "Checked your morning medications yet?",
+      "greeting_afternoon": "All clear on interactions for your afternoon meds.",
+      "greeting_evening": "Don't forget your evening medications.",
+      "tip_scanner": "Scan any product to check it against your profile.",
+      "tip_default": "I keep your medications safe and your interactions in check."
+    },
+    "pediatrician": {
+      "name": "Dr. Lily",
+      "role": "Your child health specialist",
+      "alt": "Dr. Lily the pediatrician character — playful and cheerful child health guide",
+      "greeting_morning": "Good morning, family! How is everyone feeling?",
+      "greeting_afternoon": "How is the little one doing today?",
+      "greeting_evening": "Family check-in time!",
+      "tip_profile": "Keep the family profile updated for the best care.",
+      "tip_default": "Every child deserves the best care. I'm here to help."
+    },
+    "coach": {
+      "name": "Coach Alex",
+      "role": "Your wellness motivator",
+      "alt": "Coach Alex the coach character — motivating and upbeat wellness guide",
+      "greeting_morning": "Rise and shine! Your wellness goals await!",
+      "greeting_afternoon": "Keep that momentum going — you're doing great!",
+      "greeting_evening": "Reflect on your wins today. Every step counts!",
+      "tip_dashboard": "Your wellness score is looking great. Let's keep it up!",
+      "tip_voice": "Ready to talk through your goals? I'm listening.",
+      "tip_digest": "Your weekly digest is ready — let's review your progress!",
+      "tip_default": "You've got this! Consistency is the key to lasting wellness."
+    },
+    "emergency_responder": {
+      "name": "Jordan",
+      "role": "Your emergency guide",
+      "alt": "Jordan the emergency responder character — confident and urgent emergency guide",
+      "greeting_morning": "Stay prepared. Your Medical ID is up to date.",
+      "greeting_afternoon": "All emergency contacts are in place.",
+      "greeting_evening": "Your emergency plan is ready if you ever need it.",
+      "tip_emergency": "Your Medical ID is ready to share with first responders.",
+      "tip_telehealth": "Need urgent care? I can connect you with a provider now.",
+      "tip_default": "I'm here when every second counts. Stay safe."
+    },
+    "state": {
+      "concerned": {
+        "nurse": "Your nurse is concerned about your health data. Please review.",
+        "doctor": "Dr. Marcus has flagged a concern. Please check your safety report.",
+        "dietician": "Maya has spotted a nutrition concern. Please review.",
+        "pharmacist": "Sam has flagged a medication concern. Please check immediately.",
+        "pediatrician": "Dr. Lily is concerned about a family health item.",
+        "coach": "Coach Alex is concerned about your wellness trend.",
+        "emergency_responder": "Jordan has flagged an urgent situation. Please act now."
+      }
+    }
+  },
+  "ocrCapture": {
+    "title": "Scan medication label",
+    "intro": "We pull out the drug name, dose, frequency, and prescriber. Nothing is saved until you confirm.",
+    "closeAria": "Close OCR capture",
+    "takePhoto": "Take a photo of the label",
+    "holdHint": "Hold the bottle so the printed label is in focus. JPEG, PNG, HEIC, or WebP up to 10 MB.",
+    "captureCta": "Capture or pick image",
+    "enterManually": "Enter manually instead",
+    "reading": "Reading the label…",
+    "readingHint": "This usually takes a few seconds.",
+    "somethingWentWrong": "Something went wrong.",
+    "unavailableHint": "The OCR service is temporarily unavailable. You can try again in a moment, or enter the medication manually below.",
+    "tryAgain": "Try again",
+    "serviceUnavailable": "Service unavailable, please try again or enter manually.",
+    "processError": "Couldn't process the image. Try again or enter manually.",
+    "fieldMedication": "Medication name",
+    "fieldDose": "Dose",
+    "fieldFrequency": "Frequency",
+    "fieldPrescriber": "Prescriber",
+    "lowConfidence": "low confidence",
+    "missingDraftId": "Missing OCR draft id — try uploading the image again.",
+    "selectProfileFirst": "Select a profile before confirming.",
+    "enterMedicationName": "Enter the medication name to confirm.",
+    "saveError": "Couldn't save the medication. Try again.",
+    "saving": "Saving…",
+    "confirm": "Confirm & save"
+  },
+  "caregiverDashboardPage": {
+    "titlePart1": "Caregiver",
+    "titlePart2": "Dashboard",
+    "kicker": "Caregiver",
+    "subtitle": "{name}'s adherence, alerts, and active medications",
+    "theProfile": "the profile",
+    "refreshAria": "Refresh caregiver dashboard",
+    "refresh": "Refresh",
+    "noProfileTitle": "No profile selected",
+    "noProfileBody": "Pick a profile you have caregiver access to in order to see its dashboard.",
+    "permissionDeniedTitle": "Permission denied",
+    "permissionDeniedBody": "You no longer have caregiver access to this profile. Ask the profile owner to re-share access if this is unexpected.",
+    "errorTitle": "Could not load the dashboard.",
+    "errorDefault": "Check your connection and try again. We did not display any cached profile data.",
+    "errorLoading": "Could not load caregiver dashboard.",
+    "retry": "Retry",
+    "retryAria": "Retry loading caregiver dashboard",
+    "lastActivity": "Last activity",
+    "noActivityYet": "No activity recorded yet",
+    "updatedToday": "Updated today",
+    "daysSinceOne": "1 day since last update",
+    "daysSinceMany": "{count} days since last update",
+    "daysSinceShort": "days since last update",
+    "noActivityRecordedShort": "no activity recorded yet",
+    "adherenceLabel": "Adherence rate",
+    "adherenceTaken": "{percent}% taken",
+    "adherenceNoData": "No data yet",
+    "adherenceWindow": "last 7 days",
+    "adherenceAria": "Adherence rate over the last 7 days: {percent} percent",
+    "adherenceAriaNoData": "Adherence rate over the last 7 days: no data available",
+    "missedDoses": "Missed doses",
+    "missedDoseAriaOne": "1 missed dose in the last 7 days",
+    "missedDoseAriaMany": "{count} missed doses in the last 7 days",
+    "overviewHeading": "Overview",
+    "eventsHeading": "Recent safety events ({count})",
+    "medsHeading": "Active medications ({count})",
+    "medsAria": "Active medications, {count} total",
+    "noEventsTitle": "No safety events yet",
+    "noEventsBody": "Recent alerts will appear here as they happen.",
+    "noMedsTitle": "No active medications",
+    "noMedsBody": "The profile owner has not added any medications yet.",
+    "safetyEventDefault": "Safety event",
+    "riskLevelAria": "Risk level: {level}",
+    "riskUnknown": "Unknown",
+    "clinicianKicker": "For clinicians",
+    "clinicianHeading": "Clinician summary",
+    "clinicianMedications": "Medications",
+    "clinicianAllergies": "Allergies",
+    "clinicianConditions": "Conditions",
+    "clinicianNoneRecorded": "None recorded",
+    "clinicianRecentEvents": "Recent safety events"
+  },
+  "caregiverAuthPage": {
+    "pageTitle": "Caregiver organization sign-in",
+    "logoAlt": "ElinaCura",
+    "kicker": "Caregiving organization",
+    "headingRegister": "Register your organization",
+    "headingLogin": "Welcome back",
+    "headingActivate": "Activate your account",
+    "leadRegister": "Create a company account and add your care team. You'll be the first administrator.",
+    "leadLogin": "Sign in with your personnel credentials to access your organization.",
+    "leadActivate": "You were invited to join a care team. Set a password to activate your account.",
+    "tabRegister": "Register company",
+    "tabLogin": "Sign in",
+    "fieldOrgNameLabel": "Organization name",
+    "fieldOrgNamePlaceholder": "Sunrise Home Care",
+    "fieldOrgRegLabel": "Registration / license ID (optional)",
+    "fieldOrgRegPlaceholder": "LIC-12345",
+    "fieldContactPhoneLabel": "Contact phone",
+    "fieldContactPhonePlaceholder": "+1 555 010 0100",
+    "fieldAdminNameLabel": "Your full name",
+    "fieldAdminNamePlaceholder": "Ada Administrator",
+    "fieldEmailLabel": "Work email",
+    "fieldEmailPlaceholder": "you@organization.com",
+    "fieldPasswordLabel": "Password",
+    "fieldPasswordPlaceholder": "At least 8 characters",
+    "fieldInviteCodeLabel": "Invite code",
+    "fieldInviteCodePlaceholder": "Paste the code from your invite",
+    "submitRegister": "Create organization",
+    "submitLogin": "Sign in",
+    "submitActivate": "Activate account",
+    "haveInvite": "Have an invite code? Activate your account",
+    "haveAccount": "Already activated? Sign in instead",
+    "individualAccountLink": "Sign in as an individual instead",
+    "showPasswordAria": "Show password",
+    "hidePasswordAria": "Hide password",
+    "consoleKicker": "Organization console",
+    "consoleSignedInAs": "Signed in as {name} ({role})",
+    "roleAdmin": "Administrator",
+    "roleCaregiver": "Caregiver",
+    "fieldPersonnelNameLabel": "Team member name",
+    "fieldPersonnelNamePlaceholder": "Nina Nurse",
+    "fieldRoleLabel": "Role",
+    "invitePersonnel": "Invite personnel",
+    "inviteSent": "Invitation created",
+    "inviteCodeHeading": "Share this invite code",
+    "teamHeading": "Your team",
+    "status_invited": "Invited",
+    "status_active": "Active",
+    "status_suspended": "Suspended",
+    "signOut": "Sign out",
+    "errEmailExists": "That email is already registered.",
+    "errInvalidCredentials": "Incorrect email or password.",
+    "errPersonnelInactive": "This account is not active. Contact your administrator.",
+    "errInviteNotFound": "That invite code is invalid or has already been used.",
+    "errAdminRequired": "Only organization administrators can do that.",
+    "errTooMany": "Too many attempts. Please wait a moment and try again.",
+    "errGeneric": "Something went wrong. Please try again."
+  },
+  "authPage": {
+    "storyKicker": "The story behind the app",
+    "storyHeadingLine1Prefix": "She lived",
+    "storyHeadingDecades": "11 decades.",
+    "storyHeadingLine2": "On her own terms.",
+    "storyBodyCompactPrefix": "Our grandmother Elina lived over 110 years — healthy, strong, and independent until the very end. ElinaCura is built on her philosophy: the right food, the right care, personalized to",
+    "storyBodyYou": "you",
+    "storyBodyFullPart1": "Our grandmother, Elina, lived over 110 years — healthy, strong, and completely independent until the very end. No pain. No physical support. Just a life lived with intention: the right food, the right movement, consistent care.",
+    "storyBodyFullPart2Prefix": "ElinaCura is built on that philosophy. What you eat, what you take, and how you live matter deeply — and should be personalized to",
+    "storyQuote": "We built the app she never had, so you can live the life she naturally found.",
+    "storyVisualOverline": "A life well lived",
+    "storyVisualYears": "years, healthy and independent",
+    "storyVisualTimeline": "Eleven decades, on her own terms.",
+    "storyPillarFood": "Right food",
+    "storyPillarMovement": "Daily movement",
+    "storyPillarCare": "Consistent care",
+    "badgeSafe": "Safe",
+    "badgeSafeSub": "Medication-aware",
+    "badgePrivate": "Private",
+    "badgePrivateSub": "Consent-first",
+    "badgePortable": "Portable",
+    "badgePortableSub": "Clinician handoff",
+    "healthCompanion": "Your health companion",
+    "logoAlt": "ElinaCura",
+    "mfaKicker": "Two-factor authentication",
+    "mfaHeadingPrefix": "Verify your",
+    "mfaHeadingHighlight": "identity",
+    "mfaHeadingSuffix": ".",
+    "mfaLeadTotp": "Enter the 6-digit code from your authenticator app to finish signing in.",
+    "mfaLeadBackup": "Enter one of the backup codes you saved when you enabled two-factor authentication. Each code can be used once.",
+    "mfaTotpLabel": "Authenticator code",
+    "mfaTotpPlaceholder": "123456",
+    "mfaBackupLabel": "Backup code",
+    "mfaBackupPlaceholder": "e.g. A3F9-2B1C",
+    "mfaVerifyButton": "Verify and sign in",
+    "mfaUseBackupInstead": "Use a backup code instead",
+    "mfaUseAuthenticatorInstead": "Use authenticator code instead",
+    "mfaBackToSignIn": "Back to sign in",
+    "mfaErrorTotpEnter": "Enter the 6-digit code from your authenticator app.",
+    "mfaErrorBackupEnter": "Enter one of the backup codes you saved when enabling two-factor.",
+    "mfaErrorTotpMismatch": "That code didn’t match. Wait for the next code your authenticator shows, or use a backup code.",
+    "mfaErrorBackupMismatch": "That backup code didn’t match or has already been used. Try another.",
+    "mfaErrorGeneric": "We couldn’t complete sign-in. Please try again.",
+    "mfaErrorProfileLoad": "Signed in, but we couldn’t load your profile. Please refresh.",
+    "mfaAnnounceEnter": "Enter your authenticator code to finish signing in.",
+    "mfaLowBackupCodes": "You’re running low on backup codes. Open Settings → Two-factor authentication to generate a fresh batch.",
+    "formKicker": "Secure Access",
+    "formHeadingWelcomePrefix": "Welcome",
+    "formHeadingWelcomeHighlight": "back",
+    "formHeadingWelcomeSuffix": ".",
+    "formHeadingSignupPrefix": "Begin your",
+    "formHeadingSignupHighlight": "journey",
+    "formHeadingPhonePrefix": "Continue with",
+    "formHeadingPhoneHighlight": "phone",
+    "formHeadingPhoneSuffix": ".",
+    "formHeadingVerifyPhonePrefix": "Verify your",
+    "formHeadingVerifyPhoneHighlight": "phone",
+    "formLeadSignin": "Sign in to access your care context.",
+    "formLeadSignup": "Create your secure wellness profile.",
+    "formLeadPhoneSend": "We will send a one-time verification code.",
+    "formLeadPhoneVerify": "Enter the 6-digit code sent to your device.",
+    "tabCreateAccount": "Create account",
+    "tabSignIn": "Sign in",
+    "fieldFullNameLabel": "Full Name",
+    "fieldFullNamePlaceholder": "Your full name",
+    "fieldEmailLabel": "Email Address",
+    "fieldEmailPlaceholder": "you@email.com",
+    "fieldEmailResetPlaceholder": "you@example.com",
+    "fieldEmailResetLabel": "Email address",
+    "fieldPasswordLabel": "Password",
+    "fieldPasswordPlaceholder": "Choose a password",
+    "fieldPhoneLabel": "Phone Number",
+    "fieldPhonePlaceholder": "+1 555-555-5555",
+    "fieldOtpLabel": "Verification Code",
+    "fieldOtpPlaceholder": "123456",
+    "showPasswordAria": "Show password",
+    "hidePasswordAria": "Hide password",
+    "forgotPassword": "Forgot password?",
+    "pwStrengthWeak": "Weak",
+    "pwStrengthFair": "Fair",
+    "pwStrengthStrong": "Strong",
+    "submitSignup": "Create secure account",
+    "submitSignin": "Sign in securely",
+    "sendOtp": "Send Verification Code",
+    "verifyOtp": "Verify & Sign In",
+    "backToEmail": "Back to email login",
+    "dividerOrContinue": "Or continue with",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithPhone": "Continue with Phone",
+    "guestNeedAccess": "Need immediate access?",
+    "guestRetention": "Data retained for 7 days.",
+    "guestContinue": "Continue as guest",
+    "caregiverOrgLink": "Are you a caregiving organization? Sign in here",
+    "caregiverCardTitle": "For caregiving organizations",
+    "caregiverCardDesc": "Manage clients, invite personnel, and coordinate care from your team workspace.",
+    "caregiverCardCta": "Open team sign in",
+    "showcaseHeadlinePrefix": "Care that knows",
+    "showcaseHeadlineHighlight": "you",
+    "showcaseHeadlineSuffix": "— food, medication, and everything in between.",
+    "showcaseLead": "Personalized, medication-aware wellness guidance built on consent and designed to travel with you across every clinician and caregiver.",
+    "chooseEyebrow": "Welcome to ElinaCura",
+    "chooseTitle": "How will you sign in?",
+    "chooseSub": "Two ways in — one for you, one for your team.",
+    "choosePersonalLabel": "Personal",
+    "choosePersonalTitle": "For you and your loved ones",
+    "choosePersonalDesc": "Your meals, medications, and wellness — built on consent.",
+    "choosePersonalCta": "Continue as personal",
+    "choosePersonalFeat1": "Medication-aware safety",
+    "choosePersonalFeat2": "Private by default",
+    "choosePersonalFeat3": "Clinician-ready handoff",
+    "chooseTeamLabel": "For care teams",
+    "chooseTeamTitle": "For caregiving organizations",
+    "chooseTeamDesc": "Manage clients and coordinate care across your organization.",
+    "chooseTeamCta": "Continue as team",
+    "chooseTeamFeat1": "Invite & manage personnel",
+    "chooseTeamFeat2": "Shared organization workspace",
+    "chooseTeamFeat3": "Coordinate client care",
+    "chooseTrustMed": "Medication-aware",
+    "chooseTrustConsent": "Consent-first",
+    "chooseTrustClinician": "Clinician-ready",
+    "chooseSignaturePrefix": "In memory of Elina",
+    "chooseSignatureQuote": "a life lived with intention.",
+    "chooseSwitch": "Switch account type",
+    "choosePersonalChip": "Personal workspace",
+    "chooseTeamChip": "Care-team workspace",
+    "termsPrefix": "By continuing, you agree to our",
+    "termsOfService": "Terms of Service",
+    "termsAnd": "and",
+    "privacyPolicy": "Privacy Policy",
+    "resetKicker": "Reset Password",
+    "resetHeadingSentPrefix": "Check your",
+    "resetHeadingSentHighlight": "inbox",
+    "resetHeadingPrefix": "Forgot your",
+    "resetHeadingHighlight": "password",
+    "resetHeadingSuffix": "?",
+    "resetHeadingSentSuffix": ".",
+    "resetSentBody": "We sent a password reset link to {email}. Check your inbox (and spam folder).",
+    "resetIntro": "Enter your email and we will send you a link to reset your password.",
+    "resetCancel": "Cancel",
+    "resetSendLink": "Send reset link",
+    "resetBackToSignIn": "Back to sign in",
+    "backToAccess": "Back to access",
+    "ourStory": "Our Story 🌿",
+    "mobileFooterLine1": "ElinaCura is built on the philosophy of our grandmother, Elina.",
+    "mobileFooterLink": "Read her 110-year story",
+    "errFillRequired": "Please fill in all required fields.",
+    "errEnterEmail": "Please enter your email address.",
+    "errEnterPhone": "Please enter a valid phone number.",
+    "errEnterOtp": "Please enter the verification code.",
+    "errEmailExists": "An account with this email already exists.",
+    "errInvalidEmail": "Please enter a valid email address.",
+    "errWeakPassword": "Password must be at least 8 characters.",
+    "errUserNotFound": "No account found with this email.",
+    "errWrongPassword": "Incorrect password. Please try again.",
+    "errInvalidCredential": "Incorrect email or password.",
+    "errTooMany": "Too many attempts. Please wait and try again.",
+    "errNetwork": "Network error. Check your connection.",
+    "errServerUnreachable": "Can't reach the server. Make sure the backend is running, then try again.",
+    "errSessionFailed": "Signed in, but couldn't start your session (server error). Please try again.",
+    "errAccountExists": "An account already exists with this email. Sign in with your original provider.",
+    "errAuthFailed": "Authentication failed. Please try again.",
+    "errGoogleFailed": "Google sign-in failed. Please try again.",
+    "errResetEmailNotFound": "No account found with this email address.",
+    "errResetGeneric": "Failed to send reset email. Please try again.",
+    "errSendOtpGeneric": "Failed to send code. Please check phone format (+15555555555).",
+    "errInvalidOtp": "Incorrect verification code. Please try again.",
+    "errVerifyOtpGeneric": "Verification failed. Please try again.",
+    "errStartGuest": "Unable to start guest mode. Please try again.",
+    "errFieldEmail": "Please enter a valid email address.",
+    "errFieldPassword": "Must be 8+ characters with 1 uppercase letter and 1 digit.",
+    "errFieldName": "Name is required."
+  },
+  "layout": {
+    "guestModeBanner": "Guest mode — data is retained for up to 7 days.",
+    "createProfileFirstBanner": "Create a profile first — safety checks run before recommendations appear.",
+    "createProfile": "+ Create a profile",
+    "quickSearch": "Quick search…",
+    "wellnessMode": "Wellness mode",
+    "newProfile": "New profile",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
+    "signOut": "Sign out",
+    "brandTagline": "Wellness · Safety · AI",
+    "wellnessIncomplete": "Complete your profile to unlock safer recommendations.",
+    "wellnessActionable": "Add missing fields, {name}, for full safety coverage.",
+    "wellnessSteady": "Great momentum, {name} — keep your routine steady.",
+    "fallbackName": "there",
+    "lightShort": "Light",
+    "darkShort": "Dark"
+  },
+  "installPrompt": {
+    "regionAria": "Install ElinaCura prompt",
+    "iosBody": "Tap the Share icon in Safari, then choose Add to Home Screen.",
+    "standardBody": "Add ElinaCura to your home screen for faster access and offline support.",
+    "dismissAria": "Dismiss install banner"
+  },
+  "mfaEnrolment": {
+    "announceOpened": "Two-factor authentication enrolment opened.",
+    "announceScanQr": "Scan the QR code with your authenticator app.",
+    "announceCodeAccepted": "Code accepted. Save your backup codes before continuing.",
+    "errorStartFallback": "Could not start MFA enrolment. Please try again.",
+    "errorEnterCode": "Enter the 6-digit code from your authenticator app.",
+    "errorVerifyFallback": "That code didn't match. Try the next code your authenticator shows.",
+    "errorEnrolExpired": "Your enrolment session expired. Start again to generate a new QR code.",
+    "toastCopied": "Backup codes copied to clipboard.",
+    "toastClipboardUnavailable": "Clipboard not available in this browser. Copy them manually.",
+    "toastCopyError": "Could not copy to clipboard. Copy them manually.",
+    "title": "Set up two-factor authentication",
+    "description": "Add a second factor so a stolen password alone can’t unlock your account.",
+    "closeAria": "Close MFA enrolment",
+    "loadingStart": "Generating your enrolment secret…",
+    "cancel": "Cancel",
+    "startEnrolment": "Start enrolment",
+    "verifying": "Verifying…",
+    "verify": "Verify",
+    "done": "Done",
+    "introParagraph": "We’ll generate a one-time secret and show a QR code you can scan with any TOTP authenticator app (1Password, Authy, Google Authenticator, and so on).",
+    "introStep1": "Scan the QR code or paste the fallback secret into your app.",
+    "introStep2": "Enter the 6-digit code your app shows to verify.",
+    "introStep3": "Save the ten backup codes in a secure place.",
+    "qrAriaLabel": "QR code containing your TOTP secret",
+    "pasteSecretManually": "Or paste this secret manually",
+    "fallbackHelp": "Use this fallback string if your camera can’t scan the QR code. The secret expires in 10 minutes.",
+    "enterCodeLabel": "Enter the 6-digit code",
+    "codeRefreshHelp": "The code refreshes every 30 seconds. If the first attempt fails, wait for the next code and try again.",
+    "saveNowWarning": "Save these now — we won’t show them again.",
+    "saveNowBody": "Each code can be used once if you lose access to your authenticator app. Store them in a password manager or print them and keep them somewhere safe.",
+    "copyToClipboard": "Copy backup codes to clipboard",
+    "savedAffirm": "I have saved my backup codes."
+  },
+  "settingsMfa": {
+    "announceEnabled": "Two-factor authentication is now enabled on your account.",
+    "announceRegenerated": "New backup codes generated. Save them before closing this dialog.",
+    "toastDisabled": "Two-factor authentication disabled.",
+    "announceDisabled": "Two-factor authentication has been disabled on your account.",
+    "sectionLabel": "Account security",
+    "title": "Two-factor authentication",
+    "description": "Add a TOTP authenticator app as a second factor so a stolen password alone cannot unlock your account. Caregiver and family-circle guardian roles require two-factor authentication.",
+    "notEnabled": "Not enabled yet",
+    "notEnabledHelp": "Enable an authenticator app to add a second factor.",
+    "enableButton": "Enable two-factor authentication",
+    "activeHeadline": "Two-factor authentication enabled",
+    "backupCountSingular": "{count} backup code remaining",
+    "backupCountPlural": "{count} backup codes remaining",
+    "lowCodesBanner": "Running low on backup codes. Generate a fresh batch so you don’t get locked out.",
+    "regenerateButton": "Regenerate backup codes",
+    "roleRequiredNote": "MFA is required for caregiver and guardian roles. Step down from the role before disabling.",
+    "disableButton": "Disable two-factor authentication",
+    "regenerateDialogTitle": "Regenerate backup codes",
+    "regenerateDialogDescription": "Enter the 6-digit code from your authenticator app. The previous backup codes will stop working immediately.",
+    "regenerateSubmit": "Generate new codes",
+    "disableDialogTitle": "Disable two-factor authentication",
+    "disableDialogDescription": "Enter the 6-digit code from your authenticator app to confirm. Your TOTP secret and remaining backup codes will be revoked.",
+    "disableSubmit": "Disable two-factor",
+    "closeDialog": "Close dialog",
+    "authCodeLabel": "Authenticator code",
+    "codeRefreshHelp": "The code refreshes every 30 seconds. Wait for the next code if the first attempt fails.",
+    "cancel": "Cancel",
+    "working": "Working…",
+    "codesDialogTitle": "New backup codes",
+    "codesDialogDescription": "Save these now — we won’t show them again. The previous codes are no longer valid.",
+    "toastCopied": "Backup codes copied to clipboard.",
+    "toastClipboardUnavailable": "Clipboard not available in this browser. Copy them manually.",
+    "toastCopyError": "Could not copy to clipboard. Copy them manually.",
+    "copyToClipboard": "Copy backup codes to clipboard",
+    "savedAffirm": "I have saved my backup codes.",
+    "done": "Done",
+    "errorRegenerateFallback": "Could not regenerate backup codes. Please try again.",
+    "errorDisableFallback": "Could not disable two-factor authentication. Please try again.",
+    "errorCodeMismatch": "That code didn't match. Try the next code your authenticator shows.",
+    "errorMfaRequired": "MFA is required for caregiver and guardian roles. Step down from the role first.",
+    "errorNotEnrolled": "Two-factor authentication isn't enabled on this account."
+  },
+  "interactionWarning": {
+    "tierInfo": "Info",
+    "tierCaution": "Caution",
+    "tierWarning": "Warning",
+    "tierCritical": "Critical",
+    "announceHardBlock": "{tier} interaction warning requires acknowledgement.",
+    "announceSoft": "{tier} interaction notice.",
+    "modalTitle": "Interaction warnings",
+    "modalDescription": "Review and acknowledge each warning before proceeding.",
+    "closeAria": "Close warnings",
+    "cancel": "Cancel",
+    "confirm": "Acknowledge and proceed",
+    "sourcesLabel": "Sources: {list}",
+    "ackLabel": "I understand this {tier} warning."
+  },
+  "errorBoundary": {
+    "headingDefault": "Something went wrong",
+    "headingChunkError": "Updating ElinaCura",
+    "bodyDefault": "ElinaCura encountered an unexpected issue. Your data is safe.",
+    "bodyChunkError": "We just shipped an update. Reloading…",
+    "tryAgain": "Try again",
+    "tryAgainAria": "Retry — reload the application",
+    "goHome": "Go to Dashboard",
+    "goHomeAria": "Go to home page",
+    "technicalDetails": "Technical details",
+    "headingChunk": "App updated",
+    "headingError": "Something went wrong",
+    "bodyChunk": "A new version is available. Reloading automatically…",
+    "bodyError": "We hit an unexpected error. You can try again or return to the dashboard.",
+    "tryAgainAriaLabel": "Retry loading the application",
+    "goHomeAriaLabel": "Navigate to the dashboard"
+  },
+  "riskBadge": {
+    "levelLow": "Low",
+    "levelModerate": "Moderate",
+    "levelHigh": "High",
+    "levelAvoid": "Avoid",
+    "levelError": "Error",
+    "levelUnknown": "Unknown",
+    "levelUncertain": "Uncertain",
+    "tooltipLow": "Low risk — no significant concerns flagged based on your profile.",
+    "tooltipModerate": "Moderate risk — review the details. May warrant a swap or pharmacist input.",
+    "tooltipHigh": "High risk — material concern detected. Consult your physician before relying on this option.",
+    "tooltipAvoid": "Avoid — strongly inappropriate for your profile. Do not consume.",
+    "tooltipError": "Error — the safety check could not be completed. Treat as unverified.",
+    "tooltipUnknown": "Unknown — no safety data available for this item yet.",
+    "tooltipUncertain": "Low confidence — this safety annotation is uncertain. Treat as preliminary.",
+    "ariaLabel": "Risk level: {level}. {tooltip}",
+    "safetyAnalysis": "Safety analysis",
+    "dataUsedLabel": "Data used:",
+    "profileContext": "Profile context",
+    "assumptionsLabel": "Assumptions:",
+    "listsMayBeIncomplete": "Lists may be incomplete",
+    "coverageMatrix": "Coverage matrix",
+    "checked": "Checked",
+    "notChecked": "Not checked"
+  },
+  "skeletonPage": {
+    "loading": "Loading",
+    "loadingDashboard": "Loading dashboard",
+    "loadingChat": "Loading chat",
+    "loadingScanner": "Loading scanner",
+    "loadingSafety": "Loading safety report",
+    "loadingGrocery": "Loading grocery board",
+    "loadingMeals": "Loading meals plan"
+  },
+  "splashScreen": {
+    "loadingAria": "ElinaCura is loading",
+    "tagline": "Live like Elina",
+    "brandMark": "Wellness · Safety · AI",
+    "skip": "Skip",
+    "skipAria": "Skip the loading animation"
+  },
+  "toast": {
+    "dismiss": "Dismiss"
+  },
+  "updateAvailableToast": {
+    "aria": "New app version available",
+    "title": "New version available",
+    "body": "Reload to apply the latest improvements. You can keep using the current version until you're ready.",
+    "reload": "Reload",
+    "dismiss": "Dismiss",
+    "dismissAria": "Dismiss update toast"
+  },
+  "offlineFallback": {
+    "kicker": "Offline",
+    "heading": "You’re offline on {pageName}",
+    "thisPage": "this page",
+    "body": "Some of ElinaCura works while offline. Anything that needs a fresh answer from the network will be unavailable until you reconnect.",
+    "cachedHeading": "Available offline",
+    "uncachedHeading": "Needs network",
+    "cachedSafetyReport": "Last safety report (read-only)",
+    "cachedScanHistory": "Last scan history (read-only)",
+    "cachedEmergencyId": "Emergency Medical ID page",
+    "cachedProfileBasics": "Saved profile basics",
+    "uncachedChat": "Ask Elina AI chat",
+    "uncachedScanner": "Live barcode scanner lookups",
+    "uncachedPlans": "Fresh grocery and meal plans",
+    "uncachedSafety": "New safety analyses",
+    "retry": "Retry",
+    "retryHelper": "We’ll reload as soon as you’re back online."
+  },
+  "commandPalette": {
+    "brandName": "ElinaCura",
+    "escKey": "ESC",
+    "dialogAria": "Command palette",
+    "searchPlaceholder": "Type a command or search…",
+    "searchAria": "Search commands",
+    "menuAria": "Commands",
+    "noResults": "No results for “{query}”",
+    "footerNavigate": "navigate",
+    "footerSelect": "select",
+    "dashboard": {
+      "label": "Dashboard",
+      "hint": "Daily overview",
+      "keywords": "home dashboard overview"
+    },
+    "profile": {
+      "label": "Profile",
+      "hint": "Care dossier",
+      "keywords": "profile dossier identity"
+    },
+    "grocery": {
+      "label": "Grocery",
+      "hint": "Weekly shopping list",
+      "keywords": "grocery shopping list food"
+    },
+    "meals": {
+      "label": "Meals",
+      "hint": "Nutrition plan",
+      "keywords": "meals nutrition food macros recipes"
+    },
+    "shoppingList": {
+      "label": "Smart Shopping",
+      "hint": "AI-powered shopping list",
+      "keywords": "smart shopping list buy store items"
+    },
+    "reminders": {
+      "label": "Reminders",
+      "hint": "Medication reminders",
+      "keywords": "reminders medication schedule alarm dose"
+    },
+    "scanner": {
+      "label": "Scanner",
+      "hint": "Barcode safety check",
+      "keywords": "scanner barcode product check"
+    },
+    "chat": {
+      "label": "AI Chat",
+      "hint": "Ask Elina AI",
+      "keywords": "chat ai elina ask question concierge"
+    },
+    "voice": {
+      "label": "Voice Mode",
+      "hint": "Hands-free logging",
+      "keywords": "voice speech mic hands-free log medication taken"
+    },
+    "safety": {
+      "label": "Safety",
+      "hint": "Risk analysis",
+      "keywords": "safety risk analysis check"
+    },
+    "emergency": {
+      "label": "Emergency",
+      "hint": "Medical ID",
+      "keywords": "emergency medical id critical"
+    },
+    "report": {
+      "label": "Report",
+      "hint": "Clinical summary",
+      "keywords": "report clinical summary pdf"
+    },
+    "telehealth": {
+      "label": "Telehealth",
+      "hint": "Connect with a clinician",
+      "keywords": "telehealth doctor clinician video call appointment"
+    },
+    "digest": {
+      "label": "Weekly Digest",
+      "hint": "Your safety highlights",
+      "keywords": "digest weekly summary highlights safety report"
+    },
+    "familyCircle": {
+      "label": "Family Circle",
+      "hint": "Household members",
+      "keywords": "family circle household members group share"
+    },
+    "settings": {
+      "label": "Settings",
+      "hint": "Preferences & access",
+      "keywords": "settings preferences caregiver invites"
+    },
+    "theme": {
+      "switchToLight": "Switch to light mode",
+      "switchToDark": "Switch to dark mode",
+      "hint": "Toggle appearance",
+      "keywords": "theme dark light mode appearance"
+    },
+    "logout": {
+      "label": "Sign out",
+      "hint": "End your session",
+      "keywords": "logout sign out exit"
+    },
+    "switchToProfile": "Switch to {name}",
+    "profileDefaultType": "Care profile",
+    "switchProfileKeywords": "switch profile {name}"
+  },
+  "landing": {
+    "nav": {
+      "ariaLabel": "Page sections",
+      "features": "Features",
+      "howItWorks": "How it works",
+      "testimonials": "Stories",
+      "forYou": "For you",
+      "story": "Our story",
+      "faq": "FAQ",
+      "signIn": "Sign in"
+    },
+    "hero": {
+      "kicker": "Personalized Wellness Safety",
+      "title": "Your health, protected by",
+      "titleEm": "intention.",
+      "subtitle": "Medication-aware grocery planning, AI nutrition guidance, emergency medical ID, and caregiver sharing — built around your conditions, not around averages.",
+      "imageAlt": "Calm morning light in a serene wellness space",
+      "bullet1": "Medication-safe grocery scanning",
+      "bullet2": "AI nutrition guidance for your conditions",
+      "bullet3": "Emergency Medical ID — offline ready",
+      "bullet4": "Caregiver sharing with role-based access",
+      "seeHowItWorks": "See how it works",
+      "socialProof": "Loved by people managing their wellness"
+    },
+    "stats": {
+      "aiAvailable": "AI guidance",
+      "serverSide": "Privacy-first",
+      "features": "Safety tools",
+      "offline": "Offline access",
+      "alwaysOn": "Always on",
+      "phiOnDevice": "PHI stays on-device",
+      "integratedTools": "Integrated tools",
+      "noSignalNeeded": "No signal needed"
+    },
+    "features": {
+      "kicker": "What ElinaCura does",
+      "title": "Everything your wellness needs, in one place.",
+      "subtitle": "Six integrated safety tools that work together to keep you informed, prepared, and in control.",
+      "safety": {
+        "title": "Safety Monitoring",
+        "description": "Continuous cross-checking of your medications, allergies, and conditions. Get flagged before problems happen."
+      },
+      "scanner": {
+        "title": "Barcode Scanner",
+        "description": "Scan any food product and instantly see if it's safe for your specific health profile."
+      },
+      "meals": {
+        "title": "Smart Meal Planning",
+        "description": "Nutritionally balanced meal plans tailored to your conditions, allergies, and dietary preferences."
+      },
+      "ai": {
+        "title": "AI Health Chat",
+        "description": "Context-aware health assistant that knows your profile. Ask anything about nutrition, medications, or wellness."
+      },
+      "emergency": {
+        "title": "Emergency Medical ID",
+        "description": "Critical health information accessible to first responders — even offline. Always ready when seconds count."
+      },
+      "caregiver": {
+        "title": "Caregiver Sharing",
+        "description": "Invite family members or caregivers with role-based access. Everyone stays informed, nobody oversteps."
+      },
+      "popular": "Popular"
+    },
+    "howItWorks": {
+      "kicker": "Simple to start",
+      "title": "Up and running in three steps.",
+      "step1": {
+        "title": "Create your profile",
+        "description": "Add your conditions, medications, allergies, and dietary preferences. Takes about two minutes."
+      },
+      "step2": {
+        "title": "Get personalized safety",
+        "description": "ElinaCura cross-references your profile against food products, drug interactions, and nutrition guidelines."
+      },
+      "step3": {
+        "title": "Stay protected daily",
+        "description": "Receive safety alerts, weekly digests, and AI-powered guidance — all tailored to your unique health needs."
+      }
+    },
+    "testimonials": {
+      "kicker": "Real stories",
+      "title": "People who live like Elina.",
+      "quote1": "I finally feel confident grocery shopping alone. The barcode scanner catches things I'd never notice on a label.",
+      "author1": "Maria S.",
+      "role1": "Living with celiac disease & type 2 diabetes",
+      "quote2": "As a caregiver for my mother, having her medication interactions checked automatically gives me peace of mind every single day.",
+      "author2": "James T.",
+      "role2": "Caregiver for parent with multiple conditions",
+      "rated": "Rated 4.9 by users",
+      "hipaa": "HIPAA-conscious design",
+      "freeToStart": "Free to start"
+    },
+    "cta": {
+      "getStarted": "Get started",
+      "startFree": "Start free",
+      "learnMore": "Learn more"
+    },
+    "ctaBanner": {
+      "title": "Start living with intention today.",
+      "subtitle": "Join thousands who trust ElinaCura to keep their wellness on autopilot. Free to start, no credit card required.",
+      "kicker": "Get started today",
+      "seeAllFeatures": "See all features",
+      "footnote": "No credit card required · Works offline · Cancel anytime"
+    },
+    "footer": {
+      "copyright": "© 2026 ElinaCura. All rights reserved.",
+      "terms": "Terms",
+      "privacy": "Privacy"
+    },
+    "menu": {
+      "open": "Open menu",
+      "close": "Close menu"
+    },
+    "trust": {
+      "privacyFirst": "Privacy-first",
+      "noCreditCard": "No credit card",
+      "worksOffline": "Works offline"
+    },
+    "useCases": {
+      "kicker": "Built for",
+      "title": "Wellness, made personal — for every life stage.",
+      "subtitle": "Whether you're managing a chronic condition, caring for a loved one, or simply prioritizing your health, ElinaCura adapts to your context.",
+      "conditions": {
+        "label": "Living with conditions",
+        "title": "Manage your chronic health with confidence.",
+        "description": "Get every meal, snack, and grocery product cross-checked against your diagnoses, medications, and allergies — automatically.",
+        "bullet1": "Drug-food interaction alerts",
+        "bullet2": "Dietary restriction tracking",
+        "bullet3": "Symptom & adherence logs"
+      },
+      "caregivers": {
+        "label": "Caregivers & families",
+        "title": "Stay informed without overstepping.",
+        "description": "Share access with caregivers, family, and clinicians using granular role-based permissions. Everyone stays aligned.",
+        "bullet1": "View-safety or full-edit roles",
+        "bullet2": "Activity audit log",
+        "bullet3": "Emergency SOS handoff"
+      },
+      "clinician": {
+        "label": "Clinician handoff",
+        "title": "Bring a complete picture to your visits.",
+        "description": "Generate clinical-grade reports of your nutrition, medications, and adherence — perfect for telehealth or in-person appointments.",
+        "bullet1": "PDF export for clinicians",
+        "bullet2": "Telehealth handoff bundle",
+        "bullet3": "HIPAA-conscious design"
+      }
+    },
+    "faq": {
+      "kicker": "Questions, answered",
+      "title": "Everything you need to know.",
+      "q1": "Is my health data private and secure?",
+      "a1": "Absolutely. ElinaCura is privacy-first by design — your PHI (protected health information) is kept on-device whenever possible, and any server-side data is encrypted at rest and in transit. We never sell your data to third parties.",
+      "q2": "Do I need to be tech-savvy to use ElinaCura?",
+      "a2": "No. The interface was designed with multi-generational use in mind, with large touch targets, simple flows, and accessibility built in from day one. If you can use a smartphone, you can use ElinaCura.",
+      "q3": "Does it work without internet?",
+      "a3": "Yes. Most features — including barcode scanning, Medical ID, your saved meal plans, and previously fetched safety data — work fully offline. Changes sync automatically when you reconnect.",
+      "q4": "How does the AI assistant know my health context?",
+      "a4": "When you create your profile, ElinaCura asks for your conditions, allergies, medications, and dietary preferences. The AI uses this context (with your permission) to give grounded, personalized guidance — and always recommends consulting your physician for clinical decisions.",
+      "q5": "Can I share access with my caregivers or family?",
+      "a5": "Yes. ElinaCura supports granular role-based caregiver sharing — you choose exactly what each person can see and edit (e.g. view safety only, or full profile management). Every action is logged in your audit trail.",
+      "q6": "Is ElinaCura a replacement for medical advice?",
+      "a6": "No — ElinaCura is a wellness companion, not a medical device. While we provide safety cross-checks and AI-powered guidance, always consult a qualified clinician for diagnosis and treatment decisions.",
+      "stillHaveQuestions": "Still have questions?",
+      "getInTouch": "Get in touch"
+    },
+    "demo": {
+      "profileName": "Maria's Profile",
+      "lastUpdated": "Last updated today",
+      "safe": "Safe",
+      "condition1": "Celiac disease",
+      "condition2": "Type 2 diabetes",
+      "condition3": "Lactose intolerant",
+      "scannedProduct": "Oat milk scanned",
+      "scannedSafe": "✓ Safe for your profile",
+      "lunchTitle": "Today's lunch: Quinoa bowl",
+      "lunchMeta": "420 kcal · gluten-free · dairy-free",
+      "badgeAllClear": "All clear",
+      "badgeItemsChecked": "12 items checked",
+      "badgeReminder": "Medication reminder",
+      "badgeReminderTime": "Metformin · 8:00 PM"
+    },
+    "trustStrip": {
+      "title": "Built to the standard healthcare demands",
+      "badge1": "HIPAA-conscious",
+      "badge2": "Encrypted in transit & at rest",
+      "badge3": "PHI stays on-device",
+      "badge4": "Offline-first",
+      "badge5": "No data resale, ever"
+    },
+    "showcase": {
+      "kicker": "See it in action",
+      "title": "One profile. Every safeguard.",
+      "subtitle": "Pick a tool and watch it adapt to a real health profile — each one tuned to your exact conditions, medications, and preferences.",
+      "selectHint": "Choose a tool to preview",
+      "safety": {
+        "previewTitle": "Today's safety check",
+        "row1Title": "Warfarin × leafy greens",
+        "row1Meta": "Balanced — no change needed",
+        "row1Tag": "Clear",
+        "row2Title": "Ibuprofen × Lisinopril",
+        "row2Meta": "Monitor your blood pressure",
+        "row2Tag": "Watch",
+        "row3Title": "Grapefruit × Atorvastatin",
+        "row3Meta": "Best to avoid this combination",
+        "row3Tag": "Flag",
+        "footer": "12 interactions checked · updated live"
+      },
+      "scanner": {
+        "previewTitle": "Scan result",
+        "product": "Oat milk, barista edition",
+        "verdict": "Safe for your profile",
+        "reason1": "Gluten-free",
+        "reason2": "No lactose",
+        "reason3": "Low added sugar",
+        "footer": "Checked against 3 conditions & 2 allergies"
+      },
+      "meals": {
+        "previewTitle": "Today's plan",
+        "row1Title": "Breakfast · Berry oats",
+        "row1Meta": "320 kcal · gluten-free",
+        "row2Title": "Lunch · Quinoa bowl",
+        "row2Meta": "420 kcal · dairy-free",
+        "row3Title": "Dinner · Baked salmon",
+        "row3Meta": "510 kcal · low-sodium",
+        "footer": "1,250 kcal · balanced for your conditions"
+      },
+      "ai-chat": {
+        "previewTitle": "Ask ElinaCura",
+        "userMsg": "Can I take ibuprofen with my blood pressure meds?",
+        "botMsg": "Ibuprofen can raise blood pressure and blunt how well lisinopril works. For occasional pain, acetaminophen is usually a safer choice — but confirm with your clinician.",
+        "footer": "Grounded in your profile · not medical advice"
+      },
+      "emergency": {
+        "previewTitle": "Medical ID",
+        "patientName": "Maria S.",
+        "row1Label": "Conditions",
+        "row1Value": "Celiac · Type 2 diabetes",
+        "row2Label": "Allergies",
+        "row2Value": "Penicillin · lactose",
+        "row3Label": "Emergency contact",
+        "row3Value": "James · +1 555 0192",
+        "footer": "Readable offline, right from the lock screen"
+      },
+      "caregiver": {
+        "previewTitle": "Your care circle",
+        "row1Name": "James T.",
+        "row1Role": "Full access · son",
+        "row2Name": "Dr. Alvarez",
+        "row2Role": "View safety · clinician",
+        "row3Name": "Sofia",
+        "row3Role": "Reminders only · neighbor",
+        "footer": "Every action logged in your audit trail"
+      }
+    },
+    "impact": {
+      "kicker": "Why it matters",
+      "title": "Care that compounds, quietly.",
+      "stat1Value": "6",
+      "stat1Label": "Safety tools",
+      "stat1Sub": "Working as one profile",
+      "stat2Value": "24/7",
+      "stat2Label": "AI guidance",
+      "stat2Sub": "Always on, always grounded",
+      "stat3Value": "100%",
+      "stat3Label": "Offline-ready",
+      "stat3Sub": "No signal needed"
+    },
+    "footerNav": {
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "tagline": "Wellness, protected by intention.",
+      "features": "Features",
+      "howItWorks": "How it works",
+      "forYou": "For you",
+      "story": "Our story",
+      "faq": "FAQ",
+      "getStarted": "Get started",
+      "contact": "Contact"
+    }
+  },
+  "profileCreate": {
+    "eyebrow": "Welcome to ElinaCura",
+    "heading": "Create a profile",
+    "headingFirst": "Let's set up your health profile",
+    "headingEdit": "Edit your profile",
+    "lead": "Tell us a little about yourself so ElinaCura can tailor meal, medication, and safety guidance to you. You can change any of this later.",
+    "basicsTitle": "Basics",
+    "basicsSub": "The essentials we use to personalize your care.",
+    "name": "Full name",
+    "namePlaceholder": "e.g. Jordan Rivera",
+    "profileType": "This profile is for",
+    "age": "Age",
+    "agePlaceholder": "Optional",
+    "primaryGoal": "Primary goal",
+    "healthTitle": "Health details",
+    "healthSub": "Used to flag interactions and tailor recommendations. Add as many as apply.",
+    "conditions": "Conditions",
+    "conditionsPlaceholder": "e.g. Hypertension",
+    "medications": "Medications",
+    "medicationsPlaceholder": "e.g. Lisinopril 10mg",
+    "allergies": "Allergies",
+    "allergiesPlaceholder": "e.g. Penicillin",
+    "dietary": "Dietary preferences",
+    "dietaryPlaceholder": "e.g. Low sodium",
+    "bloodType": "Blood type",
+    "bloodTypePlaceholder": "Optional",
+    "emergencyTitle": "Emergency contact",
+    "emergencySub": "Who we surface on your medical ID in an emergency.",
+    "emergencyName": "Contact name",
+    "emergencyNamePlaceholder": "Optional",
+    "emergencyPhone": "Contact phone",
+    "emergencyPhonePlaceholder": "Optional",
+    "consent": "I consent to ElinaCura storing this health information to personalize my care.",
+    "submit": "Create profile",
+    "save": "Save changes",
+    "errors": {
+      "nameRequired": "Please enter a name for this profile.",
+      "failed": "Could not create your profile. Please try again."
+    }
+  }
+}

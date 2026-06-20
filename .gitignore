@@ -1,0 +1,26 @@
+.DS_Store
+*.iml
+.idea/
+
+# Flutter / Dart (elinacura_mobile)
+elinacura_mobile/.dart_tool/
+elinacura_mobile/.flutter-plugins-dependencies
+elinacura_mobile/.pub-cache/
+elinacura_mobile/.pub/
+elinacura_mobile/build/
+elinacura_mobile/coverage/
+
+# iOS
+elinacura_mobile/ios/Pods/
+elinacura_mobile/ios/.symlinks/
+elinacura_mobile/ios/Flutter/.last_build_id
+elinacura_mobile/ios/Flutter/ephemeral/
+elinacura_mobile/ios/Flutter/flutter_export_environment.sh
+elinacura_mobile/ios/Runner/GeneratedPluginRegistrant.*
+
+# Android
+elinacura_mobile/android/.gradle/
+elinacura_mobile/android/app/debug/
+elinacura_mobile/android/app/profile/
+elinacura_mobile/android/app/release/
+elinacura_mobile/android/local.properties
