@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1078,6 +1079,7 @@ class _IntroSlide extends StatelessWidget {
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
     final onSurface = Theme.of(context).colorScheme.onSurface;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -1119,6 +1121,32 @@ class _IntroSlide extends StatelessWidget {
                           duration: 2800.ms,
                           curve: Curves.easeInOut,
                         ),
+                    // Frosted liquid-glass medallion behind the mark.
+                    ClipOval(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                        child: Container(
+                          width: logoSize * 1.46,
+                          height: logoSize * 1.46,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: isDark ? 0.06 : 0.42),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: isDark ? 0.16 : 0.65),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: meta.accent.withValues(alpha: isDark ? 0.18 : 0.12),
+                                blurRadius: 30,
+                                spreadRadius: -6,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
