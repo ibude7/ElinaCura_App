@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../api/api_client.dart';
 import '../config/app_config.dart';
@@ -72,6 +77,50 @@ class AuthService {
   Future<void> signInAnonymously() async {
     final cred = await _auth.signInAnonymously();
     await _establishSession(cred.user);
+  }
+
+  /// Sign in with Apple via Firebase OAuth, using a hashed nonce to protect
+  /// against replay attacks (per FlutterFire guidance).
+  Future<void> signInWithApple() async {
+    final rawNonce = _generateNonce();
+    final hashedNonce = _sha256ofString(rawNonce);
+
+    final appleCredential = await SignInWithApple.getAppleIDCredential(
+      scopes: const [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+      nonce: hashedNonce,
+    );
+
+    final oauthCredential = OAuthProvider('apple.com').credential(
+      idToken: appleCredential.identityToken,
+      rawNonce: rawNonce,
+    );
+
+    final cred = await _auth.signInWithCredential(oauthCredential);
+
+    // Apple only returns the user's name on the very first authorization —
+    // capture it into the Firebase profile when available.
+    final given = appleCredential.givenName ?? '';
+    final family = appleCredential.familyName ?? '';
+    final fullName = '$given $family'.trim();
+    final existing = cred.user?.displayName ?? '';
+    if (existing.isEmpty && fullName.isNotEmpty) {
+      await cred.user?.updateDisplayName(fullName);
+    }
+
+    await _establishSession(cred.user);
+  }
+
+  String _generateNonce([int length = 32]) {
+    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+  }
+
+  String _sha256ofString(String input) {
+    return sha256.convert(utf8.encode(input)).toString();
   }
 
   /// Refresh stored token and backend session after app restart.

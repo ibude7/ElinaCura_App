@@ -1,11 +1,14 @@
+import 'dart:io' show Platform;
 import 'dart:ui' show ImageFilter;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../core/auth/auth_providers.dart';
 import '../../core/theme/ec_theme.dart';
@@ -80,6 +83,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     try {
       await ref.read(authServiceProvider).signInAnonymously();
       _routeAfterAuth();
+    } catch (e) {
+      if (mounted) setState(() => _error = _pretty(e));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _apple() async {
+    HapticFeedback.lightImpact();
+    setState(() { _loading = true; _error = null; });
+    try {
+      await ref.read(authServiceProvider).signInWithApple();
+      _routeAfterAuth();
+    } on SignInWithAppleAuthorizationException catch (e) {
+      // User dismissed the Apple sheet — not an error worth surfacing.
+      if (e.code != AuthorizationErrorCode.canceled && mounted) {
+        setState(() => _error = e.message);
+      }
     } catch (e) {
       if (mounted) setState(() => _error = _pretty(e));
     } finally {
@@ -211,6 +232,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Widget _buildForm() {
     final ec = EcColors.of(context);
     final isCaregiver = _selectedRole == UserRole.caregiver;
+    final showApple = !kIsWeb && (Platform.isIOS || Platform.isMacOS);
     return Column(
       key: const ValueKey('form'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -333,6 +355,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 const SizedBox(height: 20),
                 const _OrDivider(),
                 const SizedBox(height: 16),
+                if (showApple) ...[
+                  _AppleButton(onPressed: _loading ? null : _apple),
+                  const SizedBox(height: 10),
+                ],
                 EcGlassButton(
                   label: 'Continue with Google',
                   icon: Icons.g_mobiledata_rounded,
@@ -646,6 +672,52 @@ class _AuthField extends StatelessWidget {
         labelText: label,
         prefixIcon: Icon(icon, size: 20, color: ec.textMuted),
         suffixIcon: trailing,
+      ),
+    );
+  }
+}
+
+class _AppleButton extends StatelessWidget {
+  const _AppleButton({required this.onPressed});
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Apple HIG: black button on light surfaces, white on dark surfaces.
+    final bg = isDark ? Colors.white : Colors.black;
+    final fg = isDark ? Colors.black : Colors.white;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(EcTokens.radiusMd),
+        child: Ink(
+          height: 52,
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(EcTokens.radiusMd),
+            border: Border.all(
+              color: isDark ? Colors.black.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.12),
+            ),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.22), blurRadius: 16, offset: const Offset(0, 6)),
+            ],
+          ),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.apple, color: fg, size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  'Continue with Apple',
+                  style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: 14, letterSpacing: -0.2),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
