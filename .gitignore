@@ -24,3 +24,10 @@ elinacura_mobile/android/app/debug/
 elinacura_mobile/android/app/profile/
 elinacura_mobile/android/app/release/
 elinacura_mobile/android/local.properties
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
