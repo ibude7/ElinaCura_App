@@ -35,6 +35,8 @@ const _indigo = Color(0xFF6E6BFF);
 const _green = Color(0xFF18C77E);
 const _blue = Color(0xFF3E8BFF);
 const _violet = Color(0xFF8B6FE8);
+const _rose = Color(0xFFFF6F91);
+const _teal = Color(0xFF12C2C8);
 
 String _fmt(int n) {
   final s = n.toString();
@@ -46,7 +48,7 @@ String _fmt(int n) {
   return b.toString();
 }
 
-enum _Chapter { intro, vitals, fitness, sleep, meds, ai }
+enum _Chapter { intro, vitals, fitness, sleep, meds, nutrition, care, ai }
 
 class _PageData {
   const _PageData({required this.kind, required this.eyebrow, required this.title, required this.subtitle, required this.cta, required this.accent});
@@ -59,13 +61,41 @@ class _PageData {
 }
 
 const _pages = <_PageData>[
-  _PageData(kind: _Chapter.intro, eyebrow: 'ELINACURA', title: 'Your whole health', subtitle: 'One intelligent companion for your whole body — vitals, movement, sleep and medication.', cta: 'Continue', accent: _violet),
+  _PageData(kind: _Chapter.intro, eyebrow: 'ELINACURA', title: 'Your health, protected\nby *intention.*', subtitle: 'Medication-aware grocery planning, AI nutrition guidance, emergency medical ID, and caregiver sharing — built around your conditions, not around averages.', cta: 'Continue', accent: _violet),
   _PageData(kind: _Chapter.vitals, eyebrow: 'LIVE VITALS', title: 'Every heartbeat', subtitle: 'Heart rate, oxygen and recovery, read in real time and explained in plain language.', cta: 'Continue', accent: _red),
   _PageData(kind: _Chapter.fitness, eyebrow: 'MOVEMENT', title: 'Feel your progress', subtitle: 'Close your rings, log every session, and watch your momentum compound.', cta: 'Continue', accent: _orange),
   _PageData(kind: _Chapter.sleep, eyebrow: 'SLEEP', title: 'Wake up restored', subtitle: 'Stages, efficiency and recovery, so every morning starts informed.', cta: 'Continue', accent: _indigo),
   _PageData(kind: _Chapter.meds, eyebrow: 'MEDICATION', title: 'Never miss a dose', subtitle: 'Smart reminders, refill alerts and adherence you can actually keep.', cta: 'Continue', accent: _green),
+  _PageData(kind: _Chapter.nutrition, eyebrow: 'NUTRITION', title: 'Eat with guidance', subtitle: 'Medication-aware grocery planning and AI nutrition guidance, tuned to your body and your meds.', cta: 'Continue', accent: _teal),
+  _PageData(kind: _Chapter.care, eyebrow: 'CARE CIRCLE', title: 'Care stays close', subtitle: 'Share the right updates with family and clinicians, and reach help the moment it matters.', cta: 'Continue', accent: _rose),
   _PageData(kind: _Chapter.ai, eyebrow: 'AI COMPANION', title: 'One step ahead', subtitle: 'Everything you track, synthesized into clear guidance by a private intelligence.', cta: 'Create your account', accent: _blue),
 ];
+
+/// Builds title spans, rendering any text wrapped in *asterisks* as an
+/// emphasised italic. Geist ships no italic face, so the emphasis is skewed
+/// for a genuine slant rather than relying on a (missing) italic font.
+List<InlineSpan> _titleSpans(String title, TextStyle style) {
+  final parts = title.split('*');
+  final spans = <InlineSpan>[];
+  for (var i = 0; i < parts.length; i++) {
+    final s = parts[i];
+    if (s.isEmpty) continue;
+    if (i.isOdd) {
+      spans.add(WidgetSpan(
+        alignment: PlaceholderAlignment.baseline,
+        baseline: TextBaseline.alphabetic,
+        child: Transform(
+          transform: Matrix4.skewX(-0.2),
+          alignment: Alignment.bottomLeft,
+          child: Text(s, style: style.copyWith(fontStyle: FontStyle.italic)),
+        ),
+      ));
+    } else {
+      spans.add(TextSpan(text: s, style: style));
+    }
+  }
+  return spans;
+}
 
 // ════════════════════════════════════════════════════ Shared live clock ══
 class _ClockScope extends InheritedWidget {
@@ -300,14 +330,7 @@ class _ChapterView extends StatelessWidget {
                 Text(data.eyebrow, style: TextStyle(color: data.accent, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 2.6)),
               ])),
               const SizedBox(height: 14),
-              _revealText(focus, delta, 1, SizedBox(
-                width: double.infinity,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(data.title, maxLines: 1, softWrap: false, style: TextStyle(color: p.ink, fontSize: 40, height: 1.0, fontWeight: FontWeight.w800, letterSpacing: -1.8)),
-                ),
-              )),
+              _revealText(focus, delta, 1, _title(p, data.title)),
               const SizedBox(height: 12),
               _revealText(focus, delta, 2, Text(data.subtitle, style: TextStyle(color: p.muted, fontSize: 15.5, height: 1.42, fontWeight: FontWeight.w500))),
               const SizedBox(height: 6),
@@ -324,6 +347,37 @@ class _ChapterView extends StatelessWidget {
     final e = Curves.easeOutCubic.transform(t);
     return Opacity(opacity: e, child: Transform.translate(offset: Offset(0, (1 - e) * 22), child: child));
   }
+
+  /// Title renderer: short phrases scale down to a single bold line (no awkward
+  /// word breaks); a title carrying an explicit line break is a longer
+  /// statement that wraps, sized to fit its width. Emphasis via *asterisks*.
+  Widget _title(_Palette p, String title) {
+    final multiline = title.contains('\n');
+    final style = TextStyle(
+      color: p.ink,
+      fontSize: multiline ? 40 : 40,
+      height: multiline ? 1.08 : 1.0,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -1.6,
+    );
+    final text = Text.rich(
+      TextSpan(children: _titleSpans(title, style)),
+      maxLines: multiline ? 3 : 1,
+      softWrap: multiline,
+      textAlign: TextAlign.left,
+    );
+    if (multiline) {
+      return FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: SizedBox(width: 340, child: text),
+      );
+    }
+    return SizedBox(
+      width: double.infinity,
+      child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: text),
+    );
+  }
 }
 
 class _Hero extends StatelessWidget {
@@ -339,6 +393,8 @@ class _Hero extends StatelessWidget {
       _Chapter.fitness => const _FitnessHero(),
       _Chapter.sleep => const _SleepHero(),
       _Chapter.meds => const _MedsHero(),
+      _Chapter.nutrition => const _NutritionHero(),
+      _Chapter.care => const _CareHero(),
       _Chapter.ai => const _AiHero(),
     };
     return FittedBox(fit: BoxFit.scaleDown, child: SizedBox(width: 360, child: hero));
@@ -390,8 +446,10 @@ class _FloatingGlass extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = _ClockScope.paletteOf(context);
     final radius = BorderRadius.circular(18);
-    final fill = p.dark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.55);
-    final border = p.dark ? Colors.white.withValues(alpha: 0.18) : Colors.white.withValues(alpha: 0.85);
+    // Same transparency as the logo's liquid-glass disc, so every pane reads
+    // as truly see-through frosted glass over the living background.
+    final fill = p.dark ? Colors.white.withValues(alpha: 0.10) : Colors.white.withValues(alpha: 0.38);
+    final border = p.dark ? Colors.white.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.85);
 
     // Built once (not per frame) so the BackdropFilter blur isn't recomputed.
     final body = DecoratedBox(
@@ -635,12 +693,13 @@ class _TilePulse extends StatelessWidget {
 
 /// Status tile: an icon box, a title + subtitle, and a small status badge.
 class _TileStatus extends StatelessWidget {
-  const _TileStatus({required this.icon, required this.color, required this.title, required this.sub, this.badge, this.width = 156});
+  const _TileStatus({required this.icon, required this.color, required this.title, required this.sub, this.badge, this.badgeIcon = Icons.check_circle_rounded, this.width = 156});
   final IconData icon;
   final Color color;
   final String title;
   final String sub;
   final String? badge;
+  final IconData badgeIcon;
   final double width;
   @override
   Widget build(BuildContext context) {
@@ -661,7 +720,7 @@ class _TileStatus extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                 decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(6)),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.check_circle_rounded, color: color, size: 11),
+                  Icon(badgeIcon, color: color, size: 11),
                   const SizedBox(width: 4),
                   Text(badge!, style: TextStyle(color: color, fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.2)),
                 ]),
@@ -910,6 +969,17 @@ List<Widget> _floatingFor(_Chapter kind, double delta, double eased) {
         _fc(top: 2, right: -6, seed: 0.9, delta: delta, parallax: 26, eased: eased, child: const _TileRing(icon: Icons.task_alt_rounded, label: 'ADHERENCE', value: '98%', frac: 0.98, color: _green, width: 132)),
         _fc(bottom: 2, left: -6, seed: 2.4, delta: delta, parallax: 36, eased: eased, child: const _TileStatus(icon: Icons.inventory_2_rounded, color: _blue, title: 'Vitamin D', sub: 'Refill in 3 days', badge: 'REORDER', width: 156)),
       ];
+    case _Chapter.nutrition:
+      return [
+        _fc(top: 2, right: -6, seed: 0.6, delta: delta, parallax: 26, eased: eased, child: const _TileStatus(icon: Icons.shopping_basket_rounded, color: _teal, title: 'Oat milk', sub: 'Safe with your meds', badge: 'SAFE', badgeIcon: Icons.verified_rounded, width: 160)),
+        _fc(bottom: 2, left: -6, seed: 2.5, delta: delta, parallax: 36, eased: eased, child: const _TileStatus(icon: Icons.auto_awesome_rounded, color: _violet, title: 'Add spinach', sub: 'Iron-rich for today', badge: 'AI PICK', badgeIcon: Icons.auto_awesome_rounded, width: 158)),
+        _fc(bottom: 2, right: -6, seed: 1.4, delta: delta, parallax: 30, eased: eased, child: _TileChart(icon: Icons.water_drop_rounded, label: 'GLUCOSE', color: _orange, width: 132, live: (t) => '${(96 + 6 * math.sin(t * 0.5)).round()} mg/dL')),
+      ];
+    case _Chapter.care:
+      return [
+        _fc(top: 2, right: -6, seed: 0.6, delta: delta, parallax: 26, eased: eased, child: const _TileStatus(icon: Icons.event_available_rounded, color: _blue, title: 'Dr. Almeida', sub: 'Cardiology · Tue', badge: '10:30 AM', badgeIcon: Icons.schedule_rounded, width: 158)),
+        _fc(bottom: 2, left: -6, seed: 2.5, delta: delta, parallax: 36, eased: eased, child: const _TileStatus(icon: Icons.emergency_rounded, color: _red, title: 'Emergency SOS', sub: 'Hold to alert circle', badge: 'ARMED', badgeIcon: Icons.shield_rounded, width: 158)),
+      ];
     case _Chapter.ai:
       return [
         _fc(top: 2, right: -6, seed: 0.5, delta: delta, parallax: 26, eased: eased, child: const _TileStatus(icon: Icons.shield_rounded, color: _blue, title: 'Private AI', sub: 'Runs on-device', badge: 'SECURE', width: 156)),
@@ -936,17 +1006,49 @@ class _IntroHero extends StatelessWidget {
           ),
           const _PulseRing(delayMs: 0, color: _violet),
           const _PulseRing(delayMs: 1500, color: _violet),
+          // brand mark on a frosted liquid-glass disc
           Container(
             width: 132,
             height: 132,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: p.surface,
-              border: Border.all(color: p.hairline, width: 1.5),
               boxShadow: [BoxShadow(color: _violet.withValues(alpha: p.dark ? 0.3 : 0.18), blurRadius: 40, spreadRadius: -6)],
             ),
-            alignment: Alignment.center,
-            child: const EcLogo(size: 84),
+            child: ClipOval(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: p.dark ? Colors.white.withValues(alpha: 0.10) : Colors.white.withValues(alpha: 0.38),
+                    border: Border.all(color: p.dark ? Colors.white.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.85), width: 1.5),
+                  ),
+                  alignment: Alignment.center,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // glassy specular sheen
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                center: const Alignment(-0.5, -0.6),
+                                radius: 0.95,
+                                colors: [Colors.white.withValues(alpha: p.dark ? 0.16 : 0.5), Colors.white.withValues(alpha: 0)],
+                                stops: const [0.0, 0.7],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const EcLogo(size: 84),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 1, end: 1.035, duration: 3400.ms, curve: Curves.easeInOut),
         ],
       ),
@@ -1368,6 +1470,275 @@ class _DomainDot extends StatelessWidget {
       child: Icon(icon, color: color, size: 20),
     ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 0.9, end: 1.08, duration: 2200.ms, curve: Curves.easeInOut);
   }
+}
+
+// ═══════════════════════════════════════════════════════════ Care ══
+class _CareHero extends StatelessWidget {
+  const _CareHero();
+  // Caregivers in the circle — initials + their accent colour.
+  static const _members = <(String, Color)>[
+    ('JL', _blue),
+    ('MA', _green),
+    ('SK', _orange),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 300,
+            height: 300,
+            child: _Live(builder: (c, t) {
+              return Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  // network: connection lines from the user to each caregiver,
+                  // with care/updates pulsing outward along them.
+                  CustomPaint(size: const Size(300, 300), painter: _CareNetPainter(t: t, color: _rose, dark: p.dark, count: _members.length)),
+                  for (var i = 0; i < _members.length; i++)
+                    Transform.translate(
+                      offset: Offset.fromDirection(-math.pi / 2 + i * (2 * math.pi / _members.length), 116),
+                      child: _CareAvatar(initials: _members[i].$1, color: _members[i].$2),
+                    ),
+                  // soft halo + the user's heart at the centre
+                  Container(
+                    width: 104,
+                    height: 104,
+                    decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [_rose, _rose.withValues(alpha: 0.0)], stops: const [0.2, 1.0])),
+                  ),
+                  Container(
+                    width: 78,
+                    height: 78,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: p.surface,
+                      border: Border.all(color: _rose.withValues(alpha: 0.6), width: 1.5),
+                      boxShadow: [BoxShadow(color: _rose.withValues(alpha: 0.5), blurRadius: 30, spreadRadius: -2)],
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.volunteer_activism_rounded, color: _rose, size: 34),
+                  ).animate(onPlay: (a) => a.repeat(reverse: true)).scaleXY(begin: 1, end: 1.06, duration: 2200.ms, curve: Curves.easeInOut),
+                ],
+              );
+            }),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            decoration: BoxDecoration(color: p.surface, borderRadius: BorderRadius.circular(999), border: Border.all(color: p.hairline)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 7, height: 7, decoration: const BoxDecoration(color: _green, shape: BoxShape.circle))
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .fade(begin: 0.4, end: 1, duration: 900.ms),
+                const SizedBox(width: 9),
+                Text('3 caregivers connected', style: TextStyle(color: p.ink, fontSize: 13.5, fontWeight: FontWeight.w600, letterSpacing: -0.2)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CareAvatar extends StatelessWidget {
+  const _CareAvatar({required this.initials, required this.color});
+  final String initials;
+  final Color color;
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color.alphaBlend(color.withValues(alpha: 0.22), p.surface),
+        border: Border.all(color: color.withValues(alpha: 0.7), width: 1.5),
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 14, spreadRadius: -4)],
+      ),
+      alignment: Alignment.center,
+      child: Text(initials, style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
+    ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 0.92, end: 1.06, duration: 2400.ms, curve: Curves.easeInOut);
+  }
+}
+
+class _CareNetPainter extends CustomPainter {
+  const _CareNetPainter({required this.t, required this.color, required this.dark, required this.count});
+  final double t;
+  final Color color;
+  final bool dark;
+  final int count;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final base = dark ? Colors.white : Colors.black;
+    const r = 116.0;
+    // faint guide ring tying the circle together
+    canvas.drawCircle(center, r, Paint()..style = PaintingStyle.stroke..strokeWidth = 1..color = base.withValues(alpha: 0.05));
+    for (var i = 0; i < count; i++) {
+      final a = -math.pi / 2 + i * (2 * math.pi / count);
+      final end = center + Offset.fromDirection(a, r);
+      canvas.drawLine(center, end, Paint()..strokeWidth = 1.5..color = color.withValues(alpha: 0.22));
+      // two updates flowing outward along each line, fading at the ends
+      for (var k = 0; k < 2; k++) {
+        final f = (t * 0.5 + i / count + k * 0.5) % 1.0;
+        final pt = Offset.lerp(center, end, f)!;
+        final fade = (1 - (f - 0.5).abs() * 2).clamp(0.0, 1.0);
+        canvas.drawCircle(pt, 3.0, Paint()..color = color.withValues(alpha: 0.7 * fade));
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CareNetPainter old) => old.t != t || old.color != color || old.dark != dark || old.count != count;
+}
+
+// ═══════════════════════════════════════════════════════════ Nutrition ══
+class _NutritionHero extends StatelessWidget {
+  const _NutritionHero();
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 222,
+            height: 222,
+            child: _Live(builder: (c, t) {
+              final breathe = 1 + 0.012 * math.sin(t * 1.2);
+              return Transform.scale(
+                scale: breathe,
+                child: CustomPaint(
+                  painter: _MacroDonutPainter(t: t, values: const [50, 26, 24], colors: const [_teal, _violet, _orange], dark: p.dark),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _Live(builder: (c, t) {
+                          final kcal = 1840 + (6 * math.sin(t * 0.7)).round();
+                          return Text(_fmt(kcal), style: TextStyle(color: p.ink, fontSize: 38, height: 1, fontWeight: FontWeight.w800, letterSpacing: -1.6, fontFeatures: const [FontFeature.tabularFigures()]));
+                        }),
+                        Text('KCAL · TODAY', style: TextStyle(color: p.muted, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 2)),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 22),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              _macroChip(p, _teal, 'Carbs', '50%'),
+              const SizedBox(width: 16),
+              _macroChip(p, _violet, 'Protein', '26%'),
+              const SizedBox(width: 16),
+              _macroChip(p, _orange, 'Fat', '24%'),
+            ]),
+          ),
+          const SizedBox(height: 18),
+          const _NutritionInsight(),
+        ],
+      ),
+    );
+  }
+
+  Widget _macroChip(_Palette p, Color color, String label, String pct) {
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+      const SizedBox(width: 6),
+      Text('$label ', style: TextStyle(color: p.muted, fontSize: 12, fontWeight: FontWeight.w600)),
+      Text(pct, style: TextStyle(color: p.ink, fontSize: 12, fontWeight: FontWeight.w800)),
+    ]);
+  }
+}
+
+class _NutritionInsight extends StatelessWidget {
+  const _NutritionInsight();
+  static const _items = [
+    'Balanced plate today',
+    'Low sodium — kind to your meds',
+    'High in fiber',
+    'Add iron-rich greens',
+    'Great protein ratio',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return _Live(builder: (c, t) {
+      final i = (t / 2.6).floor() % _items.length;
+      return FittedBox(
+        fit: BoxFit.scaleDown,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 450),
+          transitionBuilder: (child, anim) => FadeTransition(
+            opacity: anim,
+            child: SlideTransition(position: Tween(begin: const Offset(0, 0.35), end: Offset.zero).animate(anim), child: child),
+          ),
+          child: Container(
+            key: ValueKey(i),
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            decoration: BoxDecoration(color: p.surface, borderRadius: BorderRadius.circular(999), border: Border.all(color: p.hairline)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.auto_awesome_rounded, color: _teal, size: 15),
+                const SizedBox(width: 8),
+                Text(_items[i], style: TextStyle(color: p.ink, fontSize: 13.5, fontWeight: FontWeight.w600, letterSpacing: -0.2)),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+}
+
+class _MacroDonutPainter extends CustomPainter {
+  const _MacroDonutPainter({required this.t, required this.values, required this.colors, required this.dark});
+  final double t;
+  final List<double> values;
+  final List<Color> colors;
+  final bool dark;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    const stroke = 24.0;
+    final r = (size.shortestSide - stroke) / 2;
+    final rect = Rect.fromCircle(center: center, radius: r);
+    final base = dark ? Colors.white : Colors.black;
+    canvas.drawCircle(center, r, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..color = base.withValues(alpha: 0.06));
+    final total = values.fold<double>(0, (a, b) => a + b);
+    const gap = 0.10;
+    var startAngle = -math.pi / 2;
+    for (var i = 0; i < values.length; i++) {
+      final frac = values[i] / total;
+      final sweep = frac * 2 * math.pi - gap;
+      canvas.drawArc(rect, startAngle + gap / 2, sweep, false, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = colors[i].withValues(alpha: 0.35)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8));
+      canvas.drawArc(rect, startAngle + gap / 2, sweep, false, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = colors[i]);
+      startAngle += frac * 2 * math.pi;
+    }
+    // a bright "AI scan" highlight sweeping around the plate
+    final sweepStart = (t * 0.9) % (2 * math.pi) - math.pi / 2;
+    canvas.drawArc(rect, sweepStart, 0.45, false, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = Colors.white.withValues(alpha: dark ? 0.42 : 0.6)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5));
+  }
+
+  @override
+  bool shouldRepaint(covariant _MacroDonutPainter old) => old.t != t || old.values != values || old.colors != colors || old.dark != dark;
 }
 
 // ──────────────────────────────────────────────────────── Bottom chrome ──
