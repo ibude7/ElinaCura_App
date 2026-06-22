@@ -36,6 +36,16 @@ const _green = Color(0xFF18C77E);
 const _blue = Color(0xFF3E8BFF);
 const _violet = Color(0xFF8B6FE8);
 
+String _fmt(int n) {
+  final s = n.toString();
+  final b = StringBuffer();
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
+    b.write(s[i]);
+  }
+  return b.toString();
+}
+
 enum _Chapter { intro, vitals, fitness, sleep, meds, ai }
 
 class _PageData {
@@ -49,12 +59,12 @@ class _PageData {
 }
 
 const _pages = <_PageData>[
-  _PageData(kind: _Chapter.intro, eyebrow: 'ELINACURA', title: 'The everything\nhealth app', subtitle: 'One intelligent companion for your whole body — vitals, movement, sleep and medication.', cta: 'Continue', accent: _violet),
-  _PageData(kind: _Chapter.vitals, eyebrow: 'LIVE VITALS', title: 'Every heartbeat,\nunderstood', subtitle: 'Heart rate, oxygen and recovery, read in real time and explained in plain language.', cta: 'Continue', accent: _red),
-  _PageData(kind: _Chapter.fitness, eyebrow: 'MOVEMENT', title: 'Progress you\ncan feel', subtitle: 'Close your rings, log every session, and watch your momentum compound.', cta: 'Continue', accent: _orange),
-  _PageData(kind: _Chapter.sleep, eyebrow: 'SLEEP', title: 'Wake up\nknowing why', subtitle: 'Stages, efficiency and recovery, so every morning starts informed.', cta: 'Continue', accent: _indigo),
-  _PageData(kind: _Chapter.meds, eyebrow: 'MEDICATION', title: 'Never miss\na dose', subtitle: 'Smart reminders, refill alerts and adherence you can actually keep.', cta: 'Continue', accent: _green),
-  _PageData(kind: _Chapter.ai, eyebrow: 'AI COMPANION', title: 'Health that\nthinks ahead', subtitle: 'Everything you track, synthesized into clear guidance by a private intelligence.', cta: 'Create your account', accent: _blue),
+  _PageData(kind: _Chapter.intro, eyebrow: 'ELINACURA', title: 'Your whole health', subtitle: 'One intelligent companion for your whole body — vitals, movement, sleep and medication.', cta: 'Continue', accent: _violet),
+  _PageData(kind: _Chapter.vitals, eyebrow: 'LIVE VITALS', title: 'Every heartbeat', subtitle: 'Heart rate, oxygen and recovery, read in real time and explained in plain language.', cta: 'Continue', accent: _red),
+  _PageData(kind: _Chapter.fitness, eyebrow: 'MOVEMENT', title: 'Feel your progress', subtitle: 'Close your rings, log every session, and watch your momentum compound.', cta: 'Continue', accent: _orange),
+  _PageData(kind: _Chapter.sleep, eyebrow: 'SLEEP', title: 'Wake up restored', subtitle: 'Stages, efficiency and recovery, so every morning starts informed.', cta: 'Continue', accent: _indigo),
+  _PageData(kind: _Chapter.meds, eyebrow: 'MEDICATION', title: 'Never miss a dose', subtitle: 'Smart reminders, refill alerts and adherence you can actually keep.', cta: 'Continue', accent: _green),
+  _PageData(kind: _Chapter.ai, eyebrow: 'AI COMPANION', title: 'One step ahead', subtitle: 'Everything you track, synthesized into clear guidance by a private intelligence.', cta: 'Create your account', accent: _blue),
 ];
 
 // ════════════════════════════════════════════════════ Shared live clock ══
@@ -256,18 +266,30 @@ class _ChapterView extends StatelessWidget {
               Expanded(
                 child: Stack(
                   alignment: Alignment.center,
+                  clipBehavior: Clip.none,
                   children: [
                     _HeroGlow(color: data.accent, opacity: eased),
-                    Opacity(
-                      opacity: eased,
-                      child: Transform.translate(
-                        offset: Offset(delta * -36, 0),
-                        child: Transform.scale(
-                          scale: 0.92 + 0.08 * eased,
-                          child: Center(child: _Hero(kind: data.kind, accent: data.accent)),
+                    // Hero is confined to a centred band so the floating cards
+                    // sit in the clear top/bottom strips and never cover it.
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Opacity(
+                          opacity: eased,
+                          child: Transform.translate(
+                            offset: Offset(delta * -28, 0),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.center,
+                              heightFactor: 0.56,
+                              child: Transform.scale(
+                                scale: 0.96 + 0.04 * eased,
+                                child: Center(child: _Hero(kind: data.kind, accent: data.accent)),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
+                    ..._floatingFor(data.kind, delta, eased),
                   ],
                 ),
               ),
@@ -278,7 +300,14 @@ class _ChapterView extends StatelessWidget {
                 Text(data.eyebrow, style: TextStyle(color: data.accent, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 2.6)),
               ])),
               const SizedBox(height: 14),
-              _revealText(focus, delta, 1, Text(data.title, style: TextStyle(color: p.ink, fontSize: 40, height: 1.02, fontWeight: FontWeight.w800, letterSpacing: -1.6))),
+              _revealText(focus, delta, 1, SizedBox(
+                width: double.infinity,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(data.title, maxLines: 1, softWrap: false, style: TextStyle(color: p.ink, fontSize: 40, height: 1.0, fontWeight: FontWeight.w800, letterSpacing: -1.8)),
+                ),
+              )),
               const SizedBox(height: 12),
               _revealText(focus, delta, 2, Text(data.subtitle, style: TextStyle(color: p.muted, fontSize: 15.5, height: 1.42, fontWeight: FontWeight.w500))),
               const SizedBox(height: 6),
@@ -312,7 +341,7 @@ class _Hero extends StatelessWidget {
       _Chapter.meds => const _MedsHero(),
       _Chapter.ai => const _AiHero(),
     };
-    return FittedBox(fit: BoxFit.scaleDown, child: SizedBox(width: 360, height: 400, child: hero));
+    return FittedBox(fit: BoxFit.scaleDown, child: SizedBox(width: 360, child: hero));
   }
 }
 
@@ -342,6 +371,550 @@ class _HeroGlow extends StatelessWidget {
         );
       }),
     );
+  }
+}
+
+// ════════════════════════════════════ Floating 3D liquid-glass bento ══
+/// A frosted glass pane that floats and tilts in 3D with a light-catch that
+/// shifts as it tilts. The blurred body is built once; only the transform and
+/// the specular highlight update each frame (so the backdrop blur isn't
+/// re-rendered every tick).
+class _FloatingGlass extends StatelessWidget {
+  const _FloatingGlass({required this.child, required this.seed, this.delta = 0, this.parallax = 0});
+  final Widget child;
+  final double seed;
+  final double delta;
+  final double parallax;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    final radius = BorderRadius.circular(18);
+    final fill = p.dark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.55);
+    final border = p.dark ? Colors.white.withValues(alpha: 0.18) : Colors.white.withValues(alpha: 0.85);
+
+    // Built once (not per frame) so the BackdropFilter blur isn't recomputed.
+    final body = DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: p.dark ? 0.5 : 0.22), blurRadius: 28, spreadRadius: -8, offset: const Offset(0, 18))],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            decoration: BoxDecoration(borderRadius: radius, color: fill, border: Border.all(color: border, width: 1.2)),
+            child: Padding(padding: const EdgeInsets.all(12), child: child),
+          ),
+        ),
+      ),
+    );
+
+    return _Live(builder: (c, t) {
+      final ph = t * 0.9 + seed;
+      final bob = math.sin(ph) * 6;
+      final tiltX = math.sin(ph * 0.8 + 1) * 0.07;
+      final tiltY = math.cos(ph * 0.7) * 0.09;
+      final m = Matrix4.identity()
+        ..setEntry(3, 2, 0.0014)
+        ..rotateX(tiltX)
+        ..rotateY(tiltY);
+      final hx = (-tiltY * 6).clamp(-1.0, 1.0);
+      final hy = (-tiltX * 6).clamp(-1.0, 1.0);
+      return Transform.translate(
+        offset: Offset(delta * parallax, bob),
+        child: Transform(
+          alignment: Alignment.center,
+          transform: m,
+          child: Stack(
+            children: [
+              body,
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: ClipRRect(
+                    borderRadius: radius,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: Alignment(hx, hy),
+                          radius: 0.9,
+                          colors: [Colors.white.withValues(alpha: p.dark ? 0.16 : 0.5), Colors.white.withValues(alpha: 0)],
+                          stops: const [0.0, 0.72],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+}
+
+// ══════════════════════════════ Compact, detailed bento tiles ══
+// Each tile is intentionally small yet information-dense — a header, a value
+// and a live visual — so the floating glass panes read like the app's real
+// cards. They live in the top/bottom strips so they never cover the hero.
+
+TextStyle _tileLabel(_Palette p) => TextStyle(color: p.muted, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.9);
+TextStyle _tileValue(_Palette p, {double size = 19}) => TextStyle(color: p.ink, fontSize: size, height: 1.0, fontWeight: FontWeight.w800, letterSpacing: -0.6, fontFeatures: const [FontFeature.tabularFigures()]);
+
+Widget _tileHead(_Palette p, IconData icon, Color color, String label, {Widget? trailing}) {
+  return Row(children: [
+    Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(7)),
+      child: Icon(icon, color: color, size: 12.5),
+    ),
+    const SizedBox(width: 7),
+    Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: _tileLabel(p))),
+    ?trailing,
+  ]);
+}
+
+/// Line-chart tile with a live value pill riding on the trace (glucose-style).
+class _TileChart extends StatelessWidget {
+  const _TileChart({required this.icon, required this.label, required this.color, required this.live, this.width = 134});
+  final IconData icon;
+  final String label;
+  final Color color;
+  final String Function(double t) live;
+  final double width;
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return SizedBox(
+      width: width,
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _tileHead(p, icon, color, label),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 30,
+          width: double.infinity,
+          child: Stack(children: [
+            Positioned.fill(child: _Live(builder: (c, t) => CustomPaint(painter: _GradientLinePainter(t: t, colors: [color])))),
+            Positioned(
+              left: 0,
+              bottom: 0,
+              child: _Live(builder: (c, t) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(8), boxShadow: [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 8, spreadRadius: -1)]),
+                    child: Text(live(t), style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: -0.2, fontFeatures: [FontFeature.tabularFigures()])),
+                  )),
+            ),
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+/// Progress-ring tile with a centred icon and a value beside it.
+class _TileRing extends StatelessWidget {
+  const _TileRing({required this.icon, required this.label, required this.value, required this.frac, required this.color, this.width = 130});
+  final IconData icon;
+  final String label;
+  final String value;
+  final double frac;
+  final Color color;
+  final double width;
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return SizedBox(
+      width: width,
+      child: Row(children: [
+        SizedBox(
+          width: 44,
+          height: 44,
+          child: CustomPaint(
+            painter: _RingPainter(value: frac, color: color, stroke: 5, track: p.faint),
+            child: Center(child: Icon(icon, color: color, size: 15)),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: _tileLabel(p)),
+            const SizedBox(height: 3),
+            FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(value, style: _tileValue(p, size: 18))),
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+/// Segmented-composition tile: a stacked bar + a tiny legend (sleep stages).
+class _TileSeg extends StatelessWidget {
+  const _TileSeg({required this.icon, required this.label, required this.color, required this.segments, this.width = 152});
+  final IconData icon;
+  final String label;
+  final Color color;
+  final List<(String, int, Color)> segments; // name, weight, colour
+  final double width;
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return SizedBox(
+      width: width,
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _tileHead(p, icon, color, label),
+        const SizedBox(height: 11),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: SizedBox(
+            height: 7,
+            child: Row(children: [
+              for (var i = 0; i < segments.length; i++) ...[
+                if (i > 0) const SizedBox(width: 2),
+                Expanded(flex: segments[i].$2, child: ColoredBox(color: segments[i].$3)),
+              ],
+            ]),
+          ),
+        ),
+        const SizedBox(height: 9),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            for (var i = 0; i < segments.length; i++) ...[
+              if (i > 0) const SizedBox(width: 9),
+              Container(width: 6, height: 6, decoration: BoxDecoration(color: segments[i].$3, shape: BoxShape.circle)),
+              const SizedBox(width: 4),
+              Text(segments[i].$1, style: TextStyle(color: p.muted, fontSize: 9, fontWeight: FontWeight.w700)),
+            ],
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+/// Heart-rate pill flanked by little equaliser bars (workout-style).
+class _TilePulse extends StatelessWidget {
+  const _TilePulse({required this.color, required this.live, this.width = 150});
+  final Color color;
+  final String Function(double t) live;
+  final double width;
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return SizedBox(
+      width: width,
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _tileHead(p, Icons.favorite_rounded, color, 'HEART RATE'),
+        const SizedBox(height: 10),
+        Row(children: [
+          SizedBox(width: 14, height: 26, child: _Live(builder: (c, t) => CustomPaint(painter: _BarsPainter(t: t, color: color.withValues(alpha: 0.45), track: Colors.transparent, count: 2)))),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Container(
+              height: 30,
+              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(9), boxShadow: [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 10, spreadRadius: -2)]),
+              alignment: Alignment.center,
+              child: _Live(builder: (c, t) => Row(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.favorite_rounded, color: Colors.white, size: 13),
+                    const SizedBox(width: 5),
+                    Text(live(t), style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: -0.2, fontFeatures: [FontFeature.tabularFigures()])),
+                  ])),
+            ),
+          ),
+          const SizedBox(width: 6),
+          SizedBox(width: 14, height: 26, child: _Live(builder: (c, t) => CustomPaint(painter: _BarsPainter(t: t + 1.6, color: color.withValues(alpha: 0.45), track: Colors.transparent, count: 2)))),
+        ]),
+      ]),
+    );
+  }
+}
+
+/// Status tile: an icon box, a title + subtitle, and a small status badge.
+class _TileStatus extends StatelessWidget {
+  const _TileStatus({required this.icon, required this.color, required this.title, required this.sub, this.badge, this.width = 156});
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String sub;
+  final String? badge;
+  final double width;
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return SizedBox(
+      width: width,
+      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Container(width: 34, height: 34, decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 17)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: p.ink, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
+            const SizedBox(height: 2),
+            Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: p.muted, fontSize: 10.5, fontWeight: FontWeight.w600)),
+            if (badge != null) ...[
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(6)),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.check_circle_rounded, color: color, size: 11),
+                  const SizedBox(width: 4),
+                  Text(badge!, style: TextStyle(color: color, fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.2)),
+                ]),
+              ),
+            ],
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+/// A live value over a rainbow gradient meter with a travelling knob.
+class _TileMeter extends StatelessWidget {
+  const _TileMeter({required this.icon, required this.label, required this.color, required this.live, this.width = 146});
+  final IconData icon;
+  final String label;
+  final Color color;
+  final String Function(double t) live;
+  final double width;
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return SizedBox(
+      width: width,
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _tileHead(p, icon, color, label, trailing: _Live(builder: (c, t) => Text(live(t), style: _tileValue(p, size: 13)))),
+        const SizedBox(height: 11),
+        SizedBox(height: 12, width: double.infinity, child: _Live(builder: (c, t) => CustomPaint(painter: _MeterPainter(t: t)))),
+      ]),
+    );
+  }
+}
+
+/// Streak tile: a value and a row of progress dots.
+class _TileDots extends StatelessWidget {
+  const _TileDots({required this.icon, required this.label, required this.value, required this.color, this.count = 7, this.filled = 6, this.width = 132});
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+  final int count;
+  final int filled;
+  final double width;
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return SizedBox(
+      width: width,
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _tileHead(p, icon, color, label, trailing: Text(value, style: _tileValue(p, size: 13))),
+        const SizedBox(height: 12),
+        SizedBox(height: 14, width: double.infinity, child: _Live(builder: (c, t) => CustomPaint(painter: _DotsPainter(t: t, color: color, track: p.faint, count: count, filled: filled)))),
+      ]),
+    );
+  }
+}
+
+/// Bars tile: a live value and a scrolling bar chart (steps / refills).
+class _TileBars extends StatelessWidget {
+  const _TileBars({required this.icon, required this.label, required this.color, required this.live, this.width = 134});
+  final IconData icon;
+  final String label;
+  final Color color;
+  final String Function(double t) live;
+  final double width;
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return SizedBox(
+      width: width,
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _tileHead(p, icon, color, label, trailing: _Live(builder: (c, t) => Text(live(t), style: _tileValue(p, size: 13)))),
+        const SizedBox(height: 11),
+        SizedBox(height: 22, width: double.infinity, child: _Live(builder: (c, t) => CustomPaint(painter: _BarsPainter(t: t, color: color, track: p.faint, count: 9)))),
+      ]),
+    );
+  }
+}
+
+// ── Painters used by the tiles ──
+class _GradientLinePainter extends CustomPainter {
+  _GradientLinePainter({required this.t, required this.colors});
+  final double t;
+  final List<Color> colors;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final pts = <Offset>[];
+    for (double x = 0; x <= size.width; x += 2) {
+      final u = x / size.width;
+      final base = 0.66 - 0.34 * u; // gently rising to the right
+      final wob = 0.07 * math.sin(u * 6.3 + t * 1.2) + 0.045 * math.sin(u * 12 - t * 0.8);
+      final y = (base + wob).clamp(0.08, 0.95) * size.height;
+      pts.add(Offset(x, y));
+    }
+    if (pts.length < 2) return;
+    final path = Path()..addPolygon(pts, false);
+    final area = Path.from(path)..lineTo(size.width, size.height)..lineTo(0, size.height)..close();
+    final c0 = colors.first;
+    canvas.drawPath(area, Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [c0.withValues(alpha: 0.22), c0.withValues(alpha: 0)]).createShader(Offset.zero & size));
+    final stroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    if (colors.length > 1) {
+      stroke.shader = LinearGradient(colors: colors).createShader(Offset.zero & size);
+    } else {
+      stroke.color = c0;
+    }
+    canvas.drawPath(path, stroke);
+    final tip = pts.last;
+    canvas.drawCircle(tip, 3.4, Paint()..color = Colors.white);
+    canvas.drawCircle(tip, 3.4, Paint()..style = PaintingStyle.stroke..strokeWidth = 2..color = colors.last);
+  }
+
+  @override
+  bool shouldRepaint(covariant _GradientLinePainter old) => old.t != t || old.colors != colors;
+}
+
+class _MeterPainter extends CustomPainter {
+  _MeterPainter({required this.t});
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const h = 5.0;
+    final y = size.height / 2 - h / 2;
+    final rect = RRect.fromRectAndRadius(Rect.fromLTWH(0, y, size.width, h), const Radius.circular(h / 2));
+    canvas.drawRRect(rect, Paint()..shader = const LinearGradient(colors: [_green, _orange, _red, _violet, _blue]).createShader(Offset.zero & size));
+    final pos = (0.5 + 0.42 * math.sin(t * 0.7)) * size.width;
+    final c = Offset(pos.clamp(7.0, size.width - 7), size.height / 2);
+    canvas.drawCircle(c, 6, Paint()..color = Colors.white);
+    canvas.drawCircle(c, 6, Paint()..style = PaintingStyle.stroke..strokeWidth = 2..color = Colors.black.withValues(alpha: 0.12));
+    canvas.drawCircle(c, 2.4, Paint()..color = _orange);
+  }
+
+  @override
+  bool shouldRepaint(covariant _MeterPainter old) => old.t != t;
+}
+
+class _BarsPainter extends CustomPainter {
+  _BarsPainter({required this.t, required this.color, required this.track, required this.count});
+  final double t;
+  final Color color;
+  final Color track;
+  final int count;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const gap = 4.0;
+    final bw = (size.width - gap * (count - 1)) / count;
+    if (bw <= 0) return;
+    for (var i = 0; i < count; i++) {
+      final phase = t * 1.5 - i * 0.55;
+      final hh = (0.28 + 0.72 * (0.5 + 0.5 * math.sin(phase))) * size.height;
+      final x = i * (bw + gap);
+      final active = i >= count - 2;
+      if (track.a > 0) {
+        canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x, 0, bw, size.height), const Radius.circular(2)), Paint()..color = track);
+      }
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x, size.height - hh, bw, hh), const Radius.circular(2)), Paint()..color = active ? color : color.withValues(alpha: 0.5));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BarsPainter old) => old.t != t || old.color != color || old.track != track || old.count != count;
+}
+
+class _DotsPainter extends CustomPainter {
+  _DotsPainter({required this.t, required this.color, required this.track, required this.count, required this.filled});
+  final double t;
+  final Color color;
+  final Color track;
+  final int count;
+  final int filled;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cy = size.height / 2;
+    final step = size.width / count;
+    final r = math.min(size.height / 2 - 1, step / 2 - 2.5);
+    if (r <= 0) return;
+    final pulse = (t * 1.3) % count;
+    for (var i = 0; i < count; i++) {
+      final cx = step * i + step / 2;
+      final on = i < filled;
+      final glow = (1 - (pulse - i).abs()).clamp(0.0, 1.0);
+      canvas.drawCircle(Offset(cx, cy), r, Paint()..color = on ? color.withValues(alpha: 0.9) : track);
+      if (on && glow > 0) {
+        canvas.drawCircle(Offset(cx, cy), r + 3 * glow, Paint()..color = color.withValues(alpha: 0.35 * glow));
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DotsPainter old) => old.t != t || old.color != color || old.track != track || old.filled != filled;
+}
+
+Widget _fc({double? top, double? right, double? bottom, double? left, required double seed, required double delta, required double parallax, required double eased, required Widget child}) {
+  final enter = Curves.easeOutBack.transform(eased.clamp(0.0, 1.0));
+  return Positioned(
+    top: top,
+    right: right,
+    bottom: bottom,
+    left: left,
+    child: Opacity(
+      opacity: eased,
+      child: Transform.scale(
+        scale: 0.86 + 0.14 * enter,
+        child: _FloatingGlass(seed: seed, delta: delta, parallax: parallax, child: child),
+      ),
+    ),
+  );
+}
+
+List<Widget> _floatingFor(_Chapter kind, double delta, double eased) {
+  if (eased < 0.04) return const <Widget>[];
+  switch (kind) {
+    case _Chapter.intro:
+      return [
+        _fc(top: 2, right: -6, seed: 0.0, delta: delta, parallax: 24, eased: eased, child: _TileChart(icon: Icons.favorite_rounded, label: 'HEART RATE', color: _red, width: 138, live: (t) => '${(72 + 3 * math.sin(t * 0.9)).round()} bpm')),
+        _fc(bottom: 2, left: -6, seed: 2.3, delta: delta, parallax: 34, eased: eased, child: _TileBars(icon: Icons.directions_walk_rounded, label: 'STEPS TODAY', color: _green, width: 138, live: (t) => _fmt(8210 + (t * 0.8).floor()))),
+      ];
+    case _Chapter.vitals:
+      return [
+        _fc(top: 2, right: -6, seed: 0.7, delta: delta, parallax: 26, eased: eased, child: _TileChart(icon: Icons.bloodtype_rounded, label: 'BLOOD O₂', color: _blue, width: 132, live: (t) => '${98 + math.sin(t * 0.5).round()}%')),
+        _fc(bottom: 2, left: -6, seed: 2.6, delta: delta, parallax: 36, eased: eased, child: const _TileRing(icon: Icons.monitor_heart_rounded, label: 'HRV', value: '64 ms', frac: 0.7, color: _red, width: 130)),
+        _fc(bottom: 2, right: -6, seed: 1.5, delta: delta, parallax: 30, eased: eased, child: _TileChart(icon: Icons.air_rounded, label: 'RESP RATE', color: _green, width: 132, live: (t) => '${(14 + 2 * math.sin(t * 0.5)).round()}/min')),
+      ];
+    case _Chapter.fitness:
+      return [
+        _fc(top: 2, right: -6, seed: 1.1, delta: delta, parallax: 26, eased: eased, child: _TilePulse(color: _orange, width: 150, live: (t) => '${(132 + 6 * math.sin(t * 1.1)).round()} BPM')),
+        _fc(bottom: 2, left: -6, seed: 3.0, delta: delta, parallax: 36, eased: eased, child: _TileMeter(icon: Icons.local_fire_department_rounded, label: 'ACTIVE ENERGY', color: _orange, width: 146, live: (t) => '${(540 + 30 * (0.5 + 0.5 * math.sin(t * 0.25))).round()} kcal')),
+        _fc(bottom: 2, right: -6, seed: 1.8, delta: delta, parallax: 30, eased: eased, child: const _TileRing(icon: Icons.speed_rounded, label: 'VO₂ MAX', value: '48', frac: 0.62, color: _blue, width: 120)),
+      ];
+    case _Chapter.sleep:
+      return [
+        _fc(top: 2, right: -6, seed: 0.4, delta: delta, parallax: 26, eased: eased, child: const _TileSeg(icon: Icons.bedtime_rounded, label: 'SLEEP STAGES', color: _indigo, width: 152, segments: [('Deep', 26, _indigo), ('REM', 22, _violet), ('Light', 52, _blue)])),
+        _fc(bottom: 2, left: -6, seed: 2.9, delta: delta, parallax: 36, eased: eased, child: const _TileRing(icon: Icons.bolt_rounded, label: 'EFFICIENCY', value: '92%', frac: 0.92, color: _green, width: 130)),
+        _fc(bottom: 2, right: -6, seed: 1.4, delta: delta, parallax: 30, eased: eased, child: const _TileStatus(icon: Icons.nightlight_round, color: _indigo, title: 'Deep sleep', sub: '1h 21m', badge: 'OPTIMAL', width: 150)),
+      ];
+    case _Chapter.meds:
+      return [
+        _fc(top: 2, right: -6, seed: 0.9, delta: delta, parallax: 26, eased: eased, child: const _TileRing(icon: Icons.task_alt_rounded, label: 'ADHERENCE', value: '98%', frac: 0.98, color: _green, width: 132)),
+        _fc(bottom: 2, left: -6, seed: 2.4, delta: delta, parallax: 36, eased: eased, child: const _TileStatus(icon: Icons.inventory_2_rounded, color: _blue, title: 'Vitamin D', sub: 'Refill in 3 days', badge: 'REORDER', width: 156)),
+      ];
+    case _Chapter.ai:
+      return [
+        _fc(top: 2, right: -6, seed: 0.5, delta: delta, parallax: 26, eased: eased, child: const _TileStatus(icon: Icons.shield_rounded, color: _blue, title: 'Private AI', sub: 'Runs on-device', badge: 'SECURE', width: 156)),
+        _fc(bottom: 2, left: -6, seed: 2.7, delta: delta, parallax: 36, eased: eased, child: const _TileDots(icon: Icons.hub_rounded, label: 'SIGNALS', value: '4 synced', color: _violet, count: 6, filled: 4, width: 132)),
+      ];
   }
 }
 
@@ -402,6 +975,7 @@ class _VitalsHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = _ClockScope.paletteOf(context);
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -422,21 +996,11 @@ class _VitalsHero extends StatelessWidget {
             ),
           ]);
         }),
-        const SizedBox(height: 10),
-        SizedBox(width: 360, height: 150, child: _Live(builder: (c, t) => CustomPaint(painter: _EcgPainter(phase: t * 1.2, color: _red, dark: p.dark, grid: true, glow: true)))),
-        const SizedBox(height: 22),
-        Row(children: [
-          const _BigStat(label: 'BLOOD O₂', base: 98, jitter: 1, unit: '%', color: _red, speed: 0.8),
-          _divider(p),
-          const _BigStat(label: 'HRV', base: 64, jitter: 4, unit: ' ms', color: _red, speed: 0.5),
-          _divider(p),
-          _BigStatStatic(label: 'RECOVERY', value: 'High', p: p),
-        ]),
+        const SizedBox(height: 12),
+        SizedBox(width: 360, height: 158, child: _Live(builder: (c, t) => CustomPaint(painter: _EcgPainter(phase: t * 1.2, color: _red, dark: p.dark, grid: true, glow: true)))),
       ],
     );
   }
-
-  Widget _divider(_Palette p) => Container(width: 1, height: 34, margin: const EdgeInsets.symmetric(horizontal: 16), color: p.hairline);
 }
 
 class _LiveTag extends StatelessWidget {
@@ -452,47 +1016,6 @@ class _LiveTag extends StatelessWidget {
   }
 }
 
-class _BigStat extends StatelessWidget {
-  const _BigStat({required this.label, required this.base, required this.jitter, required this.unit, required this.color, required this.speed});
-  final String label;
-  final int base;
-  final int jitter;
-  final String unit;
-  final Color color;
-  final double speed;
-  @override
-  Widget build(BuildContext context) {
-    final p = _ClockScope.paletteOf(context);
-    return Expanded(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-        Text(label, style: TextStyle(color: p.muted, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
-        const SizedBox(height: 4),
-        _Live(builder: (c, t) {
-          final v = base + (jitter * math.sin(t * speed)).round();
-          return Text('$v$unit', style: TextStyle(color: p.ink, fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5, fontFeatures: const [FontFeature.tabularFigures()]));
-        }),
-      ]),
-    );
-  }
-}
-
-class _BigStatStatic extends StatelessWidget {
-  const _BigStatStatic({required this.label, required this.value, required this.p});
-  final String label;
-  final String value;
-  final _Palette p;
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-        Text(label, style: TextStyle(color: p.muted, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
-        const SizedBox(height: 4),
-        Text(value, style: TextStyle(color: p.ink, fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
-      ]),
-    );
-  }
-}
-
 // ═══════════════════════════════════════════════════════════ Fitness ══
 class _FitnessHero extends StatelessWidget {
   const _FitnessHero();
@@ -500,6 +1023,7 @@ class _FitnessHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = _ClockScope.paletteOf(context);
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SizedBox(
@@ -552,6 +1076,7 @@ class _SleepHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = _ClockScope.paletteOf(context);
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -575,87 +1100,157 @@ class _SleepHero extends StatelessWidget {
             child: _Live(builder: (c, t) => Transform.scale(scale: 1 + 0.07 * math.sin(t * 0.7), child: Icon(Icons.nightlight_round, color: _indigo, size: 40))),
           ),
         ]),
-        const SizedBox(height: 18),
-        SizedBox(width: 360, height: 132, child: _Live(builder: (c, t) => CustomPaint(painter: _HypnogramPainter(head: (t * 0.06) % 1.0, color: _indigo, dark: p.dark)))),
-        const SizedBox(height: 18),
-        Row(children: [
-          _sleepStat(p, 'DEEP', '1h 21m'),
-          _divider(p),
-          _sleepStat(p, 'REM', '1h 05m'),
-          _divider(p),
-          _sleepStat(p, 'EFFICIENCY', '92%'),
-        ]),
+        const SizedBox(height: 20),
+        SizedBox(width: 360, height: 140, child: _Live(builder: (c, t) => CustomPaint(painter: _HypnogramPainter(head: (t * 0.06) % 1.0, color: _indigo, dark: p.dark)))),
       ],
-    );
-  }
-
-  Widget _divider(_Palette p) => Container(width: 1, height: 34, margin: const EdgeInsets.symmetric(horizontal: 16), color: p.hairline);
-
-  Widget _sleepStat(_Palette p, String label, String value) {
-    return Expanded(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-        Text(label, style: TextStyle(color: p.muted, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
-        const SizedBox(height: 4),
-        Text(value, style: TextStyle(color: p.ink, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
-      ]),
     );
   }
 }
 
 // ═══════════════════════════════════════════════════════════ Meds ══
+enum _DoseState { taken, next, upcoming }
+
 class _MedsHero extends StatelessWidget {
   const _MedsHero();
+
+  static double _secsLeft(double t) => (9783 - t) % 10800; // counts down, wraps over a 3h cycle
+
   @override
   Widget build(BuildContext context) {
     final p = _ClockScope.paletteOf(context);
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
-          SizedBox(width: 96, height: 96, child: CustomPaint(painter: _RingPainter(value: 0.98, color: _green, stroke: 9, track: p.faint), child: Center(child: Text('98%', style: TextStyle(color: p.ink, fontSize: 21, fontWeight: FontWeight.w800, letterSpacing: -0.5))))),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-              Text('On-time this week', style: TextStyle(color: p.muted, fontSize: 12.5, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 4),
-              Row(children: [const _LiveTag(color: _green), const SizedBox(width: 8), Text('Next in', style: TextStyle(color: p.muted, fontSize: 12.5, fontWeight: FontWeight.w600))]),
-              _Live(builder: (c, t) {
-                final r = (16338 - t).floor().clamp(0, 1 << 31);
-                final h = r ~/ 3600, m = (r % 3600) ~/ 60, s = r % 60;
-                return Text('$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}', style: TextStyle(color: p.ink, fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -1, fontFeatures: const [FontFeature.tabularFigures()]));
-              }),
-            ]),
+        // Live next-dose capsule
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: p.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: p.hairline),
+            boxShadow: [BoxShadow(color: _green.withValues(alpha: p.dark ? 0.16 : 0.10), blurRadius: 30, spreadRadius: -10, offset: const Offset(0, 12))],
           ),
-        ]),
-        const SizedBox(height: 22),
-        _dose(p, 'Metformin', '500 mg · 8:00 AM', _violet, true),
-        _doseDivider(p),
-        _dose(p, 'Vitamin D', '1000 IU · 9:00 AM', _orange, true),
-        _doseDivider(p),
-        _dose(p, 'Omega-3', '1 softgel · 1:00 PM', _blue, false),
+          child: Row(children: [
+            SizedBox(
+              width: 76,
+              height: 76,
+              child: _Live(builder: (c, t) {
+                final frac = (1 - _secsLeft(t) / 10800).clamp(0.02, 1.0);
+                return CustomPaint(
+                  painter: _RingPainter(value: frac, color: _green, stroke: 7, track: p.faint),
+                  child: Center(child: Icon(Icons.medication_rounded, color: _green, size: 26)),
+                );
+              }),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                Row(children: [
+                  const _LiveTag(color: _green),
+                  const SizedBox(width: 8),
+                  Text('NEXT DOSE', style: TextStyle(color: p.muted, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.4)),
+                ]),
+                const SizedBox(height: 8),
+                Text('Metformin · 500 mg', style: TextStyle(color: p.ink, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
+                const SizedBox(height: 5),
+                _Live(builder: (c, t) {
+                  final r = _secsLeft(t).floor();
+                  final h = r ~/ 3600, m = (r % 3600) ~/ 60, s = r % 60;
+                  return Row(children: [
+                    Icon(Icons.schedule_rounded, color: p.muted, size: 14),
+                    const SizedBox(width: 5),
+                    Text('in ${h}h ${m.toString().padLeft(2, '0')}m ${s.toString().padLeft(2, '0')}s', style: TextStyle(color: p.muted, fontSize: 13, fontWeight: FontWeight.w600, fontFeatures: const [FontFeature.tabularFigures()])),
+                  ]);
+                }),
+              ]),
+            ),
+          ]),
+        ),
+        const SizedBox(height: 14),
+        _doseRow(p, '08:00', 'Metformin', '500 mg', _violet, _DoseState.taken, first: true),
+        _doseRow(p, '13:00', 'Omega-3', '1 softgel', _blue, _DoseState.next),
+        _doseRow(p, '21:00', 'Atorvastatin', '20 mg', _orange, _DoseState.upcoming, last: true),
       ],
     );
   }
 
-  Widget _doseDivider(_Palette p) => Container(height: 1, color: p.hairline, margin: const EdgeInsets.symmetric(vertical: 12));
+  Widget _doseRow(_Palette p, String time, String name, String dose, Color color, _DoseState state, {bool first = false, bool last = false}) {
+    final isNext = state == _DoseState.next;
+    return IntrinsicHeight(
+      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        SizedBox(
+          width: 44,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 17),
+            child: Text(time, textAlign: TextAlign.right, style: TextStyle(color: p.muted, fontSize: 11.5, fontWeight: FontWeight.w700, fontFeatures: const [FontFeature.tabularFigures()])),
+          ),
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 20,
+          child: Column(children: [
+            Expanded(child: Container(width: 2, color: first ? Colors.transparent : p.hairline)),
+            _node(p, color, state),
+            Expanded(child: Container(width: 2, color: last ? Colors.transparent : p.hairline)),
+          ]),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isNext ? color.withValues(alpha: 0.10) : p.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: isNext ? color.withValues(alpha: 0.45) : p.hairline),
+            ),
+            child: Row(children: [
+              Container(width: 32, height: 32, decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(9)), child: Icon(Icons.medication_rounded, color: color, size: 16)),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                  Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: p.ink, fontSize: 14.5, fontWeight: FontWeight.w700, letterSpacing: -0.2)),
+                  Text(dose, style: TextStyle(color: p.muted, fontSize: 12, fontWeight: FontWeight.w500)),
+                ]),
+              ),
+              _statusChip(p, state),
+            ]),
+          ),
+        ),
+      ]),
+    );
+  }
 
-  Widget _dose(_Palette p, String name, String detail, Color color, bool done) {
-    return Row(children: [
-      Container(width: 38, height: 38, decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(11)), child: Icon(Icons.medication_rounded, color: color, size: 18)),
-      const SizedBox(width: 14),
-      Expanded(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-          Text(name, style: TextStyle(color: p.ink, fontSize: 15.5, fontWeight: FontWeight.w700)),
-          Text(detail, style: TextStyle(color: p.muted, fontSize: 12.5, fontWeight: FontWeight.w500)),
-        ]),
-      ),
-      Container(
-        width: 26, height: 26,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: done ? _green : Colors.transparent, border: Border.all(color: done ? _green : p.muted.withValues(alpha: 0.5), width: 2)),
-        child: Icon(Icons.check_rounded, size: 15, color: done ? Colors.white : Colors.transparent),
-      ),
-    ]);
+  Widget _node(_Palette p, Color color, _DoseState state) {
+    switch (state) {
+      case _DoseState.taken:
+        return Container(width: 18, height: 18, decoration: const BoxDecoration(shape: BoxShape.circle, color: _green), child: const Icon(Icons.check_rounded, size: 12, color: Colors.white));
+      case _DoseState.next:
+        return Container(width: 18, height: 18, decoration: BoxDecoration(shape: BoxShape.circle, color: color, boxShadow: [BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 10, spreadRadius: 1)]))
+            .animate(onPlay: (a) => a.repeat(reverse: true))
+            .scaleXY(begin: 1, end: 1.22, duration: 900.ms, curve: Curves.easeInOut);
+      case _DoseState.upcoming:
+        return Container(width: 14, height: 14, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: p.muted.withValues(alpha: 0.5), width: 2)));
+    }
+  }
+
+  Widget _statusChip(_Palette p, _DoseState state) {
+    final (c, label, ic) = switch (state) {
+      _DoseState.taken => (_green, 'Taken', Icons.check_circle_rounded),
+      _DoseState.next => (_orange, 'Due now', Icons.notifications_active_rounded),
+      _DoseState.upcoming => (p.muted, 'Later', Icons.schedule_rounded),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(color: c.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(8)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(ic, color: c, size: 12),
+        const SizedBox(width: 4),
+        Text(label, style: TextStyle(color: c, fontSize: 10.5, fontWeight: FontWeight.w700)),
+      ]),
+    );
   }
 }
 
