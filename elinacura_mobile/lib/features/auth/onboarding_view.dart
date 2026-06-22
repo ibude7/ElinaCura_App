@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -12,9 +13,10 @@ import '../../shared/widgets/ec_logo.dart';
 
 // ════════════════════════════════════════════════════════════════════════
 //  ElinaCura — Onboarding
-//  A living brushed-silver canvas, editorial titling, and a dense bento of
-//  premium frosted-glass health widgets that assemble as you swipe.
-//  Colour lives inside the widgets; the canvas stays neutral.
+//  A living brushed-silver canvas with a dense bento of premium glass widgets
+//  driven by ONE shared real-time clock: every page streams live data — a
+//  scrolling PPG trace, ticking vitals, a counting-up calorie burn, a
+//  ticking dose countdown, a rotating feature constellation — all in sync.
 // ════════════════════════════════════════════════════════════════════════
 
 const _coral = Color(0xFFFF6F61);
@@ -24,6 +26,16 @@ const _orange = Color(0xFFFF8A3D);
 const _violet = Color(0xFF8B6FE8);
 const _amber = Color(0xFFFFB23E);
 const _cyan = Color(0xFF22C7D6);
+
+String _fmt(int n) {
+  final s = n.toString();
+  final b = StringBuffer();
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
+    b.write(s[i]);
+  }
+  return b.toString();
+}
 
 enum _PageKind { intro, wellness, fitness, sleep, meds, finale }
 
@@ -46,55 +58,40 @@ class _OnbPage {
 }
 
 const _pages = <_OnbPage>[
-  _OnbPage(
-    kind: _PageKind.intro,
-    eyebrow: 'ELINACURA',
-    title: 'The everything\nhealth app',
-    cta: 'Continue',
-    accent: _violet,
-  ),
-  _OnbPage(
-    kind: _PageKind.wellness,
-    eyebrow: 'WELLNESS',
-    title: 'Wellness',
-    subtitle: 'Understand the impact of your habits and lifestyle on your health.',
-    cta: 'Continue',
-    accent: _coral,
-  ),
-  _OnbPage(
-    kind: _PageKind.fitness,
-    eyebrow: 'FITNESS',
-    title: 'Fitness',
-    subtitle: 'Build, track, and maintain your strength and endurance.',
-    cta: 'Continue',
-    accent: _orange,
-  ),
-  _OnbPage(
-    kind: _PageKind.sleep,
-    eyebrow: 'SLEEP',
-    title: 'Sleep',
-    subtitle: 'Discover your sleep patterns to achieve consistent, restorative rest.',
-    cta: 'Continue',
-    accent: _violet,
-  ),
-  _OnbPage(
-    kind: _PageKind.meds,
-    eyebrow: 'MEDICATION',
-    title: 'Medication',
-    subtitle: 'Stay on top of every dose with smart reminders and refill alerts.',
-    cta: 'Continue',
-    accent: _blue,
-  ),
-  _OnbPage(
-    kind: _PageKind.finale,
-    eyebrow: "YOU'RE READY",
-    title: "You're all set",
-    subtitle:
-        'Create your free account to bring it all together — private, encrypted, and yours.',
-    cta: 'Get started',
-    accent: _violet,
-  ),
+  _OnbPage(kind: _PageKind.intro, eyebrow: 'ELINACURA', title: 'The everything\nhealth app', cta: 'Continue', accent: _violet),
+  _OnbPage(kind: _PageKind.wellness, eyebrow: 'WELLNESS', title: 'Wellness', subtitle: 'Understand the impact of your habits and lifestyle on your health.', cta: 'Continue', accent: _coral),
+  _OnbPage(kind: _PageKind.fitness, eyebrow: 'FITNESS', title: 'Fitness', subtitle: 'Build, track, and maintain your strength and endurance.', cta: 'Continue', accent: _orange),
+  _OnbPage(kind: _PageKind.sleep, eyebrow: 'SLEEP', title: 'Sleep', subtitle: 'Discover your sleep patterns to achieve consistent, restorative rest.', cta: 'Continue', accent: _violet),
+  _OnbPage(kind: _PageKind.meds, eyebrow: 'MEDICATION', title: 'Medication', subtitle: 'Stay on top of every dose with smart reminders and refill alerts.', cta: 'Continue', accent: _blue),
+  _OnbPage(kind: _PageKind.finale, eyebrow: "YOU'RE READY", title: "You're all set", subtitle: 'Create your free account to bring it all together — private, encrypted, and yours.', cta: 'Get started', accent: _violet),
 ];
+
+// ════════════════════════════════════════════════════ Shared live clock ══
+class _ClockScope extends InheritedWidget {
+  const _ClockScope({required this.clock, required super.child});
+  final ValueNotifier<double> clock;
+
+  static ValueNotifier<double> of(BuildContext context) =>
+      (context.getElementForInheritedWidgetOfExactType<_ClockScope>()!.widget as _ClockScope).clock;
+
+  @override
+  bool updateShouldNotify(_ClockScope old) => old.clock != clock;
+}
+
+/// Rebuilds only its [builder] subtree on every clock tick (seconds elapsed).
+class _Live extends StatelessWidget {
+  const _Live({required this.builder});
+  final Widget Function(BuildContext context, double t) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    final clock = _ClockScope.of(context);
+    return ValueListenableBuilder<double>(
+      valueListenable: clock,
+      builder: (c, t, _) => builder(c, t),
+    );
+  }
+}
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -103,11 +100,13 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerProviderStateMixin {
   static const _debugStart = int.fromEnvironment('OB_PAGE');
 
   final _pageController = PageController(initialPage: _debugStart);
   final _page = ValueNotifier<double>(_debugStart.toDouble());
+  final _clock = ValueNotifier<double>(0);
+  late final Ticker _ticker;
   int _index = _debugStart;
 
   int get _count => _pages.length;
@@ -115,25 +114,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController.addListener(() {
-      _page.value = _pageController.page ?? _index.toDouble();
-    });
+    _pageController.addListener(() => _page.value = _pageController.page ?? _index.toDouble());
+    _ticker = createTicker((elapsed) => _clock.value = elapsed.inMicroseconds / 1e6)..start();
   }
 
   @override
   void dispose() {
+    _ticker.dispose();
     _pageController.dispose();
     _page.dispose();
+    _clock.dispose();
     super.dispose();
   }
 
   void _next() {
     if (_index < _count - 1) {
       HapticFeedback.lightImpact();
-      _pageController.nextPage(
-        duration: EcTokens.motionSlow,
-        curve: Curves.easeOutCubic,
-      );
+      _pageController.nextPage(duration: EcTokens.motionSlow, curve: Curves.easeOutCubic);
     } else {
       HapticFeedback.mediumImpact();
       context.go('/auth');
@@ -149,62 +146,42 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          const _SilverBackground(),
-          SafeArea(
-            child: Column(
-              children: [
-                _TopBar(onSkip: _skip, showSkip: _index < _count - 1),
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _count,
-                    physics: const BouncingScrollPhysics(),
-                    onPageChanged: (i) {
-                      HapticFeedback.selectionClick();
-                      setState(() => _index = i);
-                    },
-                    itemBuilder: (context, i) =>
-                        _OnbPageView(page: _page, index: i, count: _count, data: _pages[i]),
+      body: _ClockScope(
+        clock: _clock,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const _SilverBackground(),
+            SafeArea(
+              child: Column(
+                children: [
+                  _TopBar(onSkip: _skip, showSkip: _index < _count - 1),
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: _count,
+                      physics: const BouncingScrollPhysics(),
+                      onPageChanged: (i) {
+                        HapticFeedback.selectionClick();
+                        setState(() => _index = i);
+                      },
+                      itemBuilder: (context, i) => _OnbPageView(page: _page, index: i, count: _count, data: _pages[i]),
+                    ),
                   ),
-                ),
-                _BottomChrome(
-                  page: _page,
-                  count: _count,
-                  label: _pages[_index].cta,
-                  onPrimary: _next,
-                ),
-              ],
+                  _BottomChrome(page: _page, count: _count, label: _pages[_index].cta, onPrimary: _next),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
 // ═══════════════════════════════════════════════════════ Background ══
-class _SilverBackground extends StatefulWidget {
+class _SilverBackground extends StatelessWidget {
   const _SilverBackground();
-
-  @override
-  State<_SilverBackground> createState() => _SilverBackgroundState();
-}
-
-class _SilverBackgroundState extends State<_SilverBackground>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 20),
-  )..repeat();
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,11 +197,10 @@ class _SilverBackgroundState extends State<_SilverBackground>
         ),
       ),
       child: RepaintBoundary(
-        child: AnimatedBuilder(
-          animation: _c,
-          builder: (context, _) => CustomPaint(
+        child: _Live(
+          builder: (context, t) => CustomPaint(
             size: Size.infinite,
-            painter: _SilverPainter(t: _c.value, isDark: isDark),
+            painter: _SilverPainter(t: t, isDark: isDark),
             child: const SizedBox.expand(),
           ),
         ),
@@ -238,74 +214,61 @@ class _SilverPainter extends CustomPainter {
   final double t;
   final bool isDark;
 
-  void _glow(Canvas c, Size s, Offset center, double r, Color color) {
-    c.drawCircle(
-      center,
-      r,
-      Paint()
-        ..shader = RadialGradient(colors: [color, color.withValues(alpha: 0)])
-            .createShader(Rect.fromCircle(center: center, radius: r)),
-    );
+  void _glow(Canvas c, Offset center, double r, Color color) {
+    c.drawCircle(center, r, Paint()..shader = RadialGradient(colors: [color, color.withValues(alpha: 0)]).createShader(Rect.fromCircle(center: center, radius: r)));
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width, h = size.height;
-    final phase = t * 2 * math.pi;
-
-    // Drifting metallic highlight (top) and shadow pool (bottom).
-    _glow(
-      canvas,
-      size,
-      Offset(w * (0.30 + 0.18 * math.sin(phase)), h * (0.14 + 0.05 * math.cos(phase))),
-      w * 0.9,
-      Colors.white.withValues(alpha: isDark ? 0.05 : 0.42),
+    _glow(canvas, Offset(w * (0.30 + 0.16 * math.sin(t * 0.22)), h * (0.14 + 0.05 * math.cos(t * 0.18))), w * 0.9, Colors.white.withValues(alpha: isDark ? 0.05 : 0.42));
+    _glow(canvas, Offset(w * (0.78 + 0.1 * math.cos(t * 0.17)), h * (0.82 + 0.04 * math.sin(t * 0.2))), w * 0.8, (isDark ? Colors.black : const Color(0xFF8A91A0)).withValues(alpha: isDark ? 0.34 : 0.22));
+    _glow(canvas, Offset(w * (0.12 + 0.05 * math.sin(t * 0.26)), h * 0.5), w * 0.55, Colors.white.withValues(alpha: isDark ? 0.03 : 0.22));
+    final band = (0.15 + 0.7 * ((t * 0.05) % 1.0)) * h;
+    canvas.drawRect(
+      Rect.fromLTWH(0, band - h * 0.25, w, h * 0.5),
+      Paint()..shader = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Colors.white.withValues(alpha: 0), Colors.white.withValues(alpha: isDark ? 0.03 : 0.13), Colors.white.withValues(alpha: 0)], stops: const [0.0, 0.5, 1.0]).createShader(Rect.fromLTWH(0, band - h * 0.25, w, h * 0.5)),
     );
-    _glow(
-      canvas,
-      size,
-      Offset(w * (0.78 + 0.12 * math.cos(phase * 0.8)), h * (0.82 + 0.04 * math.sin(phase))),
-      w * 0.8,
-      (isDark ? Colors.black : const Color(0xFF8A91A0))
-          .withValues(alpha: isDark ? 0.34 : 0.22),
-    );
-    _glow(
-      canvas,
-      size,
-      Offset(w * (0.12 + 0.06 * math.sin(phase * 1.2)), h * 0.5),
-      w * 0.55,
-      Colors.white.withValues(alpha: isDark ? 0.03 : 0.22),
-    );
-
-    // Soft diagonal sheen band.
-    final bandCenter = (0.2 + 0.6 * ((t + 0.5) % 1.0)) * h;
-    final band = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.white.withValues(alpha: 0),
-          Colors.white.withValues(alpha: isDark ? 0.03 : 0.14),
-          Colors.white.withValues(alpha: 0),
-        ],
-        stops: const [0.0, 0.5, 1.0],
-      ).createShader(Rect.fromLTWH(0, bandCenter - h * 0.25, w, h * 0.5));
-    canvas.drawRect(Rect.fromLTWH(0, bandCenter - h * 0.25, w, h * 0.5), band);
   }
 
   @override
   bool shouldRepaint(covariant _SilverPainter old) => old.t != t || old.isDark != isDark;
 }
 
+// ──────────────────────────────────────────────────────────── Top bar ──
+class _TopBar extends StatelessWidget {
+  const _TopBar({required this.onSkip, required this.showSkip});
+  final VoidCallback onSkip;
+  final bool showSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ink = isDark ? Colors.white : const Color(0xFF3A3F49);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 8, 12, 2),
+      child: Row(children: [
+        Opacity(opacity: isDark ? 0.95 : 0.85, child: const EcLogo(size: 26)),
+        const SizedBox(width: 9),
+        Text('ElinaCura', style: TextStyle(color: ink, fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: -0.3)),
+        const Spacer(),
+        AnimatedOpacity(
+          duration: EcTokens.motionFast,
+          opacity: showSkip ? 1 : 0,
+          child: TextButton(
+            onPressed: showSkip ? onSkip : null,
+            style: TextButton.styleFrom(foregroundColor: isDark ? Colors.white70 : const Color(0xFF5A606A), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), minimumSize: const Size(0, 36)),
+            child: const Text('Skip', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+          ),
+        ),
+      ]),
+    );
+  }
+}
+
 // ────────────────────────────────────────────────────────── Page view ──
 class _OnbPageView extends StatelessWidget {
-  const _OnbPageView({
-    required this.page,
-    required this.index,
-    required this.count,
-    required this.data,
-  });
-
+  const _OnbPageView({required this.page, required this.index, required this.count, required this.data});
   final ValueNotifier<double> page;
   final int index;
   final int count;
@@ -329,22 +292,14 @@ class _OnbPageView extends StatelessWidget {
   }
 }
 
-/// Staggered reveal + horizontal parallax for a layer.
 Widget _reveal(double focus, double delta, int order, double parallax, Widget child) {
   final start = order * 0.08;
   final t = ((focus - start) / (1 - start)).clamp(0.0, 1.0);
   final e = Curves.easeOutCubic.transform(t);
-  return Opacity(
-    opacity: e,
-    child: Transform.translate(
-      offset: Offset(delta * -parallax, (1 - e) * 26),
-      child: child,
-    ),
-  );
+  return Opacity(opacity: e, child: Transform.translate(offset: Offset(delta * -parallax, (1 - e) * 26), child: child));
 }
 
-Widget _layer(double delta, double factor, Widget child) =>
-    Transform.translate(offset: Offset(delta * factor, 0), child: child);
+Widget _layer(double delta, double factor, Widget child) => Transform.translate(offset: Offset(delta * factor, 0), child: child);
 
 // ───────────────────────────────────────────────────────────── Intro ──
 class _IntroContent extends StatelessWidget {
@@ -365,56 +320,27 @@ class _IntroContent extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _reveal(
-                focus,
-                delta,
-                0,
-                10,
-                SizedBox(
-                  width: 320,
-                  height: 284,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    clipBehavior: Clip.none,
-                    children: [
-                      const _PulseRing(delayMs: 0),
-                      const _PulseRing(delayMs: 1400),
-                      _layer(delta, 8, const _LogoOrb()),
-                      Positioned(top: 12, left: 4, child: _layer(delta, 60, const _FloatChip(icon: Icons.favorite_rounded, label: '72 BPM', color: _coral))),
-                      Positioned(top: 64, right: -2, child: _layer(delta, 84, const _FloatChip(icon: Icons.nightlight_round, label: 'Sleep 94', color: _violet))),
-                      Positioned(bottom: 58, left: -6, child: _layer(delta, 76, const _FloatChip(icon: Icons.directions_walk_rounded, label: '8,210 steps', color: _green))),
-                      Positioned(bottom: 6, right: 8, child: _layer(delta, 56, const _FloatChip(icon: Icons.bolt_rounded, label: '420 kcal', color: _orange))),
-                    ],
-                  ),
+              _reveal(focus, delta, 0, 10, SizedBox(
+                width: 320,
+                height: 284,
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
+                  children: [
+                    const _PulseRing(delayMs: 0),
+                    const _PulseRing(delayMs: 1400),
+                    _layer(delta, 8, const _LogoOrb()),
+                    Positioned(top: 10, left: 2, child: _layer(delta, 60, _FloatChip(icon: Icons.favorite_rounded, color: _coral, live: (t) => '${(72 + 3 * math.sin(t * 0.9)).round()} BPM'))),
+                    Positioned(top: 60, right: -4, child: _layer(delta, 84, const _FloatChip(icon: Icons.nightlight_round, color: _violet, label: 'Sleep 94'))),
+                    Positioned(bottom: 54, left: -8, child: _layer(delta, 76, _FloatChip(icon: Icons.directions_walk_rounded, color: _green, live: (t) => '${_fmt(8210 + (t * 0.8).floor())} steps'))),
+                    Positioned(bottom: 4, right: 6, child: _layer(delta, 56, _FloatChip(icon: Icons.bolt_rounded, color: _orange, live: (t) => '${420 + (t * 0.5).floor()} kcal'))),
+                  ],
                 ),
-              ),
+              )),
               const SizedBox(height: 30),
-              _reveal(
-                focus,
-                delta,
-                1,
-                22,
-                Text(
-                  'The everything\nhealth app',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 36, height: 1.1, fontWeight: FontWeight.w800, letterSpacing: -1.3, color: ink),
-                ),
-              ),
+              _reveal(focus, delta, 1, 22, Text('The everything\nhealth app', textAlign: TextAlign.center, style: TextStyle(fontSize: 36, height: 1.1, fontWeight: FontWeight.w800, letterSpacing: -1.3, color: ink))),
               const SizedBox(height: 12),
-              _reveal(
-                focus,
-                delta,
-                2,
-                34,
-                SizedBox(
-                  width: 300,
-                  child: Text(
-                    'Vitals, movement, sleep and medication — together in one calm, intelligent space.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14.5, height: 1.45, fontWeight: FontWeight.w500, color: isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF6B7078)),
-                  ),
-                ),
-              ),
+              _reveal(focus, delta, 2, 34, SizedBox(width: 300, child: Text('Vitals, movement, sleep and medication — together in one calm, intelligent space.', textAlign: TextAlign.center, style: TextStyle(fontSize: 14.5, height: 1.45, fontWeight: FontWeight.w500, color: isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF6B7078))))),
             ],
           ),
         ),
@@ -432,12 +358,7 @@ class _LogoOrb extends StatelessWidget {
       radius: 999,
       padding: const EdgeInsets.all(34),
       child: const SizedBox(width: 92, height: 92, child: Center(child: EcLogo(size: 90))),
-    ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(
-          begin: 1,
-          end: 1.04,
-          duration: 3600.ms,
-          curve: Curves.easeInOut,
-        );
+    ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 1, end: 1.04, duration: 3600.ms, curve: Curves.easeInOut);
   }
 }
 
@@ -451,30 +372,14 @@ class _PulseRing extends StatelessWidget {
     return Container(
       width: 150,
       height: 150,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.6),
-          width: 1.5,
-        ),
-      ),
-    )
-        .animate(onPlay: (c) => c.repeat())
-        .scaleXY(begin: 0.7, end: 1.7, duration: 3000.ms, delay: delayMs.ms, curve: Curves.easeOut)
-        .fadeOut(duration: 3000.ms, delay: delayMs.ms, curve: Curves.easeOut);
+      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.6), width: 1.5)),
+    ).animate(onPlay: (c) => c.repeat()).scaleXY(begin: 0.7, end: 1.7, duration: 3000.ms, delay: delayMs.ms, curve: Curves.easeOut).fadeOut(duration: 3000.ms, delay: delayMs.ms, curve: Curves.easeOut);
   }
 }
 
 // ─────────────────────────────────────────────────────────── Feature ──
 class _FeaturePage extends StatelessWidget {
-  const _FeaturePage({
-    required this.data,
-    required this.index,
-    required this.count,
-    required this.delta,
-    required this.focus,
-  });
-
+  const _FeaturePage({required this.data, required this.index, required this.count, required this.delta, required this.focus});
   final _OnbPage data;
   final int index;
   final int count;
@@ -492,75 +397,24 @@ class _FeaturePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _reveal(
-            focus,
-            delta,
-            0,
-            16,
-            Row(
-              children: [
-                Container(width: 7, height: 7, decoration: BoxDecoration(color: data.accent, shape: BoxShape.circle)),
-                const SizedBox(width: 8),
-                Text(
-                  data.eyebrow,
-                  style: TextStyle(
-                    color: isDark ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF676D77),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 2.2,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '${(index + 1).toString().padLeft(2, '0')} / ${count.toString().padLeft(2, '0')}',
-                  style: TextStyle(
-                    color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF7C828C),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _reveal(focus, delta, 0, 16, Row(children: [
+            Container(width: 7, height: 7, decoration: BoxDecoration(color: data.accent, shape: BoxShape.circle)),
+            const SizedBox(width: 8),
+            Text(data.eyebrow, style: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF676D77), fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 2.2)),
+            const Spacer(),
+            Text('${(index + 1).toString().padLeft(2, '0')} / ${count.toString().padLeft(2, '0')}', style: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF7C828C), fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1)),
+          ])),
           const SizedBox(height: 12),
-          _reveal(
-            focus,
-            delta,
-            1,
-            22,
-            Text(
-              data.title,
-              style: TextStyle(
-                fontSize: 44,
-                height: 1.0,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -1.6,
-                color: titleColor,
-              ),
-            ),
-          ),
+          _reveal(focus, delta, 1, 22, Text(data.title, style: TextStyle(fontSize: 44, height: 1.0, fontWeight: FontWeight.w800, letterSpacing: -1.6, color: titleColor))),
           const SizedBox(height: 12),
-          _reveal(
-            focus,
-            delta,
-            2,
-            32,
-            Text(
-              data.subtitle,
-              style: TextStyle(fontSize: 15, height: 1.4, fontWeight: FontWeight.w500, color: subColor),
-            ),
-          ),
+          _reveal(focus, delta, 2, 32, Text(data.subtitle, style: TextStyle(fontSize: 15, height: 1.4, fontWeight: FontWeight.w500, color: subColor))),
           const SizedBox(height: 22),
           Expanded(
             child: Center(
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.topCenter,
-                child: SizedBox(
-                  width: 342,
-                  child: _Bento(kind: data.kind, delta: delta, focus: focus),
-                ),
+                child: SizedBox(width: 342, child: _Bento(kind: data.kind, delta: delta, focus: focus)),
               ),
             ),
           ),
@@ -603,14 +457,7 @@ class _Glass extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: br,
-        boxShadow: [
-          BoxShadow(
-            color: (isDark ? Colors.black : const Color(0xFF2A2F3A)).withValues(alpha: isDark ? 0.38 : 0.16),
-            blurRadius: 30,
-            spreadRadius: -12,
-            offset: const Offset(0, 16),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: (isDark ? Colors.black : const Color(0xFF2A2F3A)).withValues(alpha: isDark ? 0.38 : 0.16), blurRadius: 30, spreadRadius: -12, offset: const Offset(0, 16))],
       ),
       child: ClipRRect(
         borderRadius: br,
@@ -619,43 +466,13 @@ class _Glass extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: br,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? [Colors.white.withValues(alpha: 0.10), Colors.white.withValues(alpha: 0.04)]
-                    : [Colors.white.withValues(alpha: 0.82), Colors.white.withValues(alpha: 0.58)],
-              ),
-              border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.9),
-              ),
+              gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: isDark ? [Colors.white.withValues(alpha: 0.10), Colors.white.withValues(alpha: 0.04)] : [Colors.white.withValues(alpha: 0.82), Colors.white.withValues(alpha: 0.58)]),
+              border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.9)),
             ),
-            child: Stack(
-              children: [
-                Padding(padding: padding, child: child),
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: IgnorePointer(
-                    child: Container(
-                      height: math.min(radius, 16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.white.withValues(alpha: isDark ? 0.16 : 0.65),
-                            Colors.white.withValues(alpha: 0),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: Stack(children: [
+              Padding(padding: padding, child: child),
+              Positioned(top: 0, left: 0, right: 0, child: IgnorePointer(child: Container(height: math.min(radius, 16), decoration: BoxDecoration(borderRadius: BorderRadius.vertical(top: Radius.circular(radius)), gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.white.withValues(alpha: isDark ? 0.16 : 0.65), Colors.white.withValues(alpha: 0)]))))),
+            ]),
           ),
         ),
       ),
@@ -673,61 +490,80 @@ class _WellnessBento extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
     final p = Curves.easeOutCubic.transform(focus);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _reveal(focus, delta, 3, 18, _Glass(
-          padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const _Heartbeat(child: _IconBadge(icon: Icons.favorite_rounded, color: _coral)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Heart rate', style: TextStyle(color: ec.textMuted, fontSize: 12.5, fontWeight: FontWeight.w600)),
-                        Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-                          Text('72', style: TextStyle(color: _ink(context), fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.8)),
-                          const SizedBox(width: 3),
-                          Text('BPM', style: TextStyle(color: ec.textMuted, fontSize: 12, fontWeight: FontWeight.w700)),
-                        ]),
-                      ],
-                    ),
-                  ),
-                  const _TrendPill(label: 'Resting', color: _green),
-                ],
-              ),
-              const SizedBox(height: 12),
-              SizedBox(height: 46, width: double.infinity, child: CustomPaint(painter: _SparkPainter(values: const [58, 64, 60, 72, 67, 80, 74, 88, 79, 72], color: _coral, progress: p))),
-            ],
-          ),
-        )),
+        _reveal(focus, delta, 3, 18, const _LiveHeartCard()),
         const SizedBox(height: 12),
         _reveal(focus, delta, 4, 30, SizedBox(
           height: 150,
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Expanded(flex: 6, child: _HydrationCard(progress: p)),
             const SizedBox(width: 12),
-            Expanded(flex: 5, child: _RingStatCard(value: 0.94, score: '94', label: 'Sleep', sub: 'Restful', color: _violet, progress: p)),
+            Expanded(flex: 5, child: _RingStatCard(value: 0.94, score: 94, label: 'Sleep', sub: 'Restful', color: _violet, progress: p)),
           ]),
         )),
         const SizedBox(height: 12),
         _reveal(focus, delta, 5, 42, const Row(children: [
-          _MiniStat(label: 'SpO₂', value: '98%', color: _blue),
+          _LiveStat(label: 'SpO₂', base: 98, jitter: 1, unit: '%', color: _blue, speed: 0.9),
           SizedBox(width: 10),
-          _MiniStat(label: 'HRV', value: '64 ms', color: _green),
+          _LiveStat(label: 'HRV', base: 64, jitter: 4, unit: ' ms', color: _green, speed: 0.6),
           SizedBox(width: 10),
           _MiniStat(label: 'Stress', value: 'Low', color: _amber),
         ])),
       ],
+    );
+  }
+}
+
+class _LiveHeartCard extends StatelessWidget {
+  const _LiveHeartCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    return _Glass(
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            const _Heartbeat(child: _IconBadge(icon: Icons.favorite_rounded, color: _coral)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Flexible(child: Text('Heart rate', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 12.5, fontWeight: FontWeight.w600))),
+                    const SizedBox(width: 8),
+                    const _LiveDot(color: _coral),
+                    const SizedBox(width: 4),
+                    const Text('LIVE', style: TextStyle(color: _coral, fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+                  ]),
+                  _Live(builder: (c, t) {
+                    final bpm = (72 + 2.4 * math.sin(t * 0.9) + 1.2 * math.sin(t * 2.3)).round();
+                    return Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+                      Text('$bpm', style: TextStyle(color: _ink(c), fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.8)),
+                      const SizedBox(width: 3),
+                      Text('BPM', style: TextStyle(color: ec.textMuted, fontSize: 12, fontWeight: FontWeight.w700)),
+                    ]);
+                  }),
+                ],
+              ),
+            ),
+          ]),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 48,
+            width: double.infinity,
+            child: _Live(builder: (c, t) => CustomPaint(painter: _PpgPainter(phase: t * 1.25, color: _coral))),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -743,16 +579,13 @@ class _HydrationCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Positioned.fill(child: CustomPaint(painter: _WavePainter(level: 0.6, color: _blue, progress: progress))),
+          Positioned.fill(child: _Live(builder: (c, t) => CustomPaint(painter: _WavePainter(level: 0.6, color: _blue, progress: progress, phase: t * 0.8)))),
           Padding(
             padding: const EdgeInsets.all(15),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Text('1.4 / 2.4 L', style: TextStyle(color: const Color(0xFF31415E), fontSize: 12, fontWeight: FontWeight.w700)),
-                ),
+                Align(alignment: Alignment.topRight, child: Text('1.4 / 2.4 L', style: TextStyle(color: const Color(0xFF31415E), fontSize: 12, fontWeight: FontWeight.w700))),
                 const Spacer(),
                 const Text('Hydration', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
                 const Text('On pace today', style: TextStyle(color: Colors.white70, fontSize: 11.5, fontWeight: FontWeight.w500)),
@@ -783,22 +616,28 @@ class _FitnessBento extends StatelessWidget {
             SizedBox(
               width: 96,
               height: 96,
-              child: CustomPaint(
-                painter: _ActivityRingsPainter(values: const [0.86, 0.72, 1.0], colors: const [_coral, _green, _blue], progress: p),
-                child: const Center(child: Icon(Icons.bolt_rounded, color: _orange, size: 22)),
-              ),
+              child: _Live(builder: (c, t) {
+                final breathe = 1 + 0.02 * math.sin(t * 1.5);
+                return Transform.scale(
+                  scale: breathe,
+                  child: CustomPaint(
+                    painter: _ActivityRingsPainter(values: const [0.86, 0.72, 1.0], colors: const [_coral, _green, _blue], progress: p),
+                    child: const Center(child: Icon(Icons.bolt_rounded, color: _orange, size: 22)),
+                  ),
+                );
+              }),
             ),
             const SizedBox(width: 18),
-            const Expanded(
+            Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _RingLegend(color: _coral, label: 'Move', value: '420 kcal'),
-                  SizedBox(height: 11),
-                  _RingLegend(color: _green, label: 'Exercise', value: '38 min'),
-                  SizedBox(height: 11),
-                  _RingLegend(color: _blue, label: 'Stand', value: '12 hrs'),
+                  _RingLegend(color: _coral, label: 'Move', live: (t) => '${412 + (t * 0.7).floor()} kcal'),
+                  const SizedBox(height: 11),
+                  const _RingLegend(color: _green, label: 'Exercise', value: '38 min'),
+                  const SizedBox(height: 11),
+                  const _RingLegend(color: _blue, label: 'Stand', value: '12 hrs'),
                 ],
               ),
             ),
@@ -808,7 +647,7 @@ class _FitnessBento extends StatelessWidget {
         _reveal(focus, delta, 4, 30, SizedBox(
           height: 146,
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Expanded(flex: 5, child: _StatCard(icon: Icons.favorite_rounded, color: _coral, label: 'Avg HR', value: '123', unit: 'BPM', footer: 'Cardio zone')),
+            Expanded(flex: 5, child: _StatCard(icon: Icons.favorite_rounded, color: _coral, label: 'Avg HR', unit: 'BPM', footer: 'Cardio zone', live: (t) => '${(123 + 4 * math.sin(t * 0.8) + 2 * math.sin(t * 2.1)).round()}')),
             const SizedBox(width: 12),
             Expanded(flex: 6, child: _WeeklyCard(progress: p)),
           ]),
@@ -821,7 +660,6 @@ class _FitnessBento extends StatelessWidget {
           const SizedBox(width: 10),
           _MiniStat(label: 'Streak', value: '12 d', color: _orange),
         ])),
-        // ignore: prefer_const_constructors
       ],
     );
   }
@@ -845,26 +683,25 @@ class _WeeklyCard extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             height: 44,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: List.generate(7, (i) {
-                const hs = [0.45, 0.7, 0.4, 0.9, 0.6, 1.0, 0.55];
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2.5),
-                    child: FractionallySizedBox(
-                      heightFactor: (hs[i] * progress).clamp(0.02, 1.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter, colors: [Color(0xFFFFB38A), _orange]),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
+            child: _Live(builder: (c, t) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: List.generate(7, (i) {
+                  const hs = [0.45, 0.7, 0.4, 0.9, 0.6, 1.0, 0.55];
+                  // last (today) bar pulses gently as a "live" bar
+                  final live = i == 6 ? (0.55 + 0.12 * (0.5 + 0.5 * math.sin(t * 2.2))) : hs[i];
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                      child: FractionallySizedBox(
+                        heightFactor: (live * progress).clamp(0.02, 1.0),
+                        child: Container(decoration: BoxDecoration(gradient: const LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter, colors: [Color(0xFFFFB38A), _orange]), borderRadius: BorderRadius.circular(5))),
                       ),
                     ),
-                  ),
-                );
-              }),
-            ),
+                  );
+                }),
+              );
+            }),
           ),
         ],
       ),
@@ -892,7 +729,11 @@ class _SleepBento extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                const _IconBadge(icon: Icons.nightlight_round, color: _violet),
+                _Live(builder: (c, t) {
+                  // slow calming breathing
+                  final s = 1 + 0.06 * math.sin(t * 0.7);
+                  return Transform.scale(scale: s, child: const _IconBadge(icon: Icons.nightlight_round, color: _violet));
+                }),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -917,14 +758,14 @@ class _SleepBento extends StatelessWidget {
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Expanded(child: _StatCard(icon: Icons.dark_mode_rounded, color: _violet, label: 'Deep', value: '1h 21m', footer: '18% of night')),
             const SizedBox(width: 12),
-            Expanded(child: _RingStatCard(value: 0.92, score: '92', label: 'Sleep', sub: 'Score', color: _violet, progress: p)),
+            Expanded(child: _RingStatCard(value: 0.92, score: 92, label: 'Sleep', sub: 'Score', color: _violet, progress: p)),
           ]),
         )),
         const SizedBox(height: 12),
         _reveal(focus, delta, 5, 42, Row(children: [
           _MiniStat(label: 'REM', value: '1h 05m', color: _blue),
           const SizedBox(width: 10),
-          _MiniStat(label: 'Efficiency', value: '92%', color: _green),
+          _LiveStat(label: 'Efficiency', base: 92, jitter: 1, unit: '%', color: _green, speed: 0.5),
           const SizedBox(width: 10),
           _MiniStat(label: 'HR dip', value: '14%', color: _cyan),
         ])),
@@ -937,29 +778,33 @@ class _SleepStages extends StatelessWidget {
   const _SleepStages({this.progress = 1});
   final double progress;
 
+  static const _heights = [0.35, 0.55, 0.3, 0.7, 1.0, 0.6, 0.85, 0.45, 0.7, 0.4, 0.6, 0.3];
+  static const _deep = [false, true, false, true, true, false, true, false, true, false, true, false];
+
   @override
   Widget build(BuildContext context) {
-    const heights = [0.35, 0.55, 0.3, 0.7, 1.0, 0.6, 0.85, 0.45, 0.7, 0.4, 0.6, 0.3];
-    const deep = [false, true, false, true, true, false, true, false, true, false, true, false];
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(heights.length, (i) {
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: FractionallySizedBox(
-              heightFactor: (heights[i] * progress).clamp(0.02, 1.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: deep[i] ? _violet : _violet.withValues(alpha: 0.32),
-                  borderRadius: BorderRadius.circular(4),
-                ),
+    return _Live(builder: (c, t) {
+      // a soft "playback" highlight sweeps across the night
+      final head = (t * 0.12) % 1.0 * _heights.length;
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: List.generate(_heights.length, (i) {
+          final d = (i - head).abs();
+          final glow = (1 - (d / 1.6)).clamp(0.0, 1.0);
+          final base = _deep[i] ? _violet : _violet.withValues(alpha: 0.32);
+          final col = Color.lerp(base, Colors.white, glow * 0.5)!;
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: FractionallySizedBox(
+                heightFactor: (_heights[i] * progress).clamp(0.02, 1.0),
+                child: Container(decoration: BoxDecoration(color: col, borderRadius: BorderRadius.circular(4))),
               ),
             ),
-          ),
-        );
-      }),
-    );
+          );
+        }),
+      );
+    });
   }
 }
 
@@ -993,13 +838,7 @@ class _MedsBento extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: 44, height: 44,
-                  child: CustomPaint(
-                    painter: _RingPainter(value: 0.98, color: _green, stroke: 5, progress: p),
-                    child: Center(child: Text('98', style: TextStyle(color: _ink(context), fontSize: 12, fontWeight: FontWeight.w800))),
-                  ),
-                ),
+                SizedBox(width: 44, height: 44, child: CustomPaint(painter: _RingPainter(value: 0.98, color: _green, stroke: 5, progress: p), child: Center(child: Text('${(98 * p).round()}', style: TextStyle(color: _ink(context), fontSize: 12, fontWeight: FontWeight.w800))))),
               ]),
               const SizedBox(height: 14),
               const _MedRow(name: 'Metformin', dose: '500 mg • 8:00 AM', color: _violet, done: true),
@@ -1012,9 +851,13 @@ class _MedsBento extends StatelessWidget {
         )),
         const SizedBox(height: 12),
         _reveal(focus, delta, 4, 30, SizedBox(
-          height: 138,
+          height: 120,
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Expanded(child: _StatCard(icon: Icons.schedule_rounded, color: _blue, label: 'Next dose', value: '1:00', unit: 'PM', footer: 'Omega-3')),
+            Expanded(child: _StatCard(icon: Icons.schedule_rounded, color: _blue, label: 'Next dose in', footer: 'Omega-3', mono: true, live: (t) {
+              final r = (16338 - t).floor().clamp(0, 1 << 31); // ~4h 32m countdown
+              final h = r ~/ 3600, m = (r % 3600) ~/ 60, s = r % 60;
+              return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+            })),
             const SizedBox(width: 12),
             Expanded(child: _StatCard(icon: Icons.event_repeat_rounded, color: _coral, label: 'Refill in', value: '5', unit: 'days', footer: 'Metformin')),
           ]),
@@ -1024,7 +867,7 @@ class _MedsBento extends StatelessWidget {
   }
 }
 
-// ── Finale (orbiting constellation) ─────────────────────────────────────
+// ── Finale (rotating constellation) ─────────────────────────────────────
 class _FinaleBento extends StatelessWidget {
   const _FinaleBento({required this.delta, required this.focus});
   final double delta;
@@ -1042,6 +885,8 @@ class _FinaleBento extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Build dots once so their pulse controllers persist across frames.
+    final dots = [for (final e in _icons) _FeatureDot(icon: e.$1, color: e.$2)];
     return _reveal(
       focus,
       delta,
@@ -1051,31 +896,22 @@ class _FinaleBento extends StatelessWidget {
         child: SizedBox(
           width: 300,
           height: 300,
-          child: Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [Colors.white.withValues(alpha: isDark ? 0.06 : 0.45), Colors.white.withValues(alpha: 0)]),
-                ),
-              ),
-              const _PulseRing(delayMs: 0),
-              for (var i = 0; i < _icons.length; i++)
-                _layer(
-                  delta,
-                  16 + (i.isEven ? 24 : 42),
+          child: _Live(builder: (c, t) {
+            final rot = t * 0.16;
+            return Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                Container(width: 250, height: 250, decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [Colors.white.withValues(alpha: isDark ? 0.06 : 0.45), Colors.white.withValues(alpha: 0)]))),
+                for (var i = 0; i < dots.length; i++)
                   Transform.translate(
-                    offset: Offset.fromDirection(-math.pi / 2 + i * (2 * math.pi / _icons.length), 116),
-                    child: _FeatureDot(icon: _icons[i].$1, color: _icons[i].$2, delayMs: 150 + i * 110),
+                    offset: Offset.fromDirection(-math.pi / 2 + i * (2 * math.pi / dots.length) + rot, 116),
+                    child: dots[i],
                   ),
-                ),
-              _layer(delta, 10, const _LogoOrb()),
-            ],
-          ),
+                const _LogoOrb(),
+              ],
+            );
+          }),
         ),
       ),
     );
@@ -1083,24 +919,15 @@ class _FinaleBento extends StatelessWidget {
 }
 
 class _FeatureDot extends StatelessWidget {
-  const _FeatureDot({required this.icon, required this.color, required this.delayMs});
+  const _FeatureDot({required this.icon, required this.color});
   final IconData icon;
   final Color color;
-  final int delayMs;
 
   @override
   Widget build(BuildContext context) {
-    return _Glass(
-      radius: 999,
-      padding: const EdgeInsets.all(13),
-      child: Icon(icon, color: color, size: 22),
-    ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(
-          begin: 0.92,
-          end: 1.07,
-          duration: 2600.ms,
-          delay: delayMs.ms,
-          curve: Curves.easeInOut,
-        );
+    return _Glass(radius: 999, padding: const EdgeInsets.all(13), child: Icon(icon, color: color, size: 22))
+        .animate(onPlay: (c) => c.repeat(reverse: true))
+        .scaleXY(begin: 0.92, end: 1.08, duration: 2200.ms, curve: Curves.easeInOut);
   }
 }
 
@@ -1115,11 +942,7 @@ class _IconBadge extends StatelessWidget {
     return Container(
       width: 44,
       height: 44,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        color: color.withValues(alpha: 0.16),
-        border: Border.all(color: color.withValues(alpha: 0.26)),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: color.withValues(alpha: 0.16), border: Border.all(color: color.withValues(alpha: 0.26))),
       child: Icon(icon, color: color, size: 22),
     );
   }
@@ -1134,10 +957,20 @@ class _Heartbeat extends StatelessWidget {
     return child
         .animate(onPlay: (c) => c.repeat())
         .scaleXY(begin: 1.0, end: 1.15, duration: 150.ms, curve: Curves.easeOut)
-        .then()
-        .scaleXY(begin: 1.15, end: 1.0, duration: 250.ms, curve: Curves.easeIn)
-        .then()
-        .scaleXY(begin: 1.0, end: 1.0, duration: 760.ms);
+        .then().scaleXY(begin: 1.15, end: 1.0, duration: 250.ms, curve: Curves.easeIn)
+        .then().scaleXY(begin: 1.0, end: 1.0, duration: 760.ms);
+  }
+}
+
+class _LiveDot extends StatelessWidget {
+  const _LiveDot({required this.color});
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(width: 7, height: 7, decoration: BoxDecoration(color: color, shape: BoxShape.circle))
+        .animate(onPlay: (c) => c.repeat(reverse: true))
+        .fade(begin: 0.3, end: 1, duration: 720.ms, curve: Curves.easeInOut);
   }
 }
 
@@ -1161,24 +994,35 @@ class _TrendPill extends StatelessWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.icon,
-    required this.color,
-    required this.label,
-    required this.value,
-    this.unit,
-    this.footer,
-  });
+  const _StatCard({required this.icon, required this.color, required this.label, this.value, this.unit, this.footer, this.live, this.mono = false});
   final IconData icon;
   final Color color;
   final String label;
-  final String value;
+  final String? value;
   final String? unit;
   final String? footer;
+  final String Function(double t)? live;
+  final bool mono;
+
+  Widget _valueRow(BuildContext context, String v) {
+    final ec = EcColors.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Text(v, style: TextStyle(color: _ink(context), fontSize: mono ? 21 : 24, fontWeight: FontWeight.w800, letterSpacing: mono ? -0.4 : -0.8, fontFeatures: const [FontFeature.tabularFigures()])),
+        if (unit != null) ...[const SizedBox(width: 3), Text(unit!, style: TextStyle(color: ec.textMuted, fontSize: 12, fontWeight: FontWeight.w700))],
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    final valueArea = live != null
+        ? _Live(builder: (c, t) => FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: _valueRow(c, live!(t))))
+        : FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: _valueRow(context, value!));
     return _Glass(
       padding: const EdgeInsets.all(15),
       child: Column(
@@ -1186,27 +1030,12 @@ class _StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Container(
-              width: 30, height: 30,
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(9)),
-              child: Icon(icon, color: color, size: 16),
-            ),
+            Container(width: 30, height: 30, decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(9)), child: Icon(icon, color: color, size: 16)),
             const Spacer(),
             Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.right, style: TextStyle(color: ec.textMuted, fontSize: 11.5, fontWeight: FontWeight.w600))),
           ]),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-              Text(value, style: TextStyle(color: _ink(context), fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.8)),
-              if (unit != null) ...[
-                const SizedBox(width: 3),
-                Text(unit!, style: TextStyle(color: ec.textMuted, fontSize: 12, fontWeight: FontWeight.w700)),
-              ],
-            ]),
-          ),
-          if (footer != null)
-            Text(footer!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 11, fontWeight: FontWeight.w500)),
+          valueArea,
+          if (footer != null) Text(footer!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 11, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -1216,7 +1045,7 @@ class _StatCard extends StatelessWidget {
 class _RingStatCard extends StatelessWidget {
   const _RingStatCard({required this.value, required this.score, required this.label, required this.sub, required this.color, this.progress = 1});
   final double value;
-  final String score;
+  final int score;
   final String label;
   final String sub;
   final Color color;
@@ -1230,13 +1059,7 @@ class _RingStatCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 62, height: 62,
-            child: CustomPaint(
-              painter: _RingPainter(value: value, color: color, stroke: 6, progress: progress),
-              child: Center(child: Text(score, style: TextStyle(color: _ink(context), fontSize: 16, fontWeight: FontWeight.w800))),
-            ),
-          ),
+          SizedBox(width: 62, height: 62, child: CustomPaint(painter: _RingPainter(value: value, color: color, stroke: 6, progress: progress), child: Center(child: Text('${(score * progress).round()}', style: TextStyle(color: _ink(context), fontSize: 16, fontWeight: FontWeight.w800))))),
           const SizedBox(height: 10),
           Text(label, style: TextStyle(color: _ink(context), fontSize: 13.5, fontWeight: FontWeight.w700)),
           Text(sub, style: TextStyle(color: ec.textMuted, fontSize: 11, fontWeight: FontWeight.w500)),
@@ -1269,11 +1092,44 @@ class _MiniStat extends StatelessWidget {
               Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 10.5, fontWeight: FontWeight.w700))),
             ]),
             const SizedBox(height: 6),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(value, style: TextStyle(color: _ink(context), fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
-            ),
+            FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(value, style: TextStyle(color: _ink(context), fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: -0.4))),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LiveStat extends StatelessWidget {
+  const _LiveStat({required this.label, required this.base, required this.jitter, required this.unit, required this.color, required this.speed});
+  final String label;
+  final int base;
+  final int jitter;
+  final String unit;
+  final Color color;
+  final double speed;
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    return Expanded(
+      child: _Glass(
+        radius: 18,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              _LiveDot(color: color),
+              const SizedBox(width: 6),
+              Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 10.5, fontWeight: FontWeight.w700))),
+            ]),
+            const SizedBox(height: 6),
+            _Live(builder: (c, t) {
+              final v = base + (jitter * math.sin(t * speed)).round();
+              return FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text('$v$unit', style: TextStyle(color: _ink(c), fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: -0.4, fontFeatures: const [FontFeature.tabularFigures()])));
+            }),
           ],
         ),
       ),
@@ -1282,20 +1138,24 @@ class _MiniStat extends StatelessWidget {
 }
 
 class _RingLegend extends StatelessWidget {
-  const _RingLegend({required this.color, required this.label, required this.value});
+  const _RingLegend({required this.color, required this.label, this.value, this.live});
   final Color color;
   final String label;
-  final String value;
+  final String? value;
+  final String Function(double t)? live;
 
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    final valueWidget = live != null
+        ? _Live(builder: (c, t) => Text(live!(t), style: TextStyle(color: _ink(c), fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: -0.3, fontFeatures: const [FontFeature.tabularFigures()])))
+        : Text(value!, style: TextStyle(color: _ink(context), fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: -0.3));
     return Row(children: [
       Container(width: 9, height: 9, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
       const SizedBox(width: 8),
       Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 12.5, fontWeight: FontWeight.w600))),
       const SizedBox(width: 6),
-      Text(value, style: TextStyle(color: _ink(context), fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
+      valueWidget,
     ]);
   }
 }
@@ -1311,11 +1171,7 @@ class _MedRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
     return Row(children: [
-      Container(
-        width: 36, height: 36,
-        decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(11)),
-        child: Icon(Icons.medication_rounded, color: color, size: 17),
-      ),
+      Container(width: 36, height: 36, decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(11)), child: Icon(Icons.medication_rounded, color: color, size: 17)),
       const SizedBox(width: 12),
       Expanded(
         child: Column(
@@ -1329,11 +1185,7 @@ class _MedRow extends StatelessWidget {
       ),
       Container(
         width: 24, height: 24,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: done ? _green : Colors.transparent,
-          border: Border.all(color: done ? _green : ec.textMuted.withValues(alpha: 0.4), width: 2),
-        ),
+        decoration: BoxDecoration(shape: BoxShape.circle, color: done ? _green : Colors.transparent, border: Border.all(color: done ? _green : ec.textMuted.withValues(alpha: 0.4), width: 2)),
         child: Icon(Icons.check_rounded, size: 14, color: done ? Colors.white : Colors.transparent),
       ),
     ]);
@@ -1341,62 +1193,23 @@ class _MedRow extends StatelessWidget {
 }
 
 class _FloatChip extends StatelessWidget {
-  const _FloatChip({required this.icon, required this.label, required this.color});
+  const _FloatChip({required this.icon, required this.color, this.label, this.live});
   final IconData icon;
-  final String label;
   final Color color;
+  final String? label;
+  final String Function(double t)? live;
 
   @override
   Widget build(BuildContext context) {
+    final style = TextStyle(color: _ink(context), fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: -0.2, fontFeatures: const [FontFeature.tabularFigures()]);
+    final content = live != null
+        ? _Live(builder: (c, t) => Text(live!(t), style: style))
+        : Text(label!, style: style);
     return _Glass(
       radius: 999,
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, color: color, size: 15),
-        const SizedBox(width: 7),
-        Text(label, style: TextStyle(color: _ink(context), fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: -0.2)),
-      ]),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, color: color, size: 15), const SizedBox(width: 7), content]),
     ).animate(onPlay: (c) => c.repeat(reverse: true)).moveY(begin: -5, end: 5, duration: 2900.ms, curve: Curves.easeInOut);
-  }
-}
-
-// ──────────────────────────────────────────────────────────── Top bar ──
-class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onSkip, required this.showSkip});
-  final VoidCallback onSkip;
-  final bool showSkip;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final ink = isDark ? Colors.white : const Color(0xFF3A3F49);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 8, 12, 2),
-      child: Row(
-        children: [
-          Opacity(opacity: isDark ? 0.95 : 0.85, child: const EcLogo(size: 26)),
-          const SizedBox(width: 9),
-          Text(
-            'ElinaCura',
-            style: TextStyle(color: ink, fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: -0.3),
-          ),
-          const Spacer(),
-          AnimatedOpacity(
-            duration: EcTokens.motionFast,
-            opacity: showSkip ? 1 : 0,
-            child: TextButton(
-              onPressed: showSkip ? onSkip : null,
-              style: TextButton.styleFrom(
-                foregroundColor: isDark ? Colors.white70 : const Color(0xFF5A606A),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                minimumSize: const Size(0, 36),
-              ),
-              child: const Text('Skip', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -1440,21 +1253,11 @@ class _BottomChromeState extends State<_BottomChrome> {
               child: Container(
                 height: 58,
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  color: btnColor,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.24), blurRadius: 24, spreadRadius: -6, offset: const Offset(0, 12)),
-                  ],
-                ),
+                decoration: BoxDecoration(color: btnColor, borderRadius: BorderRadius.circular(30), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.24), blurRadius: 24, spreadRadius: -6, offset: const Offset(0, 12))]),
                 alignment: Alignment.center,
                 child: AnimatedSwitcher(
                   duration: EcTokens.motionFast,
-                  child: Text(
-                    widget.label,
-                    key: ValueKey(widget.label),
-                    style: TextStyle(color: btnText, fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.2),
-                  ),
+                  child: Text(widget.label, key: ValueKey(widget.label), style: TextStyle(color: btnText, fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.2)),
                 ),
               ),
             ),
@@ -1497,6 +1300,44 @@ class _Dots extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════ Painters ══
+class _PpgPainter extends CustomPainter {
+  const _PpgPainter({required this.phase, required this.color});
+  final double phase;
+  final Color color;
+
+  double _wave(double f) {
+    double g(double c, double w, double a) {
+      final d = f - c;
+      return a * math.exp(-(d * d) / (2 * w * w));
+    }
+    return g(0.16, 0.034, 1.0) - g(0.27, 0.05, 0.30) + g(0.42, 0.06, 0.22);
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const beats = 3.0;
+    final mid = size.height * 0.62;
+    final amp = size.height * 0.5;
+    final pts = <Offset>[];
+    for (double x = 0; x <= size.width; x += 1.5) {
+      final f = (((x / size.width) * beats) + phase) % 1.0;
+      pts.add(Offset(x, mid - _wave(f) * amp));
+    }
+    if (pts.length < 2) return;
+    final path = Path()..addPolygon(pts, false);
+    final area = Path.from(path)..lineTo(size.width, size.height)..lineTo(0, size.height)..close();
+    canvas.drawPath(area, Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color.withValues(alpha: 0.22), color.withValues(alpha: 0)]).createShader(Offset.zero & size));
+    canvas.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.6..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round..color = color);
+    final tip = pts.last;
+    canvas.drawCircle(tip, 6, Paint()..color = color.withValues(alpha: 0.22));
+    canvas.drawCircle(tip, 3, Paint()..color = color);
+    canvas.drawCircle(tip, 1.4, Paint()..color = Colors.white);
+  }
+
+  @override
+  bool shouldRepaint(covariant _PpgPainter old) => old.phase != phase || old.color != color;
+}
+
 class _RingPainter extends CustomPainter {
   const _RingPainter({required this.value, required this.color, this.stroke = 7, this.progress = 1});
   final double value;
@@ -1511,13 +1352,7 @@ class _RingPainter extends CustomPainter {
     canvas.drawCircle(center, r, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..color = color.withValues(alpha: 0.18));
     final sweep = value.clamp(0.0, 1.0) * progress.clamp(0.0, 1.0) * 2 * math.pi;
     if (sweep > 0.0001) {
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: r),
-        -math.pi / 2,
-        sweep,
-        false,
-        Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color,
-      );
+      canvas.drawArc(Rect.fromCircle(center: center, radius: r), -math.pi / 2, sweep, false, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color);
     }
   }
 
@@ -1544,13 +1379,7 @@ class _ActivityRingsPainter extends CustomPainter {
       canvas.drawCircle(center, r, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..color = color.withValues(alpha: 0.16));
       final sweep = values[i].clamp(0.0, 1.0) * progress.clamp(0.0, 1.0) * 2 * math.pi;
       if (sweep > 0.0001) {
-        canvas.drawArc(
-          Rect.fromCircle(center: center, radius: r),
-          -math.pi / 2,
-          sweep,
-          false,
-          Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color,
-        );
+        canvas.drawArc(Rect.fromCircle(center: center, radius: r), -math.pi / 2, sweep, false, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color);
       }
     }
   }
@@ -1559,65 +1388,12 @@ class _ActivityRingsPainter extends CustomPainter {
   bool shouldRepaint(covariant _ActivityRingsPainter old) => old.values != values || old.colors != colors || old.progress != progress;
 }
 
-class _SparkPainter extends CustomPainter {
-  const _SparkPainter({required this.values, required this.color, this.progress = 1});
-  final List<double> values;
-  final Color color;
-  final double progress;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (values.length < 2) return;
-    final p = progress.clamp(0.0, 1.0);
-    final minV = values.reduce(math.min);
-    final maxV = values.reduce(math.max);
-    final span = (maxV - minV).abs() < 1e-6 ? 1.0 : (maxV - minV);
-    final dx = size.width / (values.length - 1);
-    final pts = <Offset>[
-      for (var i = 0; i < values.length; i++)
-        Offset(i * dx, size.height - ((values[i] - minV) / span) * (size.height - 10) - 5),
-    ];
-    final path = Path()..moveTo(pts.first.dx, pts.first.dy);
-    for (var i = 1; i < pts.length; i++) {
-      final prev = pts[i - 1];
-      final cur = pts[i];
-      final mx = (prev.dx + cur.dx) / 2;
-      path.cubicTo(mx, prev.dy, mx, cur.dy, cur.dx, cur.dy);
-    }
-    final area = Path.from(path)..lineTo(pts.last.dx, size.height)..lineTo(pts.first.dx, size.height)..close();
-
-    final revealW = (size.width * p).clamp(0.0, size.width);
-    canvas.save();
-    canvas.clipRect(Rect.fromLTWH(0, 0, revealW <= 0 ? 0.01 : revealW, size.height));
-    canvas.drawPath(area, Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color.withValues(alpha: 0.28), color.withValues(alpha: 0)]).createShader(Offset.zero & size));
-    canvas.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 3..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round..color = color);
-    canvas.restore();
-
-    // tip marker at the leading edge
-    final tipX = revealW;
-    var tipY = pts.last.dy;
-    for (var i = 1; i < pts.length; i++) {
-      if (pts[i].dx >= tipX) {
-        final t = ((tipX - pts[i - 1].dx) / (pts[i].dx - pts[i - 1].dx)).clamp(0.0, 1.0);
-        tipY = pts[i - 1].dy + (pts[i].dy - pts[i - 1].dy) * t;
-        break;
-      }
-    }
-    if (p > 0.02) {
-      canvas.drawCircle(Offset(tipX.clamp(0.0, size.width), tipY), 4.5, Paint()..color = color);
-      canvas.drawCircle(Offset(tipX.clamp(0.0, size.width), tipY), 2, Paint()..color = Colors.white);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _SparkPainter old) => old.values != values || old.color != color || old.progress != progress;
-}
-
 class _WavePainter extends CustomPainter {
-  const _WavePainter({required this.level, required this.color, this.progress = 1});
+  const _WavePainter({required this.level, required this.color, this.progress = 1, this.phase = 0});
   final double level;
   final Color color;
   final double progress;
+  final double phase;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1625,15 +1401,13 @@ class _WavePainter extends CustomPainter {
     final baseY = size.height * (1 - lvl);
     final path = Path()..moveTo(0, baseY);
     for (var x = 0.0; x <= size.width; x += 1) {
-      path.lineTo(x, baseY + math.sin(x / size.width * 2 * math.pi + 0.6) * 5);
+      final y = baseY + math.sin(x / size.width * 2 * math.pi * 1.4 + phase * 2 * math.pi) * 4 + math.sin(x / size.width * 2 * math.pi * 2.7 + phase * 3) * 2;
+      path.lineTo(x, y);
     }
     path..lineTo(size.width, size.height)..lineTo(0, size.height)..close();
-    canvas.drawPath(
-      path,
-      Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color, color.withValues(alpha: 0.8)]).createShader(Offset.zero & size),
-    );
+    canvas.drawPath(path, Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color, color.withValues(alpha: 0.8)]).createShader(Offset.zero & size));
   }
 
   @override
-  bool shouldRepaint(covariant _WavePainter old) => old.level != level || old.color != color || old.progress != progress;
+  bool shouldRepaint(covariant _WavePainter old) => old.level != level || old.color != color || old.progress != progress || old.phase != phase;
 }
