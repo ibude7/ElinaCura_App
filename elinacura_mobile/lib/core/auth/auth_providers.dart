@@ -10,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../api/api_client.dart';
-import '../config/app_config.dart';
 import '../../shared/models/models.dart';
 import '../../shared/utils/health_overview_builder.dart';
 import 'secure_token_store.dart';

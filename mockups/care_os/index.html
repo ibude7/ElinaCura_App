@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElinaCura - Care OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            bottom: 0;
+            left: 5px;
+            width: 2px;
+            background: #EAE3D9;
+            z-index: 0;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        base: '#F7F1E7',
+                        surface: '#FCFAF8',
+                        textMain: '#2D2A26',
+                        textMuted: '#7A756D',
+                        terracotta: '#B85C38',
+                        terracottaLight: '#F3EAE6',
+                        mint: '#10B981',
+                        mintLight: '#E6F6EE',
+                        amber: '#F59E0B',
+                        amberLight: '#FEF3C7',
+                        rose: '#EF4444',
+                        roseLight: '#FEE2E2',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-base min-h-screen flex items-center justify-center p-4 md:p-8 antialiased">
+
+    <!-- Mobile Frame -->
+    <div class="w-full max-w-[390px] h-[844px] bg-surface rounded-[48px] shadow-2xl overflow-hidden flex flex-col relative border-[8px] border-white ring-1 ring-black/5">
+        
+        <!-- Status Bar (Mock) -->
+        <div class="h-12 w-full flex items-center justify-between px-6 pt-2 z-50 bg-surface/80 backdrop-blur-md absolute top-0">
+            <span class="text-textMain text-[15px] font-semibold tracking-tight">9:41</span>
+            <div class="flex items-center gap-2">
+                <i data-lucide="signal" class="w-4 h-4 text-textMain"></i>
+                <i data-lucide="wifi" class="w-4 h-4 text-textMain"></i>
+                <i data-lucide="battery-full" class="w-5 h-5 text-textMain"></i>
+            </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto pb-28 pt-12 hide-scrollbar">
+            
+            <!-- Header -->
+            <header class="px-6 pt-6 pb-4">
+                <p class="text-textMuted text-[13px] font-semibold tracking-widest uppercase mb-1.5">Thursday, Oct 24</p>
+                <h1 class="text-[32px] leading-tight font-semibold text-textMain tracking-tight mb-6">Good morning,<br>Elena.</h1>
+                
+                <!-- Summary Strip -->
+                <div class="bg-mintLight/60 rounded-2xl p-4 flex items-start gap-3.5 border border-mint/10 shadow-sm">
+                    <div class="bg-mint text-white p-1.5 rounded-full mt-0.5 shadow-sm">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-mint font-semibold text-[15px]">All clear for today</h3>
+                        <p class="text-mint/80 text-[13px] mt-0.5 font-medium">2 tasks remaining this morning.</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Vertical Care Timeline -->
+            <section class="px-6 py-4">
+                <h2 class="text-[22px] font-semibold text-textMain mb-6 tracking-tight">Care Rhythm</h2>
+                
+                <div class="relative pl-1.5 timeline-line space-y-8">
+                    
+                    <!-- Morning -->
+                    <div class="relative z-10">
+                        <div class="absolute -left-[1.5px] top-1.5 w-[14px] h-[14px] rounded-full bg-surface border-[3px] border-terracotta shadow-sm"></div>
+                        <h3 class="text-[13px] font-bold text-textMuted uppercase tracking-widest mb-4 pl-6">Morning</h3>
+                        
+                        <div class="space-y-3 pl-6">
+                            <!-- Task 1 (Done) -->
+                            <div class="bg-white rounded-[20px] p-4 shadow-sm border border-black/[0.03] flex items-center gap-4 opacity-60">
+                                <div class="w-6 h-6 rounded-full bg-mint flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-[15px] font-medium text-textMain line-through">Review medications</p>
+                                    <p class="text-[13px] text-textMuted mt-0.5">8:00 AM</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Task 2 (Pending - Active) -->
+                            <div class="bg-white rounded-[20px] p-4 shadow-md shadow-black/[0.03] border border-terracotta/20 flex items-center gap-4 relative overflow-hidden">
+                                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-terracotta"></div>
+                                <div class="w-6 h-6 rounded-full border-2 border-textMuted/30 flex items-center justify-center flex-shrink-0">
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-[15px] font-semibold text-textMain">Log vitals</p>
+                                    <p class="text-[13px] text-textMuted mt-0.5">Blood pressure • 9:00 AM</p>
+                                </div>
+                                <button class="text-terracotta bg-terracottaLight px-4 py-2 rounded-full text-[13px] font-semibold hover:bg-terracotta hover:text-white transition-colors">Log</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Afternoon -->
+                    <div class="relative z-10">
+                        <div class="absolute -left-[1.5px] top-1.5 w-[14px] h-[14px] rounded-full bg-surface border-[3px] border-[#EAE3D9]"></div>
+                        <h3 class="text-[13px] font-bold text-textMuted uppercase tracking-widest mb-4 pl-6">Afternoon</h3>
+                        
+                        <div class="space-y-3 pl-6">
+                            <!-- Task 3 -->
+                            <div class="bg-white rounded-[20px] p-4 shadow-sm border border-black/[0.03] flex items-center gap-4">
+                                <div class="w-6 h-6 rounded-full border-2 border-textMuted/30 flex items-center justify-center flex-shrink-0">
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-[15px] font-medium text-textMain">Afternoon walk</p>
+                                    <p class="text-[13px] text-textMuted mt-0.5">1:00 PM</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </section>
+
+            <!-- Medication Safety Board -->
+            <section class="px-6 py-6 mt-2">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-[22px] font-semibold text-textMain tracking-tight">Medications</h2>
+                    <button class="text-terracotta text-[14px] font-semibold">See all</button>
+                </div>
+                
+                <div class="bg-white rounded-[24px] p-5 shadow-sm border border-black/[0.03]">
+                    <div class="flex items-center gap-3.5 mb-5">
+                        <div class="w-11 h-11 rounded-full bg-mintLight/60 flex items-center justify-center">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-mint"></i>
+                        </div>
+                        <div>
+                            <p class="text-[15px] font-semibold text-textMain">100% adherence</p>
+                            <p class="text-[13px] text-textMuted mt-0.5">Great job this week</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-base pt-4">
+                        <p class="text-[11px] text-textMuted font-bold mb-3 uppercase tracking-widest">Next Dose • 8:00 PM</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-[14px] bg-terracottaLight/50 flex items-center justify-center text-terracotta">
+                                    <i data-lucide="pill" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[15px] font-semibold text-textMain">Lisinopril</p>
+                                    <p class="text-[13px] text-textMuted mt-0.5">10mg • With food</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <nav class="absolute bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-black/[0.03] pb-8 pt-3 px-6 flex justify-between items-center z-50">
+            <button class="flex flex-col items-center gap-1 p-2 text-terracotta">
+                <i data-lucide="home" class="w-6 h-6 fill-terracotta/20"></i>
+                <span class="text-[10px] font-semibold">Home</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 p-2 text-textMuted hover:text-textMain transition-colors">
+                <i data-lucide="activity" class="w-6 h-6"></i>
+                <span class="text-[10px] font-medium">Health</span>
+            </button>
+            
+            <!-- Quick Add (Prominent) -->
+            <div class="relative -top-6">
+                <button class="w-[56px] h-[56px] bg-terracotta text-white rounded-full shadow-lg shadow-terracotta/30 flex items-center justify-center hover:scale-105 transition-transform border-[4px] border-surface">
+                    <i data-lucide="plus" class="w-7 h-7"></i>
+                </button>
+            </div>
+            
+            <button class="flex flex-col items-center gap-1 p-2 text-textMuted hover:text-textMain transition-colors">
+                <i data-lucide="message-circle" class="w-6 h-6"></i>
+                <span class="text-[10px] font-medium">Messages</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 p-2 text-textMuted hover:text-textMain transition-colors">
+                <i data-lucide="user" class="w-6 h-6"></i>
+                <span class="text-[10px] font-medium">Profile</span>
+            </button>
+        </nav>
+        
+        <!-- Home Indicator -->
+        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-[120px] h-1.5 bg-black/20 rounded-full z-50"></div>
+        
+    </div>
+    
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

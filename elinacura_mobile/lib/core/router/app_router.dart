@@ -12,31 +12,54 @@ import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/medications/medication_screens.dart';
 import '../../features/profile/profile_screens.dart';
 import '../../features/social/social_screens.dart';
+import '../../shared/widgets/ec_widgets.dart';
 
 void showQuickAddSheet(BuildContext context) {
   showEcGlassSheet(
     context,
     children: [
+      const Padding(
+        padding: EdgeInsets.fromLTRB(12, 4, 12, 14),
+        child: EcScreenHero(
+          eyebrow: 'Quick add',
+          title: 'What do you want to capture?',
+          subtitle:
+              'Add a scan, reminder, vital, or emergency action without leaving your care flow.',
+          icon: Icons.add_rounded,
+        ),
+      ),
       _SheetTile(
         icon: Icons.document_scanner_rounded,
         title: 'Scan medication',
-        onTap: () { Navigator.pop(context); context.push('/ocr'); },
+        onTap: () {
+          Navigator.pop(context);
+          context.push('/ocr');
+        },
       ),
       _SheetTile(
         icon: Icons.monitor_heart_rounded,
         title: 'Log vitals',
-        onTap: () { Navigator.pop(context); context.push('/health'); },
+        onTap: () {
+          Navigator.pop(context);
+          context.push('/health');
+        },
       ),
       _SheetTile(
         icon: Icons.alarm_rounded,
         title: 'Add reminder',
-        onTap: () { Navigator.pop(context); context.push('/reminders'); },
+        onTap: () {
+          Navigator.pop(context);
+          context.push('/reminders');
+        },
       ),
       _SheetTile(
         icon: Icons.emergency_rounded,
         title: 'Emergency',
         iconColor: EcColors.of(context).textCritical,
-        onTap: () { Navigator.pop(context); context.push('/emergency'); },
+        onTap: () {
+          Navigator.pop(context);
+          context.push('/emergency');
+        },
       ),
     ],
   );
@@ -67,8 +90,16 @@ class _SheetTile extends StatelessWidget {
         children: [
           Icon(icon, color: iconColor),
           const SizedBox(width: 14),
-          Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
-          Icon(Icons.chevron_right_rounded, color: EcColors.of(context).textMuted),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: EcColors.of(context).textMuted,
+          ),
         ],
       ),
     );
@@ -103,19 +134,44 @@ class _PatientShellState extends ConsumerState<PatientShell> {
         selectedIndex: index,
         onSelected: (i) {
           switch (i) {
-            case 0: context.go('/dashboard');
-            case 1: context.go('/health');
-            case 2: showQuickAddSheet(context);
-            case 3: context.go('/messages');
-            case 4: context.go('/profile');
+            case 0:
+              context.go('/dashboard');
+            case 1:
+              context.go('/health');
+            case 2:
+              showQuickAddSheet(context);
+            case 3:
+              context.go('/messages');
+            case 4:
+              context.go('/profile');
           }
         },
         destinations: const [
-          EcGlassNavDestination(icon: Icons.home_outlined, selectedIcon: Icons.home_rounded, label: 'Home'),
-          EcGlassNavDestination(icon: Icons.favorite_outline, selectedIcon: Icons.favorite_rounded, label: 'Health'),
-          EcGlassNavDestination(icon: Icons.add_circle_outline, selectedIcon: Icons.add_circle_rounded, label: 'Add'),
-          EcGlassNavDestination(icon: Icons.chat_bubble_outline, selectedIcon: Icons.chat_bubble_rounded, label: 'Messages'),
-          EcGlassNavDestination(icon: Icons.person_outline, selectedIcon: Icons.person_rounded, label: 'Profile'),
+          EcGlassNavDestination(
+            icon: Icons.home_outlined,
+            selectedIcon: Icons.home_rounded,
+            label: 'Home',
+          ),
+          EcGlassNavDestination(
+            icon: Icons.favorite_outline,
+            selectedIcon: Icons.favorite_rounded,
+            label: 'Health',
+          ),
+          EcGlassNavDestination(
+            icon: Icons.add_circle_outline,
+            selectedIcon: Icons.add_circle_rounded,
+            label: 'Add',
+          ),
+          EcGlassNavDestination(
+            icon: Icons.chat_bubble_outline,
+            selectedIcon: Icons.chat_bubble_rounded,
+            label: 'Messages',
+          ),
+          EcGlassNavDestination(
+            icon: Icons.person_outline,
+            selectedIcon: Icons.person_rounded,
+            label: 'Profile',
+          ),
         ],
       ),
     );
@@ -132,7 +188,9 @@ class CaregiverShell extends ConsumerWidget {
     final location = GoRouterState.of(context).uri.toString();
     var index = 0;
     if (location.startsWith('/messages')) index = 1;
-    if (location.startsWith('/profile') || location.startsWith('/settings')) index = 2;
+    if (location.startsWith('/profile') || location.startsWith('/settings')) {
+      index = 2;
+    }
 
     return EcGlassScaffold(
       body: child,
@@ -147,14 +205,28 @@ class CaregiverShell extends ConsumerWidget {
               } else {
                 context.go('/caregiver-picker');
               }
-            case 1: context.go('/messages');
-            case 2: context.go('/profile');
+            case 1:
+              context.go('/messages');
+            case 2:
+              context.go('/profile');
           }
         },
         destinations: const [
-          EcGlassNavDestination(icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard_rounded, label: 'Dashboard'),
-          EcGlassNavDestination(icon: Icons.chat_bubble_outline, selectedIcon: Icons.chat_bubble_rounded, label: 'Messages'),
-          EcGlassNavDestination(icon: Icons.person_outline, selectedIcon: Icons.person_rounded, label: 'Profile'),
+          EcGlassNavDestination(
+            icon: Icons.dashboard_outlined,
+            selectedIcon: Icons.dashboard_rounded,
+            label: 'Dashboard',
+          ),
+          EcGlassNavDestination(
+            icon: Icons.chat_bubble_outline,
+            selectedIcon: Icons.chat_bubble_rounded,
+            label: 'Messages',
+          ),
+          EcGlassNavDestination(
+            icon: Icons.person_outline,
+            selectedIcon: Icons.person_rounded,
+            label: 'Profile',
+          ),
         ],
       ),
     );
@@ -169,27 +241,65 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/onboarding',
     redirect: (context, state) {
       final isLoggedIn = authState.valueOrNull != null;
-      final onAuth = state.matchedLocation.startsWith('/auth') ||
+      final onAuth =
+          state.matchedLocation.startsWith('/auth') ||
           state.matchedLocation == '/onboarding';
       if (!isLoggedIn && !onAuth) return '/auth';
-      if (isLoggedIn && (state.matchedLocation == '/auth' || state.matchedLocation == '/onboarding')) {
-        return shellMode == AppShellMode.caregiver ? '/caregiver-picker' : '/dashboard';
+      if (isLoggedIn &&
+          (state.matchedLocation == '/auth' ||
+              state.matchedLocation == '/onboarding')) {
+        return shellMode == AppShellMode.caregiver
+            ? '/caregiver-picker'
+            : '/dashboard';
       }
       return null;
     },
     routes: [
-      GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
-      GoRoute(path: '/auth', builder: (_, __) => const AuthScreen()),
-      GoRoute(path: '/caregiver-picker', builder: (_, __) => const CaregiverProfilePickerScreen()),
-      GoRoute(path: '/emergency', builder: (_, __) => const EmergencyScreen()),
-      GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
-      GoRoute(path: '/ocr', builder: (_, __) => const OcrCaptureScreen()),
-      GoRoute(path: '/scanner', builder: (_, __) => const ScannerScreen()),
-      GoRoute(path: '/reminders', builder: (_, __) => const RemindersScreen()),
-      GoRoute(path: '/refill', builder: (_, __) => const RefillCalendarScreen()),
-      GoRoute(path: '/connections', builder: (_, __) => const ConnectionsScreen()),
-      GoRoute(path: '/more', builder: (_, __) => const MoreMenuScreen()),
-      GoRoute(path: '/safety', builder: (_, __) => const SafetyScreen()),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(path: '/auth', builder: (context, state) => const AuthScreen()),
+      GoRoute(
+        path: '/caregiver-picker',
+        builder: (context, state) => const CaregiverProfilePickerScreen(),
+      ),
+      GoRoute(
+        path: '/emergency',
+        builder: (context, state) => const EmergencyScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/ocr',
+        builder: (context, state) => const OcrCaptureScreen(),
+      ),
+      GoRoute(
+        path: '/scanner',
+        builder: (context, state) => const ScannerScreen(),
+      ),
+      GoRoute(
+        path: '/reminders',
+        builder: (context, state) => const RemindersScreen(),
+      ),
+      GoRoute(
+        path: '/refill',
+        builder: (context, state) => const RefillCalendarScreen(),
+      ),
+      GoRoute(
+        path: '/connections',
+        builder: (context, state) => const ConnectionsScreen(),
+      ),
+      GoRoute(
+        path: '/more',
+        builder: (context, state) => const MoreMenuScreen(),
+      ),
+      GoRoute(
+        path: '/safety',
+        builder: (context, state) => const SafetyScreen(),
+      ),
       ShellRoute(
         builder: (context, state, child) {
           if (shellMode == AppShellMode.caregiver) {
@@ -198,13 +308,25 @@ final routerProvider = Provider<GoRouter>((ref) {
           return PatientShell(child: child);
         },
         routes: [
-          GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
-          GoRoute(path: '/health', builder: (_, __) => const HealthScreen()),
-          GoRoute(path: '/messages', builder: (_, __) => const MessagesScreen()),
-          GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
+          GoRoute(
+            path: '/dashboard',
+            builder: (context, state) => const DashboardScreen(),
+          ),
+          GoRoute(
+            path: '/health',
+            builder: (context, state) => const HealthScreen(),
+          ),
+          GoRoute(
+            path: '/messages',
+            builder: (context, state) => const MessagesScreen(),
+          ),
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
           GoRoute(
             path: '/caregiver/:profileId',
-            builder: (_, state) => CaregiverDashboardScreen(
+            builder: (context, state) => CaregiverDashboardScreen(
               profileId: state.pathParameters['profileId']!,
             ),
           ),

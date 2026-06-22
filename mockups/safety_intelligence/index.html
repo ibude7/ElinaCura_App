@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElinaCura - Safety Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgBase: '#161D2A',
+                        surface: '#1E2738',
+                        surfaceHover: '#2A364B',
+                        textMain: '#E7ECF2',
+                        textMuted: '#94A3B8',
+                        borderSubtle: '#334155',
+                        safe: '#10B981',
+                        safeBg: 'rgba(16, 185, 129, 0.15)',
+                        caution: '#F59E0B',
+                        cautionBg: 'rgba(245, 158, 11, 0.15)',
+                        alert: '#EF4444',
+                        alertBg: 'rgba(239, 68, 68, 0.15)',
+                        accent: '#3B82F6',
+                        accentBg: 'rgba(59, 130, 246, 0.15)',
+                    },
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    backgroundImage: {
+                        'grid-pattern': "url(\"data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L0 0L0 20' fill='none' stroke='%23334155' stroke-width='0.5' opacity='0.3'/%3E%3C/svg%3E\")",
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #05080f;
+        }
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            80%, 100% { transform: scale(2.5); opacity: 0; }
+        }
+        @keyframes shine {
+            100% { left: 125%; }
+        }
+        .animate-scan {
+            animation: scan 3s ease-in-out infinite alternate;
+        }
+        .pulse-ring::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; right: 0; bottom: 0;
+            border-radius: 50%;
+            border: 1px solid theme('colors.accent');
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: theme('colors.borderSubtle');
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 antialiased selection:bg-accent/30 selection:text-textMain">
+
+    <!-- Mobile Frame -->
+    <div class="w-[375px] h-[812px] bg-bgBase rounded-[45px] overflow-hidden shadow-2xl shadow-accent/5 border-[10px] border-[#0a0f18] relative flex flex-col font-sans text-textMain ring-1 ring-white/10">
+        
+        <!-- Grid Background -->
+        <div class="absolute inset-0 bg-grid-pattern z-0 pointer-events-none mix-blend-overlay opacity-60"></div>
+
+        <!-- Dynamic Island / Top Bar Mockup -->
+        <div class="absolute top-0 inset-x-0 h-7 flex justify-center z-50">
+            <div class="w-[120px] h-7 bg-[#0a0f18] rounded-b-3xl"></div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="pt-3 px-6 flex justify-between items-center text-[12px] font-medium z-40 relative tracking-wide">
+            <span>09:41</span>
+            <div class="flex gap-1.5 items-center">
+                <i class="ph-fill ph-cell-signal-full text-[13px]"></i>
+                <i class="ph-fill ph-wifi-high text-[13px]"></i>
+                <i class="ph-fill ph-battery-full text-[13px]"></i>
+            </div>
+        </div>
+
+        <!-- Risk Summary Header -->
+        <header class="pt-5 pb-5 px-5 border-b border-borderSubtle/50 relative z-10 bg-gradient-to-b from-bgBase to-bgBase/95 backdrop-blur-md">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h1 class="text-[10px] font-mono font-medium text-textMuted tracking-[0.2em] uppercase mb-1.5 flex items-center gap-1.5">
+                        <i class="ph-fill ph-shield-check text-accent/80 text-xs"></i>
+                        Safety Status
+                    </h1>
+                    <div class="flex items-center gap-3">
+                        <div class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-caution opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-caution shadow-[0_0_8px_theme('colors.caution')]"></span>
+                        </div>
+                        <h2 class="text-xl font-bold tracking-tight text-white">1 Interaction Found</h2>
+                    </div>
+                </div>
+                <button class="w-10 h-10 rounded-full bg-surface border border-borderSubtle hover:bg-surfaceHover transition-colors flex items-center justify-center relative shadow-lg group">
+                    <i class="ph ph-bell text-lg text-textMain group-hover:animate-bounce"></i>
+                    <span class="absolute top-2 right-2.5 w-2.5 h-2.5 bg-alert rounded-full border-2 border-surface"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-4 flex flex-col gap-5 custom-scrollbar relative z-10 pb-32">
+            
+            <!-- Scan Review Card -->
+            <section class="bg-surface/80 backdrop-blur-md border border-accent/40 rounded-2xl p-4 relative overflow-hidden shadow-[0_4px_25px_-5px_theme('colors.accentBg')] group">
+                <!-- Scanning animation overlay -->
+                <div class="absolute inset-x-0 h-24 bg-gradient-to-b from-transparent via-accent/10 to-accent/30 animate-scan border-b border-accent/50 blur-[2px] pointer-events-none"></div>
+                
+                <div class="flex justify-between items-center mb-4 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="relative w-6 h-6 flex items-center justify-center pulse-ring">
+                            <i class="ph ph-scan text-accent text-lg"></i>
+                        </div>
+                        <h3 class="text-[15px] font-bold tracking-wide text-white">Live Scan: Advil Cold</h3>
+                    </div>
+                    <span class="text-[9px] font-mono font-bold bg-accentBg text-accent px-2 py-1 rounded border border-accent/30 tracking-wider">ANALYZING</span>
+                </div>
+                
+                <div class="space-y-2 relative z-10">
+                    <div class="flex justify-between items-center p-3 rounded-xl bg-bgBase border border-borderSubtle transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i class="ph-fill ph-check-circle text-safe text-lg shadow-[0_0_10px_theme('colors.safeBg')]"></i>
+                            <span class="text-[13px] font-medium">Ibuprofen (200mg)</span>
+                        </div>
+                        <span class="text-[10px] font-mono font-medium text-safe bg-safeBg px-1.5 py-0.5 rounded border border-safe/20">SAFE</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-3 rounded-xl bg-bgBase border border-caution/40 transition-all duration-300 shadow-[0_0_15px_theme('colors.cautionBg')]">
+                        <div class="flex items-center gap-3">
+                            <i class="ph-fill ph-warning-circle text-caution text-lg animate-pulse shadow-[0_0_10px_theme('colors.cautionBg')]"></i>
+                            <span class="text-[13px] font-medium">Pseudoephedrine (30mg)</span>
+                        </div>
+                        <span class="text-[10px] font-mono font-medium text-caution bg-cautionBg px-1.5 py-0.5 rounded border border-caution/20">FLAGGED</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex items-start gap-3 p-3.5 bg-gradient-to-r from-accentBg/50 to-bgBase rounded-xl border border-accent/20 relative z-10">
+                    <i class="ph-fill ph-sparkle text-accent mt-0.5 text-sm"></i>
+                    <p class="text-xs text-[#CBD5E1] leading-relaxed"><strong class="text-accent font-semibold">Elina AI:</strong> Pseudoephedrine can increase blood pressure. This conflicts with your active <span class="border-b border-dashed border-textMuted cursor-help text-white">Hypertension</span> profile.</p>
+                </div>
+            </section>
+
+            <!-- Interaction Feed -->
+            <section class="mt-1">
+                <div class="flex justify-between items-end mb-3 px-1">
+                    <h3 class="text-[10px] font-mono font-medium text-textMuted tracking-[0.15em] uppercase flex items-center gap-1.5">
+                        <i class="ph ph-activity text-textMuted"></i>
+                        Active Interactions
+                    </h3>
+                    <span class="text-[9px] font-mono text-textMuted bg-surface px-1.5 py-0.5 rounded border border-borderSubtle">JUST NOW</span>
+                </div>
+                
+                <div class="bg-surface/90 backdrop-blur-sm rounded-2xl border border-alert/30 overflow-hidden relative shadow-[0_8px_25px_-5px_theme('colors.alertBg')]">
+                    <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-alert via-caution to-alert"></div>
+                    <div class="p-4.5 pt-5 px-4">
+                        <div class="flex items-start justify-between mb-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-alertBg flex items-center justify-center border border-alert/20">
+                                    <i class="ph-fill ph-warning text-alert text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-alert text-[15px]">Moderate Risk</h4>
+                                    <p class="text-[9px] text-textMuted font-mono tracking-wide mt-0.5">BLOOD PRESSURE ELEVATION</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-mono font-bold bg-alertBg text-alert px-2 py-1 rounded border border-alert/20 tracking-wider">MED-MED</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 mb-4 bg-bgBase p-1 rounded-xl border border-borderSubtle">
+                            <div class="flex-1 p-2 rounded-lg text-center flex flex-col gap-0.5 relative overflow-hidden">
+                                <span class="text-[9px] font-mono text-textMuted tracking-wider mb-0.5">CURRENT</span>
+                                <span class="text-[14px] font-bold text-textMain">Lisinopril</span>
+                                <span class="text-[10px] text-textMuted">10mg / Daily</span>
+                            </div>
+                            <div class="w-7 h-7 rounded-full bg-surface border border-borderSubtle flex items-center justify-center relative z-10 -mx-1.5 shadow-sm">
+                                <i class="ph ph-arrows-left-right text-textMuted text-xs"></i>
+                            </div>
+                            <div class="flex-1 p-2 rounded-lg text-center flex flex-col gap-0.5 bg-cautionBg/20 border border-caution/20 relative overflow-hidden">
+                                <span class="text-[9px] font-mono text-textMuted tracking-wider mb-0.5">NEW (SCANNED)</span>
+                                <span class="text-[14px] font-bold text-caution">Advil Cold</span>
+                                <span class="text-[10px] text-textMuted">Pseudoephedrine</span>
+                            </div>
+                        </div>
+                        
+                        <p class="text-[13px] text-[#CBD5E1] leading-relaxed mb-5 px-1">Taking these together counteracts the effects of Lisinopril, potentially causing a dangerous spike in blood pressure.</p>
+                        
+                        <div class="flex gap-2">
+                            <button class="flex-1 py-2.5 bg-bgBase border border-borderSubtle hover:bg-surfaceHover transition-colors rounded-xl text-xs font-semibold text-textMain flex items-center justify-center gap-2 group">
+                                <i class="ph ph-stethoscope text-textMuted group-hover:text-textMain transition-colors"></i>
+                                View Details
+                            </button>
+                            <button class="flex-1 py-2.5 bg-surfaceHover border border-borderSubtle hover:bg-bgBase transition-colors rounded-xl text-xs font-semibold text-white flex items-center justify-center gap-2 group">
+                                <i class="ph ph-lightbulb text-textMuted group-hover:text-white transition-colors"></i>
+                                Suggest Alt
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="mt-1">
+                <div class="bg-surface/40 backdrop-blur-sm rounded-2xl border border-borderSubtle/60 p-3.5 opacity-80 hover:opacity-100 transition-all cursor-pointer group">
+                   <div class="flex items-start justify-between mb-2">
+                      <div class="flex items-center gap-2">
+                        <i class="ph-fill ph-info text-accent text-sm group-hover:scale-110 transition-transform"></i>
+                        <h4 class="font-semibold text-[13px] text-textMain">Low Risk Note</h4>
+                      </div>
+                      <span class="text-[9px] font-mono font-medium bg-surfaceHover text-textMuted px-1.5 py-0.5 rounded border border-borderSubtle/50">MED-FOOD</span>
+                    </div>
+                    <p class="text-xs text-textMuted pl-6 leading-relaxed">Lisinopril + Grapefruit. Minor interaction. Avoid consuming in large quantities.</p>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Caregiver Alert Quick-Action Footer -->
+        <footer class="absolute bottom-0 w-full pt-10 pb-8 px-5 bg-gradient-to-t from-bgBase via-bgBase/95 to-transparent z-20 pointer-events-none">
+            <button class="w-full relative group rounded-2xl overflow-hidden shadow-[0_10px_40px_rgba(239,68,68,0.25)] transform transition-transform active:scale-[0.98] pointer-events-auto">
+                <div class="absolute inset-0 bg-gradient-to-r from-alert to-rose-600"></div>
+                <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-30 mix-blend-overlay"></div>
+                
+                <!-- Shine effect -->
+                <div class="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 group-hover:animate-[shine_1.5s_ease-in-out]"></div>
+
+                <div class="relative px-5 py-4 flex items-center justify-between z-10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 shadow-inner">
+                            <i class="ph-fill ph-phone-call text-white text-lg"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-[15px] font-bold text-white tracking-wide">Alert Care Team</span>
+                            <div class="flex items-center gap-1.5 mt-1">
+                                <span class="relative flex h-1.5 w-1.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+                                </span>
+                                <span class="block text-[9px] text-white/90 font-mono font-medium tracking-[0.1em]">SARAH (CAREGIVER)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <i class="ph-bold ph-caret-right text-white/80 text-lg group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </button>
+            
+            <!-- Home indicator -->
+            <div class="w-[120px] h-1.5 bg-borderSubtle/60 rounded-full mx-auto mt-6 pointer-events-auto"></div>
+        </footer>
+    </div>
+
+</body>
+</html>

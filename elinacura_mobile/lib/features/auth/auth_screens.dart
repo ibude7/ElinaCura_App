@@ -45,7 +45,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Future<void> _submit() async {
     HapticFeedback.lightImpact();
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final auth = ref.read(authServiceProvider);
       if (_isSignUp) {
@@ -55,7 +58,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           displayName: _nameController.text,
         );
       } else {
-        await auth.signInWithEmail(_emailController.text, _passwordController.text);
+        await auth.signInWithEmail(
+          _emailController.text,
+          _passwordController.text,
+        );
       }
       _routeAfterAuth();
     } catch (e) {
@@ -67,7 +73,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Future<void> _google() async {
     HapticFeedback.lightImpact();
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await ref.read(authServiceProvider).signInWithGoogle();
       _routeAfterAuth();
@@ -79,7 +88,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _guest() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await ref.read(authServiceProvider).signInAnonymously();
       _routeAfterAuth();
@@ -92,7 +104,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Future<void> _apple() async {
     HapticFeedback.lightImpact();
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await ref.read(authServiceProvider).signInWithApple();
       _routeAfterAuth();
@@ -144,7 +159,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               transitionBuilder: (child, anim) => FadeTransition(
                 opacity: anim,
                 child: SlideTransition(
-                  position: Tween(begin: const Offset(0.04, 0), end: Offset.zero).animate(anim),
+                  position: Tween(
+                    begin: const Offset(0.04, 0),
+                    end: Offset.zero,
+                  ).animate(anim),
                   child: child,
                 ),
               ),
@@ -162,64 +180,105 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return SingleChildScrollView(
       key: const ValueKey('role'),
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
       child: ConstrainedBox(
-        constraints: BoxConstraints(minHeight: MediaQuery.sizeOf(context).height - 120),
+        constraints: BoxConstraints(
+          minHeight: MediaQuery.sizeOf(context).height - 120,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             const _BrandHero()
                 .animate()
-                .fadeIn(duration: 600.ms)
-                .scale(begin: const Offset(0.86, 0.86), curve: Curves.easeOutBack, duration: 700.ms),
-            const SizedBox(height: 30),
+                .fadeIn(duration: 560.ms)
+                .slideY(begin: 0.08, end: 0, curve: Curves.easeOutCubic),
+            const SizedBox(height: 26),
+            EcGlassSurface(
+                  variant: EcGlassVariant.elevated,
+                  borderRadius: EcTokens.radiusGlass,
+                  padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome to ElinaCura',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -1.1,
+                          height: 1.05,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Choose your path. We will tune the experience around your daily care role.',
+                        style: TextStyle(
+                          color: ec.textSecondary,
+                          fontSize: 14.5,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      const _CarePromiseStrip(),
+                    ],
+                  ),
+                )
+                .animate()
+                .fadeIn(delay: 120.ms, duration: 440.ms)
+                .slideY(begin: 0.08, end: 0, delay: 120.ms),
+            const SizedBox(height: 22),
             Text(
-              'Welcome to ElinaCura',
-              textAlign: TextAlign.center,
+              'CONTINUE AS',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 28,
+                color: ec.textMuted,
+                fontSize: 10.5,
                 fontWeight: FontWeight.w800,
-                letterSpacing: -1.0,
-                height: 1.05,
+                letterSpacing: 1.4,
               ),
-            ).animate().fadeIn(delay: 160.ms, duration: 450.ms).slideY(begin: 0.12, end: 0, delay: 160.ms),
+            ).animate().fadeIn(delay: 260.ms, duration: 350.ms),
             const SizedBox(height: 12),
-            Text(
-              'A century of intentional living, distilled into one calm, careful companion.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: ec.textSecondary, fontSize: 14.5, height: 1.5),
-            ).animate().fadeIn(delay: 260.ms, duration: 450.ms),
-            const SizedBox(height: 36),
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 12),
-              child: Text(
-                'HOW WILL YOU USE THE APP?',
-                style: TextStyle(
-                  color: ec.textMuted,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.4,
-                ),
-              ),
-            ).animate().fadeIn(delay: 340.ms, duration: 350.ms),
             _RoleCard(
-              icon: Icons.self_improvement_rounded,
-              title: 'Manage my health',
-              subtitle: 'Track meds, vitals, scans and appointments',
-              accent: ec.accentBrand,
-              onTap: () { HapticFeedback.selectionClick(); setState(() => _selectedRole = UserRole.patient); },
-            ).animate().fadeIn(delay: 400.ms, duration: 420.ms).slideY(begin: 0.14, end: 0, delay: 400.ms, curve: Curves.easeOut),
+                  icon: Icons.self_improvement_rounded,
+                  title: 'Manage my health',
+                  subtitle:
+                      'A private command center for medications, scans, vitals, appointments, and safety alerts.',
+                  accent: ec.accentBrand,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _selectedRole = UserRole.patient);
+                  },
+                )
+                .animate()
+                .fadeIn(delay: 400.ms, duration: 420.ms)
+                .slideY(
+                  begin: 0.14,
+                  end: 0,
+                  delay: 400.ms,
+                  curve: Curves.easeOut,
+                ),
             const SizedBox(height: 14),
             _RoleCard(
-              icon: Icons.diversity_1_rounded,
-              title: 'Care for someone I love',
-              subtitle: 'Stay connected as a family caregiver',
-              accent: const Color(0xFF1A3C34),
-              onTap: () { HapticFeedback.selectionClick(); setState(() => _selectedRole = UserRole.caregiver); },
-            ).animate().fadeIn(delay: 480.ms, duration: 420.ms).slideY(begin: 0.14, end: 0, delay: 480.ms, curve: Curves.easeOut),
-            const SizedBox(height: 28),
+                  icon: Icons.diversity_1_rounded,
+                  title: 'Care for someone I love',
+                  subtitle:
+                      'See the right updates, coordinate routines, and step in quickly when care needs attention.',
+                  accent: const Color(0xFF1A3C34),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _selectedRole = UserRole.caregiver);
+                  },
+                )
+                .animate()
+                .fadeIn(delay: 480.ms, duration: 420.ms)
+                .slideY(
+                  begin: 0.14,
+                  end: 0,
+                  delay: 480.ms,
+                  curve: Curves.easeOut,
+                ),
+            const SizedBox(height: 24),
             const _TrustRow().animate().fadeIn(delay: 600.ms, duration: 500.ms),
             const SizedBox(height: 8),
           ],
@@ -243,11 +302,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () { HapticFeedback.selectionClick(); setState(() { _selectedRole = null; _error = null; }); },
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  setState(() {
+                    _selectedRole = null;
+                    _error = null;
+                  });
+                },
               ),
               const Spacer(),
               _RoleChip(
-                icon: isCaregiver ? Icons.diversity_1_rounded : Icons.self_improvement_rounded,
+                icon: isCaregiver
+                    ? Icons.diversity_1_rounded
+                    : Icons.self_improvement_rounded,
                 label: isCaregiver ? 'Caregiver' : 'Personal',
                 accent: _accent,
               ),
@@ -262,25 +329,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const EcLogo(size: 64).animate().fadeIn(duration: 400.ms),
-                const SizedBox(height: 18),
-                Text(
-                  _isSignUp ? 'Create your account' : 'Welcome back',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.7,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _isSignUp
-                      ? 'A few seconds to set up your care space.'
-                      : 'Pick up right where you left off.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: ec.textSecondary, fontSize: 13.5, height: 1.4),
-                ),
+                const SizedBox(height: 16),
+                _AuthHeroPanel(
+                      isSignUp: _isSignUp,
+                      isCaregiver: isCaregiver,
+                      accent: _accent,
+                    )
+                    .animate()
+                    .fadeIn(duration: 420.ms)
+                    .slideY(begin: 0.06, end: 0),
                 const SizedBox(height: 22),
                 _AuthToggle(
                   isSignUp: _isSignUp,
@@ -288,72 +345,86 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   onChanged: (v) {
                     if (v == _isSignUp) return;
                     HapticFeedback.selectionClick();
-                    setState(() { _isSignUp = v; _error = null; });
+                    setState(() {
+                      _isSignUp = v;
+                      _error = null;
+                    });
                   },
                 ),
                 const SizedBox(height: 18),
                 EcGlassSurface(
-                  variant: EcGlassVariant.elevated,
-                  borderRadius: EcTokens.radiusGlass,
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AnimatedSize(
-                        duration: EcTokens.motionBase,
-                        curve: Curves.easeOutCubic,
-                        child: _isSignUp
-                            ? Column(
-                                children: [
-                                  _AuthField(
-                                    controller: _nameController,
-                                    label: 'Full name',
-                                    icon: Icons.badge_outlined,
-                                    textInputAction: TextInputAction.next,
-                                  ),
-                                  const SizedBox(height: 14),
-                                ],
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                      _AuthField(
-                        controller: _emailController,
-                        label: 'Email address',
-                        icon: Icons.alternate_email_rounded,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: 14),
-                      _AuthField(
-                        controller: _passwordController,
-                        label: 'Password',
-                        icon: Icons.lock_outline_rounded,
-                        obscure: !_showPassword,
-                        trailing: IconButton(
-                          splashRadius: 20,
-                          icon: Icon(
-                            _showPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                            size: 20,
-                            color: ec.textMuted,
+                      variant: EcGlassVariant.elevated,
+                      borderRadius: EcTokens.radiusGlass,
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          AnimatedSize(
+                            duration: EcTokens.motionBase,
+                            curve: Curves.easeOutCubic,
+                            child: _isSignUp
+                                ? Column(
+                                    children: [
+                                      _AuthField(
+                                        controller: _nameController,
+                                        label: 'Full name',
+                                        icon: Icons.badge_outlined,
+                                        textInputAction: TextInputAction.next,
+                                      ),
+                                      const SizedBox(height: 14),
+                                    ],
+                                  )
+                                : const SizedBox.shrink(),
                           ),
-                          onPressed: () => setState(() => _showPassword = !_showPassword),
-                        ),
+                          _AuthField(
+                            controller: _emailController,
+                            label: 'Email address',
+                            icon: Icons.alternate_email_rounded,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                          ),
+                          const SizedBox(height: 14),
+                          _AuthField(
+                            controller: _passwordController,
+                            label: 'Password',
+                            icon: Icons.lock_outline_rounded,
+                            obscure: !_showPassword,
+                            trailing: IconButton(
+                              splashRadius: 20,
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility_off_rounded
+                                    : Icons.visibility_rounded,
+                                size: 20,
+                                color: ec.textMuted,
+                              ),
+                              onPressed: () => setState(
+                                () => _showPassword = !_showPassword,
+                              ),
+                            ),
+                          ),
+                          if (_error != null) ...[
+                            const SizedBox(height: 14),
+                            _ErrorBanner(message: _error!),
+                          ],
+                          const SizedBox(height: 20),
+                          EcGlassButton(
+                            label: _isSignUp ? 'Create account' : 'Sign in',
+                            loading: _loading,
+                            onPressed: _loading ? null : _submit,
+                          ),
+                        ],
                       ),
-                      if (_error != null) ...[
-                        const SizedBox(height: 14),
-                        _ErrorBanner(message: _error!),
-                      ],
-                      const SizedBox(height: 20),
-                      EcGlassButton(
-                        label: _isSignUp ? 'Create account' : 'Sign in',
-                        loading: _loading,
-                        onPressed: _loading ? null : _submit,
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 80.ms, duration: 400.ms).slideY(begin: 0.06, end: 0, delay: 80.ms),
+                    )
+                    .animate()
+                    .fadeIn(delay: 80.ms, duration: 400.ms)
+                    .slideY(begin: 0.06, end: 0, delay: 80.ms),
                 const SizedBox(height: 20),
-                const _OrDivider(),
+                _OrDivider(
+                  label: _isSignUp
+                      ? 'or start faster with'
+                      : 'or continue with',
+                ),
                 const SizedBox(height: 16),
                 if (showApple) ...[
                   _AppleButton(onPressed: _loading ? null : _apple),
@@ -371,7 +442,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     onPressed: _loading ? null : _guest,
                     child: Text(
                       'Explore as a guest',
-                      style: TextStyle(color: ec.textSecondary, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: ec.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -379,7 +453,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 Text(
                   'By continuing you agree to our Terms & Privacy Policy.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: ec.textMuted, fontSize: 11, height: 1.4),
+                  style: TextStyle(
+                    color: ec.textMuted,
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),
@@ -401,44 +479,153 @@ class _BrandHero extends StatelessWidget {
     final ec = EcColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
-      height: 188,
+      height: 172,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Container(
-            width: 188,
-            height: 188,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  ec.accentBrand.withValues(alpha: 0.22),
-                  ec.accentBrand.withValues(alpha: 0.05),
-                  Colors.transparent,
-                ],
-                stops: const [0.0, 0.55, 1.0],
-              ),
-            ),
-          )
+                width: 168,
+                height: 168,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: ec.accentBrand.withValues(alpha: 0.10),
+                ),
+              )
               .animate(onPlay: (c) => c.repeat(reverse: true))
-              .scale(begin: const Offset(0.94, 0.94), end: const Offset(1.06, 1.06), duration: 3000.ms, curve: Curves.easeInOut),
+              .scale(
+                begin: const Offset(0.94, 0.94),
+                end: const Offset(1.06, 1.06),
+                duration: 3000.ms,
+                curve: Curves.easeInOut,
+              ),
+          Positioned(
+            right: 46,
+            top: 30,
+            child: _FloatingSignal(
+              icon: Icons.health_and_safety_rounded,
+              color: ec.accentBrand,
+              label: 'Safe',
+            ),
+          ),
+          Positioned(
+            left: 42,
+            bottom: 24,
+            child: const _FloatingSignal(
+              icon: Icons.favorite_rounded,
+              color: Color(0xFF1A3C34),
+              label: 'Care',
+            ),
+          ),
           ClipOval(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
               child: Container(
-                width: 132,
-                height: 132,
+                width: 124,
+                height: 124,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: (isDark ? Colors.white : Colors.white).withValues(alpha: isDark ? 0.08 : 0.5),
-                  border: Border.all(color: Colors.white.withValues(alpha: isDark ? 0.18 : 0.7), width: 1.2),
+                  color: (isDark ? Colors.white : Colors.white).withValues(
+                    alpha: isDark ? 0.08 : 0.5,
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: isDark ? 0.18 : 0.7),
+                    width: 1.2,
+                  ),
                 ),
               ),
             ),
           ),
-          const EcLogo(size: 104),
+          const EcLogo(size: 96),
         ],
       ),
+    );
+  }
+}
+
+class _FloatingSignal extends StatelessWidget {
+  const _FloatingSignal({
+    required this.icon,
+    required this.color,
+    required this.label,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final glass = EcGlass.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: glass.fillElevated,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: glass.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 15),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CarePromiseStrip extends StatelessWidget {
+  const _CarePromiseStrip();
+
+  static const _items = [
+    (Icons.lock_rounded, 'Private'),
+    (Icons.notifications_active_rounded, 'Timely'),
+    (Icons.groups_rounded, 'Shared'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    return Row(
+      children: [
+        for (var i = 0; i < _items.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: ec.accentBrand.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: ec.accentBrand.withValues(alpha: 0.12),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(_items[i].$1, color: ec.accentBrand, size: 17),
+                  const SizedBox(height: 5),
+                  Text(
+                    _items[i].$2,
+                    style: TextStyle(
+                      color: ec.textSecondary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -449,20 +636,70 @@ class _AuthGlow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final base = dark ? const Color(0xFF080B11) : const Color(0xFFEFEBE3);
+    return ColoredBox(
+      color: base,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned(
+            top: -110,
+            right: -92,
+            child: _AuthOrb(
+              size: 260,
+              color: accent,
+              opacity: dark ? 0.22 : 0.15,
+            ),
+          ),
+          Positioned(
+            bottom: 44,
+            left: -120,
+            child: _AuthOrb(
+              size: 250,
+              color: const Color(0xFF1A3C34),
+              opacity: dark ? 0.16 : 0.10,
+            ),
+          ),
+          Positioned(
+            top: 240,
+            left: 28,
+            child: _AuthOrb(
+              size: 96,
+              color: Colors.white,
+              opacity: dark ? 0.04 : 0.28,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AuthOrb extends StatelessWidget {
+  const _AuthOrb({
+    required this.size,
+    required this.color,
+    required this.opacity,
+  });
+
+  final double size;
+  final Color color;
+  final double opacity;
+
+  @override
+  Widget build(BuildContext context) {
     return IgnorePointer(
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeOut,
+      child: Container(
+        width: size,
+        height: size,
         decoration: BoxDecoration(
+          shape: BoxShape.circle,
           gradient: RadialGradient(
-            center: const Alignment(0.0, -0.85),
-            radius: 1.0,
             colors: [
-              accent.withValues(alpha: 0.12),
-              accent.withValues(alpha: 0.03),
-              Colors.transparent,
+              color.withValues(alpha: opacity),
+              color.withValues(alpha: 0),
             ],
-            stops: const [0.0, 0.45, 1.0],
           ),
         ),
       ),
@@ -495,36 +732,60 @@ class _RoleCard extends StatelessWidget {
     return EcGlassSurface(
       onTap: onTap,
       variant: EcGlassVariant.elevated,
-      borderRadius: EcTokens.radiusLg,
-      padding: const EdgeInsets.all(16),
-      child: Row(
+      borderRadius: EcTokens.radiusGlass,
+      padding: const EdgeInsets.all(18),
+      tint: accent,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [accent.withValues(alpha: 0.22), accent.withValues(alpha: 0.10)],
+          Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  color: accent.withValues(alpha: 0.15),
+                  border: Border.all(color: accent.withValues(alpha: 0.24)),
+                ),
+                child: Icon(icon, color: accent, size: 27),
               ),
-              border: Border.all(color: accent.withValues(alpha: 0.28)),
-            ),
-            child: Icon(icon, color: accent, size: 26),
+              const Spacer(),
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accent.withValues(alpha: 0.12),
+                  border: Border.all(color: accent.withValues(alpha: 0.20)),
+                ),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  color: accent,
+                  size: 18,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(color: onSurface, fontWeight: FontWeight.w700, fontSize: 15.5, letterSpacing: -0.3)),
-                const SizedBox(height: 3),
-                Text(subtitle, style: TextStyle(color: ec.textSecondary, fontSize: 12.5, height: 1.3)),
-              ],
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: TextStyle(
+              color: onSurface,
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+              letterSpacing: -0.5,
             ),
           ),
-          Icon(Icons.arrow_forward_rounded, color: accent, size: 20),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: ec.textSecondary,
+              fontSize: 13,
+              height: 1.42,
+            ),
+          ),
         ],
       ),
     );
@@ -532,7 +793,11 @@ class _RoleCard extends StatelessWidget {
 }
 
 class _RoleChip extends StatelessWidget {
-  const _RoleChip({required this.icon, required this.label, required this.accent});
+  const _RoleChip({
+    required this.icon,
+    required this.label,
+    required this.accent,
+  });
   final IconData icon;
   final String label;
   final Color accent;
@@ -551,7 +816,100 @@ class _RoleChip extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: accent),
           const SizedBox(width: 6),
-          Text(label.toUpperCase(), style: TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              color: accent,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AuthHeroPanel extends StatelessWidget {
+  const _AuthHeroPanel({
+    required this.isSignUp,
+    required this.isCaregiver,
+    required this.accent,
+  });
+
+  final bool isSignUp;
+  final bool isCaregiver;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+    return EcGlassSurface(
+      variant: EcGlassVariant.subtle,
+      borderRadius: EcTokens.radiusGlass,
+      tint: accent,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  color: accent.withValues(alpha: 0.14),
+                  border: Border.all(color: accent.withValues(alpha: 0.22)),
+                ),
+                child: Icon(
+                  isCaregiver
+                      ? Icons.diversity_1_rounded
+                      : Icons.self_improvement_rounded,
+                  color: accent,
+                  size: 22,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                isSignUp ? 'NEW CARE SPACE' : 'SECURE RETURN',
+                style: TextStyle(
+                  color: accent,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.9,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          AnimatedSwitcher(
+            duration: EcTokens.motionFast,
+            child: Text(
+              isSignUp ? 'Create your account' : 'Welcome back',
+              key: ValueKey(isSignUp),
+              style: TextStyle(
+                color: onSurface,
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.9,
+                height: 1.05,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isSignUp
+                ? 'Set up a calm, private place to coordinate your care from day one.'
+                : 'Sign in to continue your routines, insights, and care circle.',
+            style: TextStyle(
+              color: ec.textSecondary,
+              fontSize: 13.5,
+              height: 1.45,
+            ),
+          ),
         ],
       ),
     );
@@ -562,7 +920,11 @@ class _RoleChip extends StatelessWidget {
 // Sign in / Create account segmented toggle
 // ─────────────────────────────────────────────────────────────────────────────
 class _AuthToggle extends StatelessWidget {
-  const _AuthToggle({required this.isSignUp, required this.accent, required this.onChanged});
+  const _AuthToggle({
+    required this.isSignUp,
+    required this.accent,
+    required this.onChanged,
+  });
   final bool isSignUp;
   final Color accent;
   final ValueChanged<bool> onChanged;
@@ -587,17 +949,21 @@ class _AuthToggle extends StatelessWidget {
               AnimatedAlign(
                 duration: EcTokens.motionBase,
                 curve: Curves.easeOutCubic,
-                alignment: isSignUp ? Alignment.centerRight : Alignment.centerLeft,
+                alignment: isSignUp
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
                 child: Container(
                   width: segW,
                   height: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    gradient: LinearGradient(
-                      colors: [accent, Color.lerp(accent, Colors.white, 0.12)!],
-                    ),
+                    color: accent,
                     boxShadow: [
-                      BoxShadow(color: accent.withValues(alpha: 0.32), blurRadius: 14, offset: const Offset(0, 4)),
+                      BoxShadow(
+                        color: accent.withValues(alpha: 0.32),
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
                   ),
                 ),
@@ -667,7 +1033,11 @@ class _AuthField extends StatelessWidget {
       obscureText: obscure,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
-      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 15, fontWeight: FontWeight.w600),
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+      ),
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, size: 20, color: ec.textMuted),
@@ -698,10 +1068,16 @@ class _AppleButton extends StatelessWidget {
             color: bg,
             borderRadius: BorderRadius.circular(EcTokens.radiusMd),
             border: Border.all(
-              color: isDark ? Colors.black.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.12),
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.08)
+                  : Colors.white.withValues(alpha: 0.12),
             ),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.22), blurRadius: 16, offset: const Offset(0, 6)),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.22),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
             ],
           ),
           child: Center(
@@ -712,7 +1088,12 @@ class _AppleButton extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Continue with Apple',
-                  style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: 14, letterSpacing: -0.2),
+                  style: TextStyle(
+                    color: fg,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    letterSpacing: -0.2,
+                  ),
                 ),
               ],
             ),
@@ -724,7 +1105,9 @@ class _AppleButton extends StatelessWidget {
 }
 
 class _OrDivider extends StatelessWidget {
-  const _OrDivider();
+  const _OrDivider({required this.label});
+
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -737,7 +1120,14 @@ class _OrDivider extends StatelessWidget {
         line,
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text('or', style: TextStyle(color: ec.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: ec.textMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
         line,
       ],
@@ -764,7 +1154,15 @@ class _ErrorBanner extends StatelessWidget {
           Icon(Icons.error_outline_rounded, size: 18, color: ec.textCritical),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(message, style: TextStyle(color: ec.textCritical, fontSize: 12.5, height: 1.35, fontWeight: FontWeight.w600)),
+            child: Text(
+              message,
+              style: TextStyle(
+                color: ec.textCritical,
+                fontSize: 12.5,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -779,13 +1177,20 @@ class _TrustRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
     Widget item(IconData i, String t) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(i, size: 14, color: ec.textMuted),
-            const SizedBox(width: 6),
-            Text(t, style: TextStyle(color: ec.textMuted, fontSize: 11.5, fontWeight: FontWeight.w600)),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(i, size: 14, color: ec.textMuted),
+        const SizedBox(width: 6),
+        Text(
+          t,
+          style: TextStyle(
+            color: ec.textMuted,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 18,
@@ -855,12 +1260,18 @@ class _BiometricGateState extends ConsumerState<BiometricGate> {
                 children: [
                   const EcLogo(size: 84),
                   const SizedBox(height: 22),
-                  Text('Unlock ElinaCura', style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    'Unlock ElinaCura',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   const SizedBox(height: 6),
                   Text(
                     'Use Face ID or your passcode to continue.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: EcColors.of(context).textSecondary, fontSize: 13),
+                    style: TextStyle(
+                      color: EcColors.of(context).textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   EcGlassButton(
@@ -898,16 +1309,11 @@ class CaregiverProfilePickerScreen extends ConsumerWidget {
         ),
         data: (entries) {
           if (entries.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: EcGlassSurface(
-                  child: const Text(
-                    'No linked patients yet. Ask them to invite you via Connections.',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
+            return const EcEmptyState(
+              icon: Icons.people_outline_rounded,
+              title: 'No linked patients yet',
+              message:
+                  'Ask the person you care for to invite you from Connections before opening caregiver mode.',
             );
           }
           if (entries.length == 1) {
@@ -918,17 +1324,30 @@ class CaregiverProfilePickerScreen extends ConsumerWidget {
           }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: entries.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemCount: entries.length + 1,
+            separatorBuilder: (context, index) => const SizedBox(height: 10),
             itemBuilder: (context, i) {
-              final entry = entries[i];
+              if (i == 0) {
+                return const EcScreenHero(
+                  eyebrow: 'Caregiver access',
+                  title: 'Choose a profile',
+                  subtitle:
+                      'Open the care view for the person you are supporting today.',
+                  icon: Icons.diversity_1_rounded,
+                );
+              }
+              final entry = entries[i - 1];
               return EcCard(
                 onTap: () => context.go('/caregiver/${entry.profileId}'),
                 child: Row(
                   children: [
                     const Icon(Icons.person_rounded),
                     const SizedBox(width: 12),
-                    Expanded(child: Text('Patient ${entry.profileId.substring(0, 8)}…')),
+                    Expanded(
+                      child: Text(
+                        'Patient ${entry.profileId.substring(0, 8)}…',
+                      ),
+                    ),
                     const Icon(Icons.chevron_right_rounded),
                   ],
                 ),

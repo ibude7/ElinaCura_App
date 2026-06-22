@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/config/app_config.dart';
 import '../../core/auth/auth_providers.dart';
 import '../../core/theme/ec_theme.dart';
-import '../../core/theme/ec_tokens.dart';
 import '../../shared/models/models.dart';
 import '../../shared/utils/health_overview_builder.dart';
 import '../../shared/widgets/ec_glass.dart';
@@ -27,7 +26,11 @@ class DashboardScreen extends ConsumerWidget {
           onRetry: () => ref.read(healthOverviewProvider.notifier).retry(),
         ),
         data: (data) {
-          if (!data.hasProfile) return _DashboardOnboarding(onContinue: () => context.push('/profile'));
+          if (!data.hasProfile) {
+            return _DashboardOnboarding(
+              onContinue: () => context.push('/profile'),
+            );
+          }
           if (!data.hasAnalytics) return _DashboardWelcome(data: data);
           return _DashboardFull(data: data);
         },
@@ -61,37 +64,12 @@ class _DashboardOnboarding extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          EcGlassSurface(
-            variant: EcGlassVariant.elevated,
-            borderRadius: EcTokens.radiusGlass,
-            child: Column(
-              children: [
-                Icon(Icons.health_and_safety_rounded, size: 64, color: ec.accentBrand),
-                const SizedBox(height: 24),
-                Text(
-                  'Set up your health profile',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Add your conditions and medications to get personalized insights.',
-                  style: TextStyle(color: ec.textSecondary, height: 1.5),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-          EcGlassButton(label: 'Complete profile', onPressed: onContinue),
-        ],
-      ),
+    return EcEmptyState(
+      icon: Icons.health_and_safety_rounded,
+      title: 'Create your care profile',
+      message:
+          'Add medications, conditions, allergies, and care preferences so ElinaCura can personalize your daily safety view.',
+      action: EcGlassButton(label: 'Complete profile', onPressed: onContinue),
     );
   }
 }
@@ -108,24 +86,45 @@ class _DashboardWelcome extends StatelessWidget {
     return ListView(
       padding: kEcGlassTabPadding,
       children: [
-        _HeroSection(greeting: '${greetingForHour(hour)}, $name', pillCount: data.medications.length)
+        _HeroSection(
+              greeting: '${greetingForHour(hour)}, $name',
+              pillCount: data.medications.length,
+              conditionCount: data.conditions.length,
+            )
             .animate()
             .fadeIn(duration: 280.ms)
             .slideY(begin: 0.08, end: 0, curve: Curves.easeOutCubic),
         const SizedBox(height: 16),
-        _GlanceStrip(medCount: data.medications.length, conditionCount: data.conditions.length)
+        _GlanceStrip(
+              medCount: data.medications.length,
+              conditionCount: data.conditions.length,
+            )
             .animate()
             .fadeIn(delay: 80.ms, duration: 280.ms)
             .slideY(begin: 0.06, end: 0),
         const SizedBox(height: 20),
-        EcGlassEntrance(index: 2, child: const EcSectionTitle(title: 'Quick actions')),
-        EcGlassEntrance(index: 3, child: _QuickActions()),
+        EcGlassEntrance(
+          index: 2,
+          child: _CareRhythmCard(medCount: data.medications.length),
+        ),
+        const SizedBox(height: 20),
+        EcGlassEntrance(
+          index: 3,
+          child: const EcSectionTitle(title: 'Quick actions'),
+        ),
+        EcGlassEntrance(index: 4, child: _QuickActions()),
         const SizedBox(height: 20),
         if (data.medications.isNotEmpty)
-          EcGlassEntrance(index: 4, child: _MedicationsCard(medications: data.medications)),
+          EcGlassEntrance(
+            index: 5,
+            child: _MedicationsCard(medications: data.medications),
+          ),
         if (data.conditions.isNotEmpty) ...[
           const SizedBox(height: 16),
-          EcGlassEntrance(index: 5, child: _ConditionsCard(conditions: data.conditions)),
+          EcGlassEntrance(
+            index: 6,
+            child: _ConditionsCard(conditions: data.conditions),
+          ),
         ],
       ],
     );
@@ -142,64 +141,159 @@ class _DashboardFull extends StatelessWidget {
 }
 
 class _HeroSection extends StatelessWidget {
-  const _HeroSection({required this.greeting, required this.pillCount});
+  const _HeroSection({
+    required this.greeting,
+    required this.pillCount,
+    required this.conditionCount,
+  });
 
   final String greeting;
   final int pillCount;
+  final int conditionCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return EcScreenHero(
+      eyebrow: _formatDate(DateTime.now()),
+      title: greeting,
+      subtitle:
+          '$pillCount medications and $conditionCount conditions are organized in today\'s care view.',
+      icon: Icons.spa_rounded,
+      trailing: EcPill(label: 'Today', tone: EcPillTone.positive),
+    );
+  }
+
+  String _formatDate(DateTime d) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return '${days[d.weekday - 1]}, ${months[d.month - 1]} ${d.day}';
+  }
+}
+
+class _CareRhythmCard extends StatelessWidget {
+  const _CareRhythmCard({required this.medCount});
+
+  final int medCount;
 
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
-    return EcGlassSurface(
-      variant: EcGlassVariant.elevated,
-      borderRadius: EcTokens.radiusGlass,
+    return EcCard(
+      elevated: true,
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      ec.accentBrand.withValues(alpha: 0.25),
-                      ec.accentBrand.withValues(alpha: 0.08),
-                    ],
-                  ),
-                  border: Border.all(color: ec.accentBrand.withValues(alpha: 0.2)),
+                  borderRadius: BorderRadius.circular(15),
+                  color: ec.accentBrand.withValues(alpha: 0.14),
                 ),
-                child: Icon(Icons.wb_sunny_rounded, color: ec.accentBrand, size: 22),
+                child: Icon(
+                  Icons.event_note_rounded,
+                  color: ec.accentBrand,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  _formatDate(DateTime.now()),
-                  style: TextStyle(color: ec.textMuted, fontSize: 12, fontWeight: FontWeight.w500),
+                  'Today\'s care rhythm',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
+              ),
+              EcPill(
+                label: medCount == 0 ? 'Set up' : '$medCount meds',
+                tone: EcPillTone.info,
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            greeting,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+          _RhythmStep(
+            time: 'Morning',
+            label: medCount == 0
+                ? 'Add your first medication'
+                : 'Review medications',
+            done: medCount > 0,
           ),
-          const SizedBox(height: 8),
-          Text(
-            '$pillCount medications today',
-            style: TextStyle(color: ec.textSecondary, fontSize: 14),
+          const SizedBox(height: 10),
+          const _RhythmStep(
+            time: 'Afternoon',
+            label: 'Scan labels before new purchases',
+            done: false,
+          ),
+          const SizedBox(height: 10),
+          const _RhythmStep(
+            time: 'Evening',
+            label: 'Log a quick wellness note',
+            done: false,
           ),
         ],
       ),
     );
   }
+}
 
-  String _formatDate(DateTime d) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return '${days[d.weekday - 1]}, ${months[d.month - 1]} ${d.day}';
+class _RhythmStep extends StatelessWidget {
+  const _RhythmStep({
+    required this.time,
+    required this.label,
+    required this.done,
+  });
+
+  final String time;
+  final String label;
+  final bool done;
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    return Row(
+      children: [
+        Icon(
+          done
+              ? Icons.check_circle_rounded
+              : Icons.radio_button_unchecked_rounded,
+          size: 20,
+          color: done ? ec.accentMintText : ec.textMuted,
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 74,
+          child: Text(
+            time,
+            style: TextStyle(
+              color: ec.textMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -213,11 +307,32 @@ class _GlanceStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: EcCard(child: EcStat(label: 'Meds', value: '$medCount'))),
+        Expanded(
+          child: EcMetricTile(
+            label: 'Meds',
+            value: '$medCount',
+            icon: Icons.medication_rounded,
+            tone: EcPillTone.positive,
+          ),
+        ),
         const SizedBox(width: 10),
-        Expanded(child: EcCard(child: EcStat(label: 'Conditions', value: '$conditionCount'))),
+        Expanded(
+          child: EcMetricTile(
+            label: 'Conditions',
+            value: '$conditionCount',
+            icon: Icons.monitor_heart_rounded,
+            tone: EcPillTone.info,
+          ),
+        ),
         const SizedBox(width: 10),
-        Expanded(child: EcCard(child: EcStat(label: 'Alerts', value: '0'))),
+        const Expanded(
+          child: EcMetricTile(
+            label: 'Alerts',
+            value: '0',
+            icon: Icons.shield_rounded,
+            tone: EcPillTone.positive,
+          ),
+        ),
       ],
     );
   }
@@ -227,20 +342,72 @@ class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      childAspectRatio: 1.75,
       children: [
-        EcGlassChip(icon: Icons.document_scanner_rounded, label: 'Scan', onTap: () => context.push('/ocr')),
-        EcGlassChip(icon: Icons.alarm_rounded, label: 'Reminder', onTap: () => context.push('/reminders')),
-        EcGlassChip(icon: Icons.monitor_heart_rounded, label: 'Vitals', onTap: () => context.push('/health')),
-        EcGlassChip(
+        _ActionCard(
+          icon: Icons.document_scanner_rounded,
+          label: 'Scan label',
+          onTap: () => context.push('/ocr'),
+        ),
+        _ActionCard(
+          icon: Icons.alarm_rounded,
+          label: 'Reminder',
+          onTap: () => context.push('/reminders'),
+        ),
+        _ActionCard(
+          icon: Icons.monitor_heart_rounded,
+          label: 'Log vitals',
+          onTap: () => context.push('/health'),
+        ),
+        _ActionCard(
           icon: Icons.emergency_rounded,
           label: 'Emergency',
           tint: ec.textCritical,
           onTap: () => context.push('/emergency'),
         ),
       ],
+    );
+  }
+}
+
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.tint,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? tint;
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    final color = tint ?? ec.accentBrand;
+    return EcCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -258,32 +425,51 @@ class _MedicationsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const EcSectionTitle(title: 'Medications'),
-          ...medications.take(5).map((m) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: ec.accentMintFill,
-                        borderRadius: BorderRadius.circular(12),
+          ...medications
+              .take(5)
+              .map(
+                (m) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: ec.accentMintFill,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.medication_rounded,
+                          size: 20,
+                          color: ec.accentMintText,
+                        ),
                       ),
-                      child: Icon(Icons.medication_rounded, size: 20, color: ec.accentMintText),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(m.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                          if (m.dose.isNotEmpty)
-                            Text(m.dose, style: TextStyle(color: ec.textSecondary, fontSize: 12)),
-                        ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              m.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (m.dose.isNotEmpty)
+                              Text(
+                                m.dose,
+                                style: TextStyle(
+                                  color: ec.textSecondary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              )),
+              ),
         ],
       ),
     );

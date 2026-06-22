@@ -65,11 +65,11 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
                 }
                 final docs = snapshot.data!.docs;
                 if (docs.isEmpty) {
-                  return Center(
-                    child: EcGlassSurface(
-                      variant: EcGlassVariant.subtle,
-                      child: const Text('No messages yet. Start a conversation.'),
-                    ),
+                  return const EcEmptyState(
+                    icon: Icons.chat_bubble_rounded,
+                    title: 'No messages yet',
+                    message:
+                        'Start a conversation with your care circle when something needs context.',
                   );
                 }
                 return ListView.builder(
@@ -77,18 +77,30 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                   itemCount: docs.length,
                   itemBuilder: (context, i) {
-                    final msg = ChatMessage.fromFirestore(docs[i].id, docs[i].data());
+                    final msg = ChatMessage.fromFirestore(
+                      docs[i].id,
+                      docs[i].data(),
+                    );
                     final isMine = msg.senderId == userId;
                     return EcGlassEntrance(
                       index: i.clamp(0, 8),
                       child: Align(
-                        alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+                        alignment: isMine
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
                         child: EcGlassSurface(
-                          variant: isMine ? EcGlassVariant.tinted : EcGlassVariant.subtle,
-                          tint: isMine ? EcColors.of(context).accentBrand : null,
+                          variant: isMine
+                              ? EcGlassVariant.tinted
+                              : EcGlassVariant.subtle,
+                          tint: isMine
+                              ? EcColors.of(context).accentBrand
+                              : null,
                           borderRadius: 22,
                           margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                           child: Text(msg.text),
                         ),
                       ),
@@ -114,7 +126,10 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
                           hintText: 'Type a message…',
                           border: InputBorder.none,
                           filled: false,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                         ),
                       ),
                     ),
@@ -141,11 +156,11 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
         .doc(threadId)
         .collection('messages')
         .add({
-      'text': text,
-      'senderId': userId,
-      'timestamp': FieldValue.serverTimestamp(),
-      'read': false,
-    });
+          'text': text,
+          'senderId': userId,
+          'timestamp': FieldValue.serverTimestamp(),
+          'read': false,
+        });
   }
 }
 
@@ -170,16 +185,21 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen> {
     setState(() => _loading = true);
     try {
       final api = ref.read(apiClientProvider);
-      await api.post<Map<String, dynamic>>('/connections/invite', data: {
-        'email': _emailController.text.trim(),
-      });
+      await api.post<Map<String, dynamic>>(
+        '/connections/invite',
+        data: {'email': _emailController.text.trim()},
+      );
       _emailController.clear();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invite sent')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Invite sent')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invite failed: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Invite failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -197,16 +217,31 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen> {
           children: [
             EcGlassEntrance(
               index: 0,
-              child: EcGlassSurface(
-                variant: EcGlassVariant.elevated,
-                borderRadius: EcTokens.radiusGlass,
+              child: EcScreenHero(
+                eyebrow: 'Care circle',
+                title: 'Invite trusted support',
+                subtitle:
+                    'Caregiver access keeps the right people close without turning your profile into a shared account.',
+                icon: Icons.people_rounded,
+                trailing: const EcPill(
+                  label: 'Private',
+                  tone: EcPillTone.positive,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            EcGlassEntrance(
+              index: 1,
+              child: EcCard(
+                elevated: true,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const EcSectionTitle(title: 'Invite a caregiver'),
                     TextField(
                       controller: _emailController,
-                      decoration: const InputDecoration(labelText: 'Email address'),
+                      decoration: const InputDecoration(
+                        labelText: 'Email address',
+                      ),
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 12),
@@ -222,8 +257,11 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen> {
             const SizedBox(height: 24),
             const EcSectionTitle(title: 'Active caregiver access'),
             Expanded(
-              child: ref.watch(caregiverAccessProvider).when(
-                    loading: () => const Center(child: CircularProgressIndicator()),
+              child: ref
+                  .watch(caregiverAccessProvider)
+                  .when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (e, _) => EcErrorState(
                       message: 'Could not load connections',
                       onRetry: () => ref.invalidate(caregiverAccessProvider),
@@ -231,9 +269,11 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen> {
                     data: (entries) {
                       if (entries.isEmpty) {
                         return Center(
-                          child: EcGlassSurface(
-                            variant: EcGlassVariant.subtle,
-                            child: const Text('No active caregiver links'),
+                          child: EcEmptyState(
+                            icon: Icons.diversity_1_rounded,
+                            title: 'No active caregiver links',
+                            message:
+                                'Invite a caregiver when you want someone to help monitor routines and appointments.',
                           ),
                         );
                       }
@@ -256,10 +296,24 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text('Caregiver link ${entries[i].id.substring(0, 8)}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                                      Text('Profile: ${entries[i].profileId}', style: TextStyle(color: EcColors.of(context).textSecondary, fontSize: 12)),
+                                      Text(
+                                        'Caregiver link ${entries[i].id.substring(0, 8)}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Profile: ${entries[i].profileId}',
+                                        style: TextStyle(
+                                          color: EcColors.of(
+                                            context,
+                                          ).textSecondary,
+                                          fontSize: 12,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -293,7 +347,8 @@ class CaregiverDashboardScreen extends ConsumerWidget {
         error: (e, _) => _CaregiverContent(
           data: const CaregiverDashboardData(profileId: '', missedDoseCount: 0),
           isSample: true,
-          onRetry: () => ref.read(caregiverDashboardProvider(profileId).notifier).retry(),
+          onRetry: () =>
+              ref.read(caregiverDashboardProvider(profileId).notifier).retry(),
         ),
         data: (data) => _CaregiverContent(data: data, isSample: false),
       ),
@@ -328,7 +383,9 @@ class _CaregiverContent extends StatelessWidget {
                 children: [
                   Icon(Icons.info_outline_rounded, color: ec.accentAmberText),
                   const SizedBox(width: 12),
-                  const Expanded(child: Text('Sample data — backend unreachable')),
+                  const Expanded(
+                    child: Text('Sample data — backend unreachable'),
+                  ),
                   if (onRetry != null)
                     TextButton(onPressed: onRetry, child: const Text('Retry')),
                 ],
@@ -338,17 +395,50 @@ class _CaregiverContent extends StatelessWidget {
         if (isSample) const SizedBox(height: 16),
         EcGlassEntrance(
           index: 1,
-          child: Row(
-            children: [
-              Expanded(child: EcCard(elevated: true, child: EcStat(label: 'Adherence (7d)', value: data.adherencePercent != null ? '${data.adherencePercent}%' : '—'))),
-              const SizedBox(width: 10),
-              Expanded(child: EcCard(elevated: true, child: EcStat(label: 'Missed doses', value: '${data.missedDoseCount}'))),
-            ],
+          child: EcScreenHero(
+            eyebrow: 'Caregiver view',
+            title: 'Care signals at a glance',
+            subtitle:
+                'Monitor adherence, missed doses, safety events, and profile context for the selected patient.',
+            icon: Icons.dashboard_rounded,
+            trailing: EcPill(
+              label: isSample ? 'Sample' : 'Live',
+              tone: isSample ? EcPillTone.caution : EcPillTone.positive,
+            ),
           ),
         ),
         const SizedBox(height: 16),
         EcGlassEntrance(
           index: 2,
+          child: Row(
+            children: [
+              Expanded(
+                child: EcMetricTile(
+                  label: 'Adherence',
+                  value: data.adherencePercent != null
+                      ? '${data.adherencePercent}%'
+                      : '—',
+                  icon: Icons.check_circle_rounded,
+                  tone: EcPillTone.positive,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: EcMetricTile(
+                  label: 'Missed doses',
+                  value: '${data.missedDoseCount}',
+                  icon: Icons.alarm_off_rounded,
+                  tone: data.missedDoseCount > 0
+                      ? EcPillTone.caution
+                      : EcPillTone.positive,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        EcGlassEntrance(
+          index: 3,
           child: EcCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,23 +447,29 @@ class _CaregiverContent extends StatelessWidget {
                 if (data.activeMedications.isEmpty)
                   Text('None', style: TextStyle(color: ec.textMuted))
                 else
-                  ...data.activeMedications.map((m) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Row(
-                          children: [
-                            Icon(Icons.medication_rounded, color: ec.accentBrand, size: 20),
-                            const SizedBox(width: 10),
-                            Expanded(child: Text(m)),
-                          ],
-                        ),
-                      )),
+                  ...data.activeMedications.map(
+                    (m) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.medication_rounded,
+                            color: ec.accentBrand,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(child: Text(m)),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
         ),
         const SizedBox(height: 16),
         EcGlassEntrance(
-          index: 3,
+          index: 4,
           child: EcCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,8 +488,8 @@ class _CaregiverContent extends StatelessWidget {
                         tone: tone == 'critical'
                             ? EcPillTone.critical
                             : tone == 'caution'
-                                ? EcPillTone.caution
-                                : EcPillTone.neutral,
+                            ? EcPillTone.caution
+                            : EcPillTone.neutral,
                       );
                     }).toList(),
                   ),
@@ -404,16 +500,24 @@ class _CaregiverContent extends StatelessWidget {
         if (data.clinicianSummary != null) ...[
           const SizedBox(height: 16),
           EcGlassEntrance(
-            index: 4,
+            index: 5,
             child: EcCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const EcSectionTitle(title: 'Clinician summary'),
                   if (data.clinicianSummary!['conditions'] is List)
-                    _SummaryList('Conditions', (data.clinicianSummary!['conditions'] as List).cast<String>()),
+                    _SummaryList(
+                      'Conditions',
+                      (data.clinicianSummary!['conditions'] as List)
+                          .cast<String>(),
+                    ),
                   if (data.clinicianSummary!['allergies'] is List)
-                    _SummaryList('Allergies', (data.clinicianSummary!['allergies'] as List).cast<String>()),
+                    _SummaryList(
+                      'Allergies',
+                      (data.clinicianSummary!['allergies'] as List)
+                          .cast<String>(),
+                    ),
                 ],
               ),
             ),
@@ -421,7 +525,7 @@ class _CaregiverContent extends StatelessWidget {
         ],
         const SizedBox(height: 24),
         EcGlassEntrance(
-          index: 5,
+          index: 6,
           child: Row(
             children: [
               Expanded(
@@ -486,18 +590,29 @@ class MoreMenuScreen extends StatelessWidget {
       appBar: const EcAppBar(title: 'More'),
       body: ListView(
         padding: kEcGlassTabPadding,
-        children: items
-            .asMap()
-            .entries
-            .map((e) => EcGlassEntrance(
-                  index: e.key,
-                  child: EcGlassListTile(
-                    icon: e.value.$2,
-                    title: e.value.$1,
-                    onTap: () => context.push(e.value.$3),
-                  ),
-                ))
-            .toList(),
+        children: [
+          const EcGlassEntrance(
+            index: 0,
+            child: EcScreenHero(
+              eyebrow: 'Care tools',
+              title: 'Everything else, organized',
+              subtitle:
+                  'Find planning, scanning, safety, and account tools without losing the calm care rhythm.',
+              icon: Icons.apps_rounded,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...items.asMap().entries.map(
+            (e) => EcGlassEntrance(
+              index: e.key + 1,
+              child: EcGlassListTile(
+                icon: e.value.$2,
+                title: e.value.$1,
+                onTap: () => context.push(e.value.$3),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -516,25 +631,13 @@ class SafetyScreen extends StatelessWidget {
         children: [
           EcGlassEntrance(
             index: 0,
-            child: EcCard(
-              elevated: true,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.shield_rounded, color: ec.accentBrand, size: 28),
-                      const SizedBox(width: 12),
-                      Text('Safety monitoring', style: Theme.of(context).textTheme.titleLarge),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'View alerts and risk monitoring for medication interactions, missed doses, and health anomalies.',
-                    style: TextStyle(color: ec.textSecondary, height: 1.5),
-                  ),
-                ],
-              ),
+            child: EcScreenHero(
+              eyebrow: 'Safety monitoring',
+              title: 'Risks stay visible',
+              subtitle:
+                  'Review medication interactions, missed-dose signals, and health anomalies from one focused safety hub.',
+              icon: Icons.shield_rounded,
+              trailing: const EcPill(label: 'Clear', tone: EcPillTone.positive),
             ),
           ),
           const SizedBox(height: 16),

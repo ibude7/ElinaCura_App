@@ -2,6 +2,9 @@
 *.iml
 .idea/
 
+# Node / tooling
+node_modules/
+
 # Flutter / Dart (elinacura_mobile)
 elinacura_mobile/.dart_tool/
 elinacura_mobile/.flutter-plugins-dependencies

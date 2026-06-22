@@ -56,7 +56,10 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
       await _initCamera();
       return;
     }
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final file = await _controller!.takePicture();
       await _upload(File(file.path));
@@ -71,7 +74,10 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
     final picker = ImagePicker();
     final file = await picker.pickImage(source: ImageSource.gallery);
     if (file == null) return;
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await _upload(File(file.path));
     } catch (e) {
@@ -116,7 +122,9 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
       );
       ref.invalidate(healthOverviewProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Medication added')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Medication added')));
         context.pop();
       }
     } catch (e) {
@@ -139,6 +147,15 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
       padding: kEcGlassListPadding,
       child: Column(
         children: [
+          EcScreenHero(
+            eyebrow: 'Medication scan',
+            title: 'Capture the label clearly',
+            subtitle:
+                'Use OCR to turn medication packaging into a draft you can review before saving.',
+            icon: Icons.document_scanner_rounded,
+            trailing: EcPill(label: 'Review first', tone: EcPillTone.info),
+          ),
+          const SizedBox(height: 14),
           Expanded(
             child: _controller?.value.isInitialized == true
                 ? ClipRRect(
@@ -151,21 +168,47 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.camera_alt_rounded, size: 48),
+                          Icon(
+                            Icons.camera_alt_rounded,
+                            size: 48,
+                            color: EcColors.of(context).accentBrand,
+                          ),
                           const SizedBox(height: 16),
-                          EcGlassButton(label: 'Start camera', onPressed: _initCamera),
+                          EcGlassButton(
+                            label: 'Start camera',
+                            onPressed: _initCamera,
+                          ),
                         ],
                       ),
                     ),
                   ),
           ),
-          if (_error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_error!, style: TextStyle(color: EcColors.of(context).textCritical))),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                _error!,
+                style: TextStyle(color: EcColors.of(context).textCritical),
+              ),
+            ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: EcGlassButton(label: 'Gallery', outlined: true, onPressed: _pickGallery)),
+              Expanded(
+                child: EcGlassButton(
+                  label: 'Gallery',
+                  outlined: true,
+                  onPressed: _pickGallery,
+                ),
+              ),
               const SizedBox(width: 12),
-              Expanded(child: EcGlassButton(label: _loading ? 'Processing…' : 'Capture', loading: _loading, onPressed: _loading ? null : _capture)),
+              Expanded(
+                child: EcGlassButton(
+                  label: _loading ? 'Processing…' : 'Capture',
+                  loading: _loading,
+                  onPressed: _loading ? null : _capture,
+                ),
+              ),
             ],
           ),
         ],
@@ -177,26 +220,50 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
     return ListView(
       padding: kEcGlassListPadding,
       children: [
-        const EcSectionTitle(title: 'Review extracted fields'),
+        const EcScreenHero(
+          eyebrow: 'Review required',
+          title: 'Confirm each field',
+          subtitle:
+              'AI extraction gives you a head start. Check details before adding this medication to your care record.',
+          icon: Icons.fact_check_rounded,
+          trailing: EcPill(label: 'Draft', tone: EcPillTone.caution),
+        ),
+        const SizedBox(height: 16),
         EcGlassSurface(
           variant: EcGlassVariant.elevated,
           borderRadius: EcTokens.radiusGlass,
           child: Column(
             children: [
-              TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Medication name')),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Medication name'),
+              ),
               const SizedBox(height: 12),
-              TextField(controller: _doseController, decoration: const InputDecoration(labelText: 'Dose')),
+              TextField(
+                controller: _doseController,
+                decoration: const InputDecoration(labelText: 'Dose'),
+              ),
               const SizedBox(height: 12),
-              TextField(controller: _frequencyController, decoration: const InputDecoration(labelText: 'Frequency')),
+              TextField(
+                controller: _frequencyController,
+                decoration: const InputDecoration(labelText: 'Frequency'),
+              ),
             ],
           ),
         ),
         if (_draft!.lowConfidenceFields.isNotEmpty) ...[
           const SizedBox(height: 12),
-          EcPill(label: 'Low confidence: ${_draft!.lowConfidenceFields.join(', ')}', tone: EcPillTone.caution),
+          EcPill(
+            label: 'Low confidence: ${_draft!.lowConfidenceFields.join(', ')}',
+            tone: EcPillTone.caution,
+          ),
         ],
         const SizedBox(height: 24),
-        EcGlassButton(label: 'Save medication', loading: _loading, onPressed: _loading ? null : _confirm),
+        EcGlassButton(
+          label: 'Save medication',
+          loading: _loading,
+          onPressed: _loading ? null : _confirm,
+        ),
       ],
     );
   }
@@ -209,15 +276,39 @@ class ScannerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return EcGlassScaffold(
       appBar: const EcAppBar(title: 'Barcode scanner'),
-      body: MobileScanner(
-        onDetect: (capture) {
-          final barcodes = capture.barcodes;
-          if (barcodes.isEmpty) return;
-          final raw = barcodes.first.rawValue;
-          if (raw != null) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Scanned: $raw')));
-          }
-        },
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          MobileScanner(
+            onDetect: (capture) {
+              final barcodes = capture.barcodes;
+              if (barcodes.isEmpty) return;
+              final raw = barcodes.first.rawValue;
+              if (raw != null) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Scanned: $raw')));
+              }
+            },
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: EcScreenHero(
+                eyebrow: 'Food and product safety',
+                title: 'Center the barcode',
+                subtitle:
+                    'Scan groceries and labels to check them against your medication and health profile.',
+                icon: Icons.qr_code_scanner_rounded,
+                trailing: const EcPill(
+                  label: 'Live',
+                  tone: EcPillTone.positive,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -232,8 +323,11 @@ class RemindersScreen extends ConsumerWidget {
     if (profileId == null) {
       return EcGlassScaffold(
         appBar: const EcAppBar(title: 'Reminders'),
-        body: Center(
-          child: EcGlassSurface(variant: EcGlassVariant.subtle, child: const Text('Select a profile first')),
+        body: const EcEmptyState(
+          icon: Icons.person_search_rounded,
+          title: 'Select a profile first',
+          message:
+              'Choose a care profile before scheduling medication reminders.',
         ),
       );
     }
@@ -242,17 +336,23 @@ class RemindersScreen extends ConsumerWidget {
       appBar: const EcAppBar(title: 'Reminders'),
       body: reminders.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => EcErrorState(message: 'Could not load reminders', onRetry: () => ref.invalidate(remindersProvider(profileId))),
+        error: (e, _) => EcErrorState(
+          message: 'Could not load reminders',
+          onRetry: () => ref.invalidate(remindersProvider(profileId)),
+        ),
         data: (items) {
           if (items.isEmpty) {
-            return Center(
-              child: EcGlassSurface(variant: EcGlassVariant.subtle, child: const Text('No reminders scheduled')),
+            return const EcEmptyState(
+              icon: Icons.alarm_rounded,
+              title: 'No reminders scheduled',
+              message:
+                  'Create reminders from your medication list to keep daily routines visible.',
             );
           }
           return ListView.separated(
             padding: kEcGlassListPadding,
             itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (context, index) => const SizedBox(height: 10),
             itemBuilder: (context, i) {
               final r = items[i];
               return EcGlassEntrance(
@@ -266,17 +366,32 @@ class RemindersScreen extends ConsumerWidget {
                           shape: BoxShape.circle,
                           color: EcColors.of(context).accentAmberFill,
                         ),
-                        child: Icon(Icons.alarm_rounded, color: EcColors.of(context).accentAmberText, size: 20),
+                        child: Icon(
+                          Icons.alarm_rounded,
+                          color: EcColors.of(context).accentAmberText,
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(r.medicationName, style: const TextStyle(fontWeight: FontWeight.w600)),
                             Text(
-                              [r.dose, r.nextDue, r.cadenceLabel].whereType<String>().where((s) => s.isNotEmpty).join(' · '),
-                              style: TextStyle(color: EcColors.of(context).textSecondary, fontSize: 12),
+                              r.medicationName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              [r.dose, r.nextDue, r.cadenceLabel]
+                                  .whereType<String>()
+                                  .where((s) => s.isNotEmpty)
+                                  .join(' · '),
+                              style: TextStyle(
+                                color: EcColors.of(context).textSecondary,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -296,7 +411,11 @@ class RemindersScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _scheduleReminder(WidgetRef ref, ReminderItem r, int index) async {
+  Future<void> _scheduleReminder(
+    WidgetRef ref,
+    ReminderItem r,
+    int index,
+  ) async {
     final notif = ref.read(notificationServiceProvider);
     final scheduled = DateTime.now().add(const Duration(hours: 1));
     await notif.scheduleMedicationReminder(
@@ -324,6 +443,20 @@ class RefillCalendarScreen extends ConsumerWidget {
         ),
         data: (data) => Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: EcScreenHero(
+                eyebrow: 'Refill planning',
+                title: 'Know what is running low',
+                subtitle:
+                    'Pair refill dates with your medication list so important prescriptions do not disappear from routine.',
+                icon: Icons.calendar_month_rounded,
+                trailing: EcPill(
+                  label: '${data.medications.length} meds',
+                  tone: EcPillTone.info,
+                ),
+              ),
+            ),
             EcGlassSurface(
               variant: EcGlassVariant.subtle,
               margin: const EdgeInsets.all(16),
@@ -342,30 +475,47 @@ class RefillCalendarScreen extends ConsumerWidget {
                 children: data.medications
                     .asMap()
                     .entries
-                    .map((e) => EcGlassEntrance(
-                          index: e.key,
-                          child: EcCard(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            child: Row(
-                              children: [
-                                Icon(Icons.medication_rounded, color: EcColors.of(context).accentBrand),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(e.value.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                      Text(
-                                        e.value.dose.isNotEmpty ? e.value.dose : 'No dose recorded',
-                                        style: TextStyle(color: EcColors.of(context).textSecondary, fontSize: 12),
+                    .map(
+                      (e) => EcGlassEntrance(
+                        index: e.key,
+                        child: EcCard(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.medication_rounded,
+                                color: EcColors.of(context).accentBrand,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      e.value.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                    Text(
+                                      e.value.dose.isNotEmpty
+                                          ? e.value.dose
+                                          : 'No dose recorded',
+                                      style: TextStyle(
+                                        color: EcColors.of(
+                                          context,
+                                        ).textSecondary,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ))
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
             ),

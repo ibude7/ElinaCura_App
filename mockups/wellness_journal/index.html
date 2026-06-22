@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElinaCura - Wellness Journal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        paper: '#FDFBF7',
+                        espresso: '#3E2723',
+                        clay: '#EBE5D9',
+                        sage: '#E3E8E1',
+                        terracotta: '#D98A6C',
+                        cocoa: '#8D6E63',
+                        surface: '#F4F1EA'
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"DM Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Custom scrollbar hiding */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Subtle noise texture overlay */
+        .bg-noise {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="bg-[#D1CCC0] min-h-screen flex items-center justify-center p-4 md:p-8 font-sans text-espresso selection:bg-terracotta selection:text-white bg-noise">
+    
+    <!-- Mobile Device Frame -->
+    <div class="relative w-full max-w-[390px] h-[844px] bg-paper rounded-[3rem] shadow-[0_20px_50px_-12px_rgba(62,39,35,0.25)] overflow-hidden flex flex-col border-[6px] border-[#F4F1EA] ring-1 ring-black/5">
+        
+        <!-- Status Bar Area (Mock) -->
+        <div class="h-12 w-full flex justify-between items-center px-6 pt-2 z-50 absolute top-0 left-0">
+            <span class="text-xs font-medium tracking-wider">9:41</span>
+            <div class="flex gap-1.5 items-center">
+                <i class="ph-fill ph-cell-signal-full text-sm"></i>
+                <i class="ph-fill ph-wifi-high text-sm"></i>
+                <i class="ph-fill ph-battery-full text-lg"></i>
+            </div>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto no-scrollbar pb-28">
+            
+            <!-- Morning Check-in Header -->
+            <div class="px-6 pt-16 pb-8 bg-gradient-to-b from-surface to-paper relative">
+                <div class="absolute top-0 left-0 w-full h-full bg-noise opacity-50 pointer-events-none"></div>
+                
+                <div class="flex justify-between items-center mb-8 relative z-10">
+                    <div class="text-cocoa text-xs tracking-[0.2em] uppercase font-medium">Oct 12, Morning</div>
+                    <button class="w-10 h-10 rounded-full bg-white shadow-sm border border-clay flex items-center justify-center text-espresso hover:bg-surface transition-colors">
+                        <i class="ph ph-user text-lg"></i>
+                    </button>
+                </div>
+                
+                <h1 class="font-serif text-[2.5rem] leading-[1.1] mb-3 relative z-10">
+                    Good morning,<br>
+                    <span class="italic text-terracotta">Elina.</span>
+                </h1>
+                
+                <p class="text-cocoa text-lg mb-8 relative z-10">How is your body feeling today?</p>
+                
+                <!-- Mood Selector -->
+                <div class="flex justify-between items-center gap-2 relative z-10">
+                    <button class="flex flex-col items-center gap-2 group w-16">
+                        <div class="w-14 h-14 rounded-full bg-white border border-clay flex items-center justify-center group-hover:bg-terracotta group-hover:text-white group-hover:border-terracotta transition-all duration-300 shadow-sm">
+                            <i class="ph ph-sparkle text-2xl"></i>
+                        </div>
+                        <span class="text-[10px] text-cocoa font-medium tracking-wide">Radiant</span>
+                    </button>
+                    
+                    <button class="flex flex-col items-center gap-2 group w-16">
+                        <div class="w-14 h-14 rounded-full bg-espresso text-white border border-espresso flex items-center justify-center shadow-md transform scale-105 transition-all duration-300">
+                            <i class="ph ph-scales text-2xl"></i>
+                        </div>
+                        <span class="text-[10px] font-medium tracking-wide text-espresso">Balanced</span>
+                    </button>
+                    
+                    <button class="flex flex-col items-center gap-2 group w-16">
+                        <div class="w-14 h-14 rounded-full bg-white border border-clay flex items-center justify-center group-hover:bg-cocoa group-hover:text-white group-hover:border-cocoa transition-all duration-300 shadow-sm">
+                            <i class="ph ph-cloud-fog text-2xl"></i>
+                        </div>
+                        <span class="text-[10px] text-cocoa font-medium tracking-wide">Tired</span>
+                    </button>
+                    
+                    <button class="flex flex-col items-center gap-2 group w-16">
+                        <div class="w-14 h-14 rounded-full bg-white border border-clay flex items-center justify-center group-hover:bg-cocoa group-hover:text-white group-hover:border-cocoa transition-all duration-300 shadow-sm">
+                            <i class="ph ph-bandaids text-2xl"></i>
+                        </div>
+                        <span class="text-[10px] text-cocoa font-medium tracking-wide">Aching</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Daily Ritual Cards -->
+            <div class="px-6 py-2">
+                <div class="flex justify-between items-end mb-5">
+                    <h2 class="font-serif text-2xl italic text-espresso">Today's Rituals</h2>
+                    <span class="text-cocoa text-xs font-medium tracking-wide uppercase">2 of 4 done</span>
+                </div>
+                
+                <div class="flex flex-col gap-3">
+                    <!-- Completed Ritual -->
+                    <div class="bg-surface/50 rounded-[1.25rem] p-4 flex items-center gap-4 opacity-75 transition-opacity hover:opacity-100 cursor-pointer border border-transparent">
+                        <button class="w-7 h-7 rounded-full bg-sage flex items-center justify-center text-espresso shrink-0">
+                            <i class="ph-bold ph-check text-sm"></i>
+                        </button>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-medium text-[1.05rem] line-through decoration-cocoa/40 text-espresso/80 truncate">Morning Nourishment</h3>
+                            <p class="text-cocoa text-xs mt-0.5 truncate">Vitamins & supplements</p>
+                        </div>
+                        <div class="text-cocoa text-xs font-medium shrink-0">8:00 AM</div>
+                    </div>
+
+                    <!-- Active Ritual -->
+                    <div class="bg-white rounded-[1.25rem] p-4 flex items-center gap-4 shadow-[0_4px_20px_-8px_rgba(62,39,35,0.08)] border border-clay relative overflow-hidden cursor-pointer group">
+                        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-terracotta"></div>
+                        <button class="w-7 h-7 rounded-full border-2 border-terracotta flex items-center justify-center text-transparent group-hover:bg-terracotta/10 transition-colors shrink-0">
+                            <i class="ph-bold ph-check text-sm"></i>
+                        </button>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-medium text-[1.05rem] text-espresso truncate">Mindful Hydration</h3>
+                            <p class="text-cocoa text-xs mt-0.5 truncate">3 of 8 glasses</p>
+                        </div>
+                        <div class="flex gap-1 shrink-0">
+                            <div class="w-1.5 h-8 rounded-full bg-sage"></div>
+                            <div class="w-1.5 h-8 rounded-full bg-sage"></div>
+                            <div class="w-1.5 h-8 rounded-full bg-sage"></div>
+                            <div class="w-1.5 h-8 rounded-full bg-clay"></div>
+                            <div class="w-1.5 h-8 rounded-full bg-clay"></div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Ritual -->
+                    <div class="bg-white/60 rounded-[1.25rem] p-4 flex items-center gap-4 border border-clay/50 cursor-pointer hover:bg-white transition-colors group">
+                        <button class="w-7 h-7 rounded-full border-2 border-clay flex items-center justify-center text-transparent group-hover:border-cocoa transition-colors shrink-0">
+                            <i class="ph-bold ph-check text-sm"></i>
+                        </button>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-medium text-[1.05rem] text-espresso truncate">Gentle Movement</h3>
+                            <p class="text-cocoa text-xs mt-0.5 truncate">15 min evening walk</p>
+                        </div>
+                        <div class="text-cocoa text-xs font-medium shrink-0">6:00 PM</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Wellness Summary -->
+            <div class="px-6 py-6 mt-2">
+                <div class="bg-sage/30 rounded-[1.5rem] p-6 relative overflow-hidden border border-sage/50">
+                    <!-- Decorative background element -->
+                    <i class="ph-fill ph-plant absolute -right-6 -bottom-6 text-[8rem] text-sage/40 transform -rotate-12"></i>
+                    
+                    <h2 class="font-serif text-xl mb-2 relative z-10 text-espresso">Your Rhythm</h2>
+                    <p class="text-espresso/70 text-sm leading-relaxed relative z-10 mb-6 pr-4">
+                        You've completed your morning rituals 4 days in a row. Your consistency is blooming beautifully.
+                    </p>
+                    
+                    <!-- Abstract Chart -->
+                    <div class="flex justify-between items-end h-16 relative z-10 gap-1.5">
+                        <div class="flex-1 bg-terracotta/40 rounded-t-lg h-[40%] hover:h-[45%] transition-all cursor-pointer"></div>
+                        <div class="flex-1 bg-terracotta/60 rounded-t-lg h-[60%] hover:h-[65%] transition-all cursor-pointer"></div>
+                        <div class="flex-1 bg-terracotta/80 rounded-t-lg h-[80%] hover:h-[85%] transition-all cursor-pointer"></div>
+                        <div class="flex-1 bg-terracotta rounded-t-lg h-[100%] hover:h-[100%] transition-all cursor-pointer relative">
+                            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-espresso text-white text-[9px] py-0.5 px-2 rounded-full font-medium tracking-wide">Today</div>
+                        </div>
+                        <div class="flex-1 bg-clay rounded-t-lg h-[20%] hover:h-[25%] transition-all cursor-pointer"></div>
+                        <div class="flex-1 bg-clay rounded-t-lg h-[20%] hover:h-[25%] transition-all cursor-pointer"></div>
+                        <div class="flex-1 bg-clay rounded-t-lg h-[20%] hover:h-[25%] transition-all cursor-pointer"></div>
+                    </div>
+                    <div class="flex justify-between mt-3 text-[9px] text-cocoa font-bold uppercase tracking-widest relative z-10 px-1">
+                        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="absolute bottom-0 left-0 right-0 bg-paper/80 backdrop-blur-xl border-t border-clay/60 px-6 pt-4 pb-8 flex justify-between items-center z-50">
+            <button class="flex flex-col items-center gap-1.5 text-espresso relative">
+                <i class="ph-fill ph-book-open text-2xl"></i>
+                <span class="text-[10px] font-medium tracking-wide">Journal</span>
+                <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full bg-espresso"></div>
+            </button>
+            
+            <button class="flex flex-col items-center gap-1.5 text-cocoa hover:text-espresso transition-colors">
+                <i class="ph ph-chart-line-up text-2xl"></i>
+                <span class="text-[10px] font-medium tracking-wide">Insights</span>
+            </button>
+            
+            <!-- FAB -->
+            <button class="w-14 h-14 rounded-full bg-terracotta text-white flex items-center justify-center shadow-[0_8px_20px_-6px_rgba(217,138,108,0.6)] transform -translate-y-6 hover:scale-105 hover:bg-[#c97a5c] transition-all active:scale-95">
+                <i class="ph ph-plus text-2xl"></i>
+            </button>
+            
+            <button class="flex flex-col items-center gap-1.5 text-cocoa hover:text-espresso transition-colors">
+                <i class="ph ph-users text-2xl"></i>
+                <span class="text-[10px] font-medium tracking-wide">Circle</span>
+            </button>
+            
+            <button class="flex flex-col items-center gap-1.5 text-cocoa hover:text-espresso transition-colors">
+                <i class="ph ph-user-circle text-2xl"></i>
+                <span class="text-[10px] font-medium tracking-wide">Profile</span>
+            </button>
+        </div>
+        
+        <!-- Home Indicator (Mock) -->
+        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1.5 bg-espresso/20 rounded-full z-50"></div>
+        
+    </div>
+
+</body>
+</html>
