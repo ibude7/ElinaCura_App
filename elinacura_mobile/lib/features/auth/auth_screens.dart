@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
-import 'dart:ui' show ImageFilter;
+import 'dart:math' as math;
+import 'dart:ui' show ImageFilter, PointMode;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -11,13 +12,304 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../core/auth/auth_providers.dart';
-import '../../core/theme/ec_theme.dart';
-import '../../core/theme/ec_tokens.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_logo.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
+// ════════════════════════════════════════════════════════════════════════
+//  ElinaCura — Auth
+//  A premium, cinematic sign-in that speaks the same language as onboarding:
+//  a solid canvas with localized accent light and film grain, frosted liquid
+//  glass, bold tight typography, and one commanding solid CTA.
+// ════════════════════════════════════════════════════════════════════════
+
+const _violet = Color(0xFF8B6FE8);
+const _green = Color(0xFF18C77E);
+const _red = Color(0xFFFF4D45);
+
+class _P {
+  _P(this.dark);
+  final bool dark;
+
+  Color get bg => dark ? const Color(0xFF0A0B0F) : const Color(0xFFEDEAE2);
+  Color get surface => dark ? const Color(0xFF14161C) : const Color(0xFFF7F5F0);
+  Color get ink => dark ? const Color(0xFFF4F5F8) : const Color(0xFF14161C);
+  Color get muted => dark ? const Color(0xFF8A90A0) : const Color(0xFF6C7178);
+  Color get faint => dark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06);
+  Color get hairline => dark ? Colors.white.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.10);
+
+  static _P of(BuildContext c) => _P(Theme.of(c).brightness == Brightness.dark);
+}
+
+// ───────────────────────────────────────────────────── Backdrop + grain ──
+class _Backdrop extends StatelessWidget {
+  const _Backdrop({required this.accent});
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = _P.of(context);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ColoredBox(color: p.bg),
+        Positioned(
+          top: -130,
+          right: -100,
+          child: _Orb(size: 300, color: accent, opacity: p.dark ? 0.22 : 0.14)
+              .animate(onPlay: (c) => c.repeat(reverse: true))
+              .scaleXY(begin: 0.9, end: 1.08, duration: 4200.ms, curve: Curves.easeInOut),
+        ),
+        Positioned(
+          bottom: 10,
+          left: -120,
+          child: _Orb(size: 280, color: _violet, opacity: p.dark ? 0.14 : 0.09),
+        ),
+        const Positioned.fill(child: IgnorePointer(child: _Grain())),
+      ],
+    );
+  }
+}
+
+class _Orb extends StatelessWidget {
+  const _Orb({required this.size, required this.color, required this.opacity});
+  final double size;
+  final Color color;
+  final double opacity;
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: [color.withValues(alpha: opacity), color.withValues(alpha: 0)]),
+        ),
+      ),
+    );
+  }
+}
+
+class _Grain extends StatelessWidget {
+  const _Grain();
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return RepaintBoundary(child: CustomPaint(painter: _GrainPainter(dark: dark)));
+  }
+}
+
+class _GrainPainter extends CustomPainter {
+  _GrainPainter({required this.dark});
+  final bool dark;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rnd = math.Random(7);
+    final n = (size.width * size.height / 900).clamp(400, 4000).toInt();
+    final paint = Paint()
+      ..strokeWidth = 1
+      ..strokeCap = StrokeCap.round
+      ..color = (dark ? Colors.white : Colors.black).withValues(alpha: dark ? 0.022 : 0.02);
+    final pts = <Offset>[for (var i = 0; i < n; i++) Offset(rnd.nextDouble() * size.width, rnd.nextDouble() * size.height)];
+    canvas.drawPoints(PointMode.points, pts, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _GrainPainter old) => old.dark != dark;
+}
+
+// ───────────────────────────────────────────────────── Glass + controls ──
+class _Pressable extends StatefulWidget {
+  const _Pressable({required this.child, required this.onTap});
+  final Widget child;
+  final VoidCallback? onTap;
+  @override
+  State<_Pressable> createState() => _PressableState();
+}
+
+class _PressableState extends State<_Pressable> {
+  bool _down = false;
+  @override
+  Widget build(BuildContext context) {
+    final enabled = widget.onTap != null;
+    return GestureDetector(
+      onTapDown: enabled ? (_) => setState(() => _down = true) : null,
+      onTapUp: enabled ? (_) => setState(() => _down = false) : null,
+      onTapCancel: enabled ? () => setState(() => _down = false) : null,
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _down ? 0.97 : 1,
+        duration: const Duration(milliseconds: 130),
+        curve: Curves.easeOut,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+class _Glass extends StatelessWidget {
+  const _Glass({required this.child, this.padding = const EdgeInsets.all(18), this.tint, this.onTap});
+  final Widget child;
+  final EdgeInsets padding;
+  final Color? tint;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = _P.of(context);
+    final r = BorderRadius.circular(22);
+    var fill = p.dark ? Colors.white.withValues(alpha: 0.07) : Colors.white.withValues(alpha: 0.55);
+    if (tint != null) fill = Color.alphaBlend(tint!.withValues(alpha: p.dark ? 0.12 : 0.10), fill);
+    final border = p.dark ? Colors.white.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.85);
+
+    Widget body = DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: r,
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: p.dark ? 0.26 : 0.08), blurRadius: 34, spreadRadius: -14, offset: const Offset(0, 12))],
+      ),
+      child: ClipRRect(
+        borderRadius: r,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            decoration: BoxDecoration(borderRadius: r, color: fill, border: Border.all(color: border, width: 1.2)),
+            padding: padding,
+            child: child,
+          ),
+        ),
+      ),
+    );
+    if (onTap != null) body = _Pressable(onTap: onTap, child: body);
+    return body;
+  }
+}
+
+class _PrimaryButton extends StatelessWidget {
+  const _PrimaryButton({required this.label, this.icon, this.onPressed, this.loading = false, this.accent = _violet});
+  final String label;
+  final IconData? icon;
+  final VoidCallback? onPressed;
+  final bool loading;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = _P.of(context);
+    final bg = p.dark ? Colors.white : const Color(0xFF14161C);
+    final fg = p.dark ? const Color(0xFF0A0B0F) : Colors.white;
+    return _Pressable(
+      onTap: loading ? null : onPressed,
+      child: Container(
+        height: 56,
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(color: accent.withValues(alpha: p.dark ? 0.42 : 0.30), blurRadius: 28, spreadRadius: -10, offset: const Offset(0, 12)),
+            BoxShadow(color: Colors.black.withValues(alpha: p.dark ? 0.30 : 0.12), blurRadius: 18, spreadRadius: -12, offset: const Offset(0, 10)),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: loading
+            ? SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, valueColor: AlwaysStoppedAnimation<Color>(fg)))
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(label, style: TextStyle(color: fg, fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.2)),
+                  if (icon != null) ...[const SizedBox(width: 9), Icon(icon, color: fg, size: 20)],
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class _GhostButton extends StatelessWidget {
+  const _GhostButton({required this.label, this.icon, this.onPressed});
+  final String label;
+  final IconData? icon;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = _P.of(context);
+    return _Pressable(
+      onTap: onPressed,
+      child: Container(
+        height: 54,
+        decoration: BoxDecoration(
+          color: p.dark ? Colors.white.withValues(alpha: 0.06) : Colors.white.withValues(alpha: 0.60),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: p.hairline),
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[Icon(icon, color: p.ink, size: 22), const SizedBox(width: 8)],
+            Text(label, style: TextStyle(color: p.ink, fontSize: 14.5, fontWeight: FontWeight.w700, letterSpacing: -0.2)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Field extends StatelessWidget {
+  const _Field({
+    required this.controller,
+    required this.label,
+    required this.icon,
+    required this.accent,
+    this.obscure = false,
+    this.keyboardType,
+    this.textInputAction,
+    this.trailing,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+  final Color accent;
+  final bool obscure;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = _P.of(context);
+    OutlineInputBorder b(Color c, [double w = 1.2]) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: c, width: w),
+        );
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      cursorColor: accent,
+      style: TextStyle(color: p.ink, fontSize: 15, fontWeight: FontWeight.w600),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: p.muted, fontWeight: FontWeight.w500),
+        floatingLabelStyle: TextStyle(color: accent, fontWeight: FontWeight.w700),
+        prefixIcon: Icon(icon, size: 20, color: p.muted),
+        suffixIcon: trailing,
+        filled: true,
+        fillColor: p.dark ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.65),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+        enabledBorder: b(p.hairline),
+        border: b(p.hairline),
+        focusedBorder: b(accent, 1.6),
+      ),
+    );
+  }
+}
+
+// ════════════════════════════════════════════════════════════ AuthScreen ══
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -112,7 +404,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       await ref.read(authServiceProvider).signInWithApple();
       _routeAfterAuth();
     } on SignInWithAppleAuthorizationException catch (e) {
-      // User dismissed the Apple sheet — not an error worth surfacing.
       if (e.code != AuthorizationErrorCode.canceled && mounted) {
         setState(() => _error = e.message);
       }
@@ -141,30 +432,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
   }
 
-  Color get _accent => _selectedRole == UserRole.caregiver
-      ? const Color(0xFF1A3C34)
-      : EcColors.of(context).accentBrand;
+  Color get _accent => _selectedRole == UserRole.caregiver ? _green : _violet;
 
   @override
   Widget build(BuildContext context) {
-    return EcGlassScaffold(
+    final p = _P.of(context);
+    return Scaffold(
+      backgroundColor: p.bg,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          _AuthGlow(accent: _accent),
+          _Backdrop(accent: _accent),
           SafeArea(
             child: AnimatedSwitcher(
-              duration: EcTokens.motionBase,
+              duration: const Duration(milliseconds: 420),
               switchInCurve: Curves.easeOutCubic,
               transitionBuilder: (child, anim) => FadeTransition(
                 opacity: anim,
-                child: SlideTransition(
-                  position: Tween(
-                    begin: const Offset(0.04, 0),
-                    end: Offset.zero,
-                  ).animate(anim),
-                  child: child,
-                ),
+                child: SlideTransition(position: Tween(begin: const Offset(0.04, 0), end: Offset.zero).animate(anim), child: child),
               ),
               child: _selectedRole == null ? _buildRolePicker() : _buildForm(),
             ),
@@ -174,112 +459,83 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 
-  // ── Step 1: choose how you'll use the app ─────────────────────────────────
+  // ── Step 1: choose how you'll use the app ───────────────────────────────
   Widget _buildRolePicker() {
-    final ec = EcColors.of(context);
+    final p = _P.of(context);
     return SingleChildScrollView(
       key: const ValueKey('role'),
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minHeight: MediaQuery.sizeOf(context).height - 120,
-        ),
+        constraints: BoxConstraints(minHeight: MediaQuery.sizeOf(context).height - 120),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
-            const _BrandHero()
+            const SizedBox(height: 12),
+            const Center(child: _BrandMark())
                 .animate()
                 .fadeIn(duration: 560.ms)
                 .slideY(begin: 0.08, end: 0, curve: Curves.easeOutCubic),
             const SizedBox(height: 26),
-            EcGlassSurface(
-                  variant: EcGlassVariant.elevated,
-                  borderRadius: EcTokens.radiusGlass,
-                  padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Welcome to ElinaCura',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -1.1,
-                          height: 1.05,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Choose your path. We will tune the experience around your daily care role.',
-                        style: TextStyle(
-                          color: ec.textSecondary,
-                          fontSize: 14.5,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      const _CarePromiseStrip(),
-                    ],
-                  ),
-                )
-                .animate()
-                .fadeIn(delay: 120.ms, duration: 440.ms)
-                .slideY(begin: 0.08, end: 0, delay: 120.ms),
-            const SizedBox(height: 22),
-            Text(
-              'CONTINUE AS',
-              style: TextStyle(
-                color: ec.textMuted,
-                fontSize: 10.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.4,
-              ),
-            ).animate().fadeIn(delay: 260.ms, duration: 350.ms),
+            _revealOrder(
+              0,
+              Row(children: [
+                Container(width: 18, height: 2, color: _violet),
+                const SizedBox(width: 9),
+                Text('WELCOME', style: TextStyle(color: _violet, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 2.6)),
+              ]),
+            ),
             const SizedBox(height: 12),
-            _RoleCard(
-                  icon: Icons.self_improvement_rounded,
-                  title: 'Manage my health',
-                  subtitle:
-                      'A private command center for medications, scans, vitals, appointments, and safety alerts.',
-                  accent: ec.accentBrand,
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() => _selectedRole = UserRole.patient);
-                  },
-                )
-                .animate()
-                .fadeIn(delay: 400.ms, duration: 420.ms)
-                .slideY(
-                  begin: 0.14,
-                  end: 0,
-                  delay: 400.ms,
-                  curve: Curves.easeOut,
-                ),
-            const SizedBox(height: 14),
-            _RoleCard(
-                  icon: Icons.diversity_1_rounded,
-                  title: 'Care for someone I love',
-                  subtitle:
-                      'See the right updates, coordinate routines, and step in quickly when care needs attention.',
-                  accent: const Color(0xFF1A3C34),
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() => _selectedRole = UserRole.caregiver);
-                  },
-                )
-                .animate()
-                .fadeIn(delay: 480.ms, duration: 420.ms)
-                .slideY(
-                  begin: 0.14,
-                  end: 0,
-                  delay: 480.ms,
-                  curve: Curves.easeOut,
-                ),
+            _revealOrder(
+              1,
+              Text(
+                'Care, made personal',
+                style: TextStyle(color: p.ink, fontSize: 34, height: 1.04, fontWeight: FontWeight.w800, letterSpacing: -1.4),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _revealOrder(
+              2,
+              Text(
+                'Tune ElinaCura around how you show up for health each day.',
+                style: TextStyle(color: p.muted, fontSize: 15, height: 1.45, fontWeight: FontWeight.w500),
+              ),
+            ),
             const SizedBox(height: 24),
-            const _TrustRow().animate().fadeIn(delay: 600.ms, duration: 500.ms),
+            _revealOrder(
+              3,
+              Text('CONTINUE AS', style: TextStyle(color: p.muted, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 1.6)),
+            ),
+            const SizedBox(height: 12),
+            _revealOrder(
+              4,
+              _RoleCard(
+                icon: Icons.self_improvement_rounded,
+                title: 'Manage my health',
+                subtitle: 'A private command center for medications, vitals, nutrition and safety.',
+                accent: _violet,
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _selectedRole = UserRole.patient);
+                },
+              ),
+            ),
+            const SizedBox(height: 14),
+            _revealOrder(
+              5,
+              _RoleCard(
+                icon: Icons.diversity_1_rounded,
+                title: 'Care for someone I love',
+                subtitle: 'See the right updates, coordinate routines and step in when it matters.',
+                accent: _green,
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _selectedRole = UserRole.caregiver);
+                },
+              ),
+            ),
+            const SizedBox(height: 26),
+            const Center(child: _TrustRow()).animate().fadeIn(delay: 640.ms, duration: 500.ms),
             const SizedBox(height: 8),
           ],
         ),
@@ -287,9 +543,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 
-  // ── Step 2: sign in / create account ──────────────────────────────────────
+  Widget _revealOrder(int order, Widget child) {
+    return child
+        .animate()
+        .fadeIn(delay: (140 + order * 90).ms, duration: 420.ms)
+        .slideY(begin: 0.12, end: 0, delay: (140 + order * 90).ms, curve: Curves.easeOutCubic);
+  }
+
+  // ── Step 2: sign in / create account ────────────────────────────────────
   Widget _buildForm() {
-    final ec = EcColors.of(context);
+    final p = _P.of(context);
     final isCaregiver = _selectedRole == UserRole.caregiver;
     final showApple = !kIsWeb && (Platform.isIOS || Platform.isMacOS);
     return Column(
@@ -297,24 +560,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(8, 4, 16, 0),
+          padding: const EdgeInsets.fromLTRB(10, 4, 18, 0),
           child: Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () {
+              _Pressable(
+                onTap: () {
                   HapticFeedback.selectionClick();
                   setState(() {
                     _selectedRole = null;
                     _error = null;
                   });
                 },
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: p.surface, border: Border.all(color: p.hairline)),
+                  child: Icon(Icons.arrow_back_rounded, color: p.ink, size: 20),
+                ),
               ),
               const Spacer(),
               _RoleChip(
-                icon: isCaregiver
-                    ? Icons.diversity_1_rounded
-                    : Icons.self_improvement_rounded,
+                icon: isCaregiver ? Icons.diversity_1_rounded : Icons.self_improvement_rounded,
                 label: isCaregiver ? 'Caregiver' : 'Personal',
                 accent: _accent,
               ),
@@ -324,21 +590,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         Expanded(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
+            padding: const EdgeInsets.fromLTRB(24, 14, 24, 28),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const EcLogo(size: 64).animate().fadeIn(duration: 400.ms),
-                const SizedBox(height: 16),
-                _AuthHeroPanel(
-                      isSignUp: _isSignUp,
-                      isCaregiver: isCaregiver,
-                      accent: _accent,
-                    )
+                _HeroPanel(isSignUp: _isSignUp, isCaregiver: isCaregiver, accent: _accent)
                     .animate()
                     .fadeIn(duration: 420.ms)
                     .slideY(begin: 0.06, end: 0),
-                const SizedBox(height: 22),
+                const SizedBox(height: 20),
                 _AuthToggle(
                   isSignUp: _isSignUp,
                   accent: _accent,
@@ -352,112 +612,85 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   },
                 ),
                 const SizedBox(height: 18),
-                EcGlassSurface(
-                      variant: EcGlassVariant.elevated,
-                      borderRadius: EcTokens.radiusGlass,
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          AnimatedSize(
-                            duration: EcTokens.motionBase,
-                            curve: Curves.easeOutCubic,
-                            child: _isSignUp
-                                ? Column(
-                                    children: [
-                                      _AuthField(
-                                        controller: _nameController,
-                                        label: 'Full name',
-                                        icon: Icons.badge_outlined,
-                                        textInputAction: TextInputAction.next,
-                                      ),
-                                      const SizedBox(height: 14),
-                                    ],
-                                  )
-                                : const SizedBox.shrink(),
-                          ),
-                          _AuthField(
-                            controller: _emailController,
-                            label: 'Email address',
-                            icon: Icons.alternate_email_rounded,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                          ),
-                          const SizedBox(height: 14),
-                          _AuthField(
-                            controller: _passwordController,
-                            label: 'Password',
-                            icon: Icons.lock_outline_rounded,
-                            obscure: !_showPassword,
-                            trailing: IconButton(
-                              splashRadius: 20,
-                              icon: Icon(
-                                _showPassword
-                                    ? Icons.visibility_off_rounded
-                                    : Icons.visibility_rounded,
-                                size: 20,
-                                color: ec.textMuted,
-                              ),
-                              onPressed: () => setState(
-                                () => _showPassword = !_showPassword,
-                              ),
-                            ),
-                          ),
-                          if (_error != null) ...[
-                            const SizedBox(height: 14),
-                            _ErrorBanner(message: _error!),
-                          ],
-                          const SizedBox(height: 20),
-                          EcGlassButton(
-                            label: _isSignUp ? 'Create account' : 'Sign in',
-                            loading: _loading,
-                            onPressed: _loading ? null : _submit,
-                          ),
-                        ],
+                _Glass(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 280),
+                        curve: Curves.easeOutCubic,
+                        child: _isSignUp
+                            ? Column(
+                                children: [
+                                  _Field(
+                                    controller: _nameController,
+                                    label: 'Full name',
+                                    icon: Icons.badge_outlined,
+                                    accent: _accent,
+                                    textInputAction: TextInputAction.next,
+                                  ),
+                                  const SizedBox(height: 14),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
                       ),
-                    )
-                    .animate()
-                    .fadeIn(delay: 80.ms, duration: 400.ms)
-                    .slideY(begin: 0.06, end: 0, delay: 80.ms),
+                      _Field(
+                        controller: _emailController,
+                        label: 'Email address',
+                        icon: Icons.alternate_email_rounded,
+                        accent: _accent,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 14),
+                      _Field(
+                        controller: _passwordController,
+                        label: 'Password',
+                        icon: Icons.lock_outline_rounded,
+                        accent: _accent,
+                        obscure: !_showPassword,
+                        trailing: IconButton(
+                          splashRadius: 20,
+                          icon: Icon(_showPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded, size: 20, color: p.muted),
+                          onPressed: () => setState(() => _showPassword = !_showPassword),
+                        ),
+                      ),
+                      if (_error != null) ...[
+                        const SizedBox(height: 14),
+                        _ErrorBanner(message: _error!),
+                      ],
+                      const SizedBox(height: 20),
+                      _PrimaryButton(
+                        label: _isSignUp ? 'Create account' : 'Sign in',
+                        icon: Icons.arrow_forward_rounded,
+                        loading: _loading,
+                        accent: _accent,
+                        onPressed: _loading ? null : _submit,
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(delay: 80.ms, duration: 400.ms).slideY(begin: 0.06, end: 0, delay: 80.ms),
                 const SizedBox(height: 20),
-                _OrDivider(
-                  label: _isSignUp
-                      ? 'or start faster with'
-                      : 'or continue with',
-                ),
+                _OrDivider(label: _isSignUp ? 'or start faster with' : 'or continue with'),
                 const SizedBox(height: 16),
                 if (showApple) ...[
                   _AppleButton(onPressed: _loading ? null : _apple),
                   const SizedBox(height: 10),
                 ],
-                EcGlassButton(
-                  label: 'Continue with Google',
-                  icon: Icons.g_mobiledata_rounded,
-                  outlined: true,
-                  onPressed: _loading ? null : _google,
-                ),
+                _GhostButton(label: 'Continue with Google', icon: Icons.g_mobiledata_rounded, onPressed: _loading ? null : _google),
                 const SizedBox(height: 10),
                 Center(
                   child: TextButton(
                     onPressed: _loading ? null : _guest,
-                    child: Text(
-                      'Explore as a guest',
-                      style: TextStyle(
-                        color: ec.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: Text('Explore as a guest', style: TextStyle(color: p.muted, fontWeight: FontWeight.w700)),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   'By continuing you agree to our Terms & Privacy Policy.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: ec.textMuted,
-                    fontSize: 11,
-                    height: 1.4,
-                  ),
+                  style: TextStyle(color: p.muted, fontSize: 11, height: 1.4),
                 ),
               ],
             ),
@@ -468,257 +701,115 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Brand hero — logo on a soft glass medallion with a breathing glow.
-// ─────────────────────────────────────────────────────────────────────────────
-class _BrandHero extends StatelessWidget {
-  const _BrandHero();
+// ────────────────────────────────────────────────────────────── Brand ──
+class _BrandMark extends StatelessWidget {
+  const _BrandMark();
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final p = _P.of(context);
     return SizedBox(
-      height: 172,
+      height: 170,
+      width: 280,
       child: Stack(
         alignment: Alignment.center,
+        clipBehavior: Clip.none,
         children: [
           Container(
-                width: 168,
-                height: 168,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: ec.accentBrand.withValues(alpha: 0.10),
-                ),
-              )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .scale(
-                begin: const Offset(0.94, 0.94),
-                end: const Offset(1.06, 1.06),
-                duration: 3000.ms,
-                curve: Curves.easeInOut,
-              ),
-          Positioned(
-            right: 46,
-            top: 30,
-            child: _FloatingSignal(
-              icon: Icons.health_and_safety_rounded,
-              color: ec.accentBrand,
-              label: 'Safe',
+            width: 168,
+            height: 168,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(colors: [_violet.withValues(alpha: p.dark ? 0.34 : 0.22), _violet.withValues(alpha: 0)]),
             ),
-          ),
-          Positioned(
-            left: 42,
-            bottom: 24,
-            child: const _FloatingSignal(
-              icon: Icons.favorite_rounded,
-              color: Color(0xFF1A3C34),
-              label: 'Care',
+          ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 0.92, end: 1.06, duration: 3200.ms, curve: Curves.easeInOut),
+          const Positioned(right: 26, top: 28, child: _Signal(icon: Icons.shield_rounded, color: _violet, label: 'Private')),
+          const Positioned(left: 24, bottom: 26, child: _Signal(icon: Icons.favorite_rounded, color: _green, label: 'Care')),
+          // frosted glass disc + logo
+          Container(
+            width: 132,
+            height: 132,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [BoxShadow(color: _violet.withValues(alpha: p.dark ? 0.3 : 0.18), blurRadius: 40, spreadRadius: -6)],
             ),
-          ),
-          ClipOval(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-              child: Container(
-                width: 124,
-                height: 124,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: (isDark ? Colors.white : Colors.white).withValues(
-                    alpha: isDark ? 0.08 : 0.5,
+            child: ClipOval(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: p.dark ? Colors.white.withValues(alpha: 0.10) : Colors.white.withValues(alpha: 0.40),
+                    border: Border.all(color: p.dark ? Colors.white.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.85), width: 1.5),
                   ),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: isDark ? 0.18 : 0.7),
-                    width: 1.2,
-                  ),
+                  alignment: Alignment.center,
+                  child: const EcLogo(size: 86),
                 ),
               ),
             ),
-          ),
-          const EcLogo(size: 96),
+          ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 1, end: 1.03, duration: 3400.ms, curve: Curves.easeInOut),
         ],
       ),
     );
   }
 }
 
-class _FloatingSignal extends StatelessWidget {
-  const _FloatingSignal({
-    required this.icon,
-    required this.color,
-    required this.label,
-  });
-
+class _Signal extends StatelessWidget {
+  const _Signal({required this.icon, required this.color, required this.label});
   final IconData icon;
   final Color color;
   final String label;
-
   @override
   Widget build(BuildContext context) {
-    final glass = EcGlass.of(context);
+    final p = _P.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: glass.fillElevated,
+        color: p.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: glass.border),
+        border: Border.all(color: p.hairline),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: p.dark ? 0.3 : 0.08), blurRadius: 16, spreadRadius: -6, offset: const Offset(0, 6))],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 15),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
+          Icon(icon, color: color, size: 14),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(color: p.ink, fontSize: 11, fontWeight: FontWeight.w800)),
         ],
       ),
     );
   }
 }
 
-class _CarePromiseStrip extends StatelessWidget {
-  const _CarePromiseStrip();
-
-  static const _items = [
-    (Icons.lock_rounded, 'Private'),
-    (Icons.notifications_active_rounded, 'Timely'),
-    (Icons.groups_rounded, 'Shared'),
-  ];
-
+class _TrustRow extends StatelessWidget {
+  const _TrustRow();
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return Row(
+    final p = _P.of(context);
+    Widget item(IconData i, String t) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(i, size: 13, color: p.muted),
+            const SizedBox(width: 6),
+            Text(t, style: TextStyle(color: p.muted, fontSize: 11.5, fontWeight: FontWeight.w600)),
+          ],
+        );
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 18,
+      runSpacing: 8,
       children: [
-        for (var i = 0; i < _items.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                color: ec.accentBrand.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: ec.accentBrand.withValues(alpha: 0.12),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Icon(_items[i].$1, color: ec.accentBrand, size: 17),
-                  const SizedBox(height: 5),
-                  Text(
-                    _items[i].$2,
-                    style: TextStyle(
-                      color: ec.textSecondary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        item(Icons.lock_rounded, 'Private by design'),
+        item(Icons.cloud_done_rounded, 'Encrypted sync'),
       ],
     );
   }
 }
 
-class _AuthGlow extends StatelessWidget {
-  const _AuthGlow({required this.accent});
-  final Color accent;
-
-  @override
-  Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final base = dark ? const Color(0xFF080B11) : const Color(0xFFEFEBE3);
-    return ColoredBox(
-      color: base,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned(
-            top: -110,
-            right: -92,
-            child: _AuthOrb(
-              size: 260,
-              color: accent,
-              opacity: dark ? 0.22 : 0.15,
-            ),
-          ),
-          Positioned(
-            bottom: 44,
-            left: -120,
-            child: _AuthOrb(
-              size: 250,
-              color: const Color(0xFF1A3C34),
-              opacity: dark ? 0.16 : 0.10,
-            ),
-          ),
-          Positioned(
-            top: 240,
-            left: 28,
-            child: _AuthOrb(
-              size: 96,
-              color: Colors.white,
-              opacity: dark ? 0.04 : 0.28,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AuthOrb extends StatelessWidget {
-  const _AuthOrb({
-    required this.size,
-    required this.color,
-    required this.opacity,
-  });
-
-  final double size;
-  final Color color;
-  final double opacity;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              color.withValues(alpha: opacity),
-              color.withValues(alpha: 0),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Role card
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────── Role card ──
 class _RoleCard extends StatelessWidget {
-  const _RoleCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.accent,
-    required this.onTap,
-  });
-
+  const _RoleCard({required this.icon, required this.title, required this.subtitle, required this.accent, required this.onTap});
   final IconData icon;
   final String title;
   final String subtitle;
@@ -727,64 +818,41 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final onSurface = Theme.of(context).colorScheme.onSurface;
-    return EcGlassSurface(
+    final p = _P.of(context);
+    return _Glass(
       onTap: onTap,
-      variant: EcGlassVariant.elevated,
-      borderRadius: EcTokens.radiusGlass,
-      padding: const EdgeInsets.all(18),
       tint: accent,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.all(18),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  color: accent.withValues(alpha: 0.15),
-                  border: Border.all(color: accent.withValues(alpha: 0.24)),
-                ),
-                child: Icon(icon, color: accent, size: 27),
-              ),
-              const Spacer(),
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: accent.withValues(alpha: 0.12),
-                  border: Border.all(color: accent.withValues(alpha: 0.20)),
-                ),
-                child: Icon(
-                  Icons.arrow_forward_rounded,
-                  color: accent,
-                  size: 18,
-                ),
-              ),
-            ],
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(17),
+              color: accent.withValues(alpha: 0.18),
+              border: Border.all(color: accent.withValues(alpha: 0.35)),
+            ),
+            child: Icon(icon, color: accent, size: 26),
           ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: TextStyle(
-              color: onSurface,
-              fontWeight: FontWeight.w800,
-              fontSize: 18,
-              letterSpacing: -0.5,
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(title, style: TextStyle(color: p.ink, fontWeight: FontWeight.w800, fontSize: 17, letterSpacing: -0.4)),
+                const SizedBox(height: 4),
+                Text(subtitle, style: TextStyle(color: p.muted, fontSize: 12.5, height: 1.4, fontWeight: FontWeight.w500)),
+              ],
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            style: TextStyle(
-              color: ec.textSecondary,
-              fontSize: 13,
-              height: 1.42,
-            ),
+          const SizedBox(width: 10),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha: 0.14), border: Border.all(color: accent.withValues(alpha: 0.22))),
+            child: Icon(Icons.arrow_forward_rounded, color: accent, size: 17),
           ),
         ],
       ),
@@ -793,122 +861,80 @@ class _RoleCard extends StatelessWidget {
 }
 
 class _RoleChip extends StatelessWidget {
-  const _RoleChip({
-    required this.icon,
-    required this.label,
-    required this.accent,
-  });
+  const _RoleChip({required this.icon, required this.label, required this.accent});
   final IconData icon;
   final String label;
   final Color accent;
-
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.12),
+        color: accent.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: accent.withValues(alpha: 0.22)),
+        border: Border.all(color: accent.withValues(alpha: 0.28)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: accent),
           const SizedBox(width: 6),
-          Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              color: accent,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
-            ),
-          ),
+          Text(label.toUpperCase(), style: TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
         ],
       ),
     );
   }
 }
 
-class _AuthHeroPanel extends StatelessWidget {
-  const _AuthHeroPanel({
-    required this.isSignUp,
-    required this.isCaregiver,
-    required this.accent,
-  });
-
+class _HeroPanel extends StatelessWidget {
+  const _HeroPanel({required this.isSignUp, required this.isCaregiver, required this.accent});
   final bool isSignUp;
   final bool isCaregiver;
   final Color accent;
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final onSurface = Theme.of(context).colorScheme.onSurface;
-    return EcGlassSurface(
-      variant: EcGlassVariant.subtle,
-      borderRadius: EcTokens.radiusGlass,
+    final p = _P.of(context);
+    return _Glass(
       tint: accent,
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
-                  color: accent.withValues(alpha: 0.14),
-                  border: Border.all(color: accent.withValues(alpha: 0.22)),
+                  color: accent.withValues(alpha: 0.16),
+                  border: Border.all(color: accent.withValues(alpha: 0.3)),
                 ),
-                child: Icon(
-                  isCaregiver
-                      ? Icons.diversity_1_rounded
-                      : Icons.self_improvement_rounded,
-                  color: accent,
-                  size: 22,
-                ),
+                child: Icon(isCaregiver ? Icons.diversity_1_rounded : Icons.self_improvement_rounded, color: accent, size: 23),
               ),
               const Spacer(),
               Text(
                 isSignUp ? 'NEW CARE SPACE' : 'SECURE RETURN',
-                style: TextStyle(
-                  color: accent,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.9,
-                ),
+                style: TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.2),
               ),
             ],
           ),
           const SizedBox(height: 16),
           AnimatedSwitcher(
-            duration: EcTokens.motionFast,
+            duration: const Duration(milliseconds: 220),
             child: Text(
               isSignUp ? 'Create your account' : 'Welcome back',
               key: ValueKey(isSignUp),
-              style: TextStyle(
-                color: onSurface,
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.9,
-                height: 1.05,
-              ),
+              style: TextStyle(color: p.ink, fontSize: 27, fontWeight: FontWeight.w800, letterSpacing: -1.0, height: 1.04),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             isSignUp
                 ? 'Set up a calm, private place to coordinate your care from day one.'
-                : 'Sign in to continue your routines, insights, and care circle.',
-            style: TextStyle(
-              color: ec.textSecondary,
-              fontSize: 13.5,
-              height: 1.45,
-            ),
+                : 'Sign in to continue your routines, insights and care circle.',
+            style: TextStyle(color: p.muted, fontSize: 13.5, height: 1.45, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -916,62 +942,43 @@ class _AuthHeroPanel extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sign in / Create account segmented toggle
-// ─────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────── Sign in / Create toggle ──
 class _AuthToggle extends StatelessWidget {
-  const _AuthToggle({
-    required this.isSignUp,
-    required this.accent,
-    required this.onChanged,
-  });
+  const _AuthToggle({required this.isSignUp, required this.accent, required this.onChanged});
   final bool isSignUp;
   final Color accent;
   final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final glass = EcGlass.of(context);
+    final p = _P.of(context);
     return Container(
       height: 50,
       padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: glass.fillSubtle,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: glass.border.withValues(alpha: 0.7)),
-      ),
+      decoration: BoxDecoration(color: p.faint, borderRadius: BorderRadius.circular(16), border: Border.all(color: p.hairline)),
       child: LayoutBuilder(
         builder: (context, c) {
-          final segW = (c.maxWidth - 0) / 2;
+          final segW = c.maxWidth / 2;
           return Stack(
             children: [
               AnimatedAlign(
-                duration: EcTokens.motionBase,
+                duration: const Duration(milliseconds: 280),
                 curve: Curves.easeOutCubic,
-                alignment: isSignUp
-                    ? Alignment.centerRight
-                    : Alignment.centerLeft,
+                alignment: isSignUp ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
                   width: segW,
                   height: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     color: accent,
-                    boxShadow: [
-                      BoxShadow(
-                        color: accent.withValues(alpha: 0.32),
-                        blurRadius: 14,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    boxShadow: [BoxShadow(color: accent.withValues(alpha: 0.34), blurRadius: 14, spreadRadius: -2, offset: const Offset(0, 4))],
                   ),
                 ),
               ),
               Row(
                 children: [
-                  _seg('Sign in', !isSignUp, ec, () => onChanged(false)),
-                  _seg('Create account', isSignUp, ec, () => onChanged(true)),
+                  _seg('Sign in', !isSignUp, p, () => onChanged(false)),
+                  _seg('Create account', isSignUp, p, () => onChanged(true)),
                 ],
               ),
             ],
@@ -981,17 +988,17 @@ class _AuthToggle extends StatelessWidget {
     );
   }
 
-  Widget _seg(String label, bool active, EcColors ec, VoidCallback onTap) {
+  Widget _seg(String label, bool active, _P p, VoidCallback onTap) {
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Center(
           child: AnimatedDefaultTextStyle(
-            duration: EcTokens.motionFast,
+            duration: const Duration(milliseconds: 180),
             style: TextStyle(
-              color: active ? Colors.white : ec.textSecondary,
-              fontWeight: active ? FontWeight.w700 : FontWeight.w600,
+              color: active ? Colors.white : p.muted,
+              fontWeight: active ? FontWeight.w800 : FontWeight.w600,
               fontSize: 13.5,
               letterSpacing: -0.2,
             ),
@@ -1003,101 +1010,31 @@ class _AuthToggle extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Glass text field
-// ─────────────────────────────────────────────────────────────────────────────
-class _AuthField extends StatelessWidget {
-  const _AuthField({
-    required this.controller,
-    required this.label,
-    required this.icon,
-    this.obscure = false,
-    this.keyboardType,
-    this.textInputAction,
-    this.trailing,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final IconData icon;
-  final bool obscure;
-  final TextInputType? keyboardType;
-  final TextInputAction? textInputAction;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return TextField(
-      controller: controller,
-      obscureText: obscure,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      style: TextStyle(
-        color: Theme.of(context).colorScheme.onSurface,
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, size: 20, color: ec.textMuted),
-        suffixIcon: trailing,
-      ),
-    );
-  }
-}
-
 class _AppleButton extends StatelessWidget {
   const _AppleButton({required this.onPressed});
   final VoidCallback? onPressed;
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Apple HIG: black button on light surfaces, white on dark surfaces.
     final bg = isDark ? Colors.white : Colors.black;
     final fg = isDark ? Colors.black : Colors.white;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(EcTokens.radiusMd),
-        child: Ink(
-          height: 52,
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(EcTokens.radiusMd),
-            border: Border.all(
-              color: isDark
-                  ? Colors.black.withValues(alpha: 0.08)
-                  : Colors.white.withValues(alpha: 0.12),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.22),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.apple, color: fg, size: 22),
-                const SizedBox(width: 8),
-                Text(
-                  'Continue with Apple',
-                  style: TextStyle(
-                    color: fg,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
+    return _Pressable(
+      onTap: onPressed,
+      child: Container(
+        height: 54,
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.22), blurRadius: 16, spreadRadius: -6, offset: const Offset(0, 6))],
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.apple, color: fg, size: 22),
+            const SizedBox(width: 8),
+            Text('Continue with Apple', style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: 14.5, letterSpacing: -0.2)),
+          ],
         ),
       ),
     );
@@ -1106,28 +1043,17 @@ class _AppleButton extends StatelessWidget {
 
 class _OrDivider extends StatelessWidget {
   const _OrDivider({required this.label});
-
   final String label;
-
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final line = Expanded(
-      child: Container(height: 1, color: ec.textMuted.withValues(alpha: 0.16)),
-    );
+    final p = _P.of(context);
+    final line = Expanded(child: Container(height: 1, color: p.hairline));
     return Row(
       children: [
         line,
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: ec.textMuted,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          child: Text(label, style: TextStyle(color: p.muted, fontSize: 12, fontWeight: FontWeight.w700)),
         ),
         line,
       ],
@@ -1138,31 +1064,21 @@ class _OrDivider extends StatelessWidget {
 class _ErrorBanner extends StatelessWidget {
   const _ErrorBanner({required this.message});
   final String message;
-
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: ec.textCritical.withValues(alpha: 0.10),
+        color: _red.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: ec.textCritical.withValues(alpha: 0.24)),
+        border: Border.all(color: _red.withValues(alpha: 0.30)),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline_rounded, size: 18, color: ec.textCritical),
+          const Icon(Icons.error_outline_rounded, size: 18, color: _red),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                color: ec.textCritical,
-                fontSize: 12.5,
-                height: 1.35,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Text(message, style: const TextStyle(color: _red, fontSize: 12.5, height: 1.35, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -1170,43 +1086,7 @@ class _ErrorBanner extends StatelessWidget {
   }
 }
 
-class _TrustRow extends StatelessWidget {
-  const _TrustRow();
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    Widget item(IconData i, String t) => Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(i, size: 14, color: ec.textMuted),
-        const SizedBox(width: 6),
-        Text(
-          t,
-          style: TextStyle(
-            color: ec.textMuted,
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 18,
-      runSpacing: 8,
-      children: [
-        item(Icons.lock_rounded, 'Private by design'),
-        item(Icons.health_and_safety_rounded, 'PIPEDA aligned'),
-        item(Icons.cloud_done_rounded, 'Encrypted sync'),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Biometric unlock gate (logic unchanged)
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────── Biometric gate ──
 class BiometricGate extends ConsumerStatefulWidget {
   const BiometricGate({super.key, required this.child});
 
@@ -1246,53 +1126,68 @@ class _BiometricGateState extends ConsumerState<BiometricGate> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_unlocked) {
-      return EcGlassScaffold(
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: EcGlassSurface(
-              variant: EcGlassVariant.elevated,
-              borderRadius: EcTokens.radiusGlass,
-              padding: const EdgeInsets.all(28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const EcLogo(size: 84),
-                  const SizedBox(height: 22),
-                  Text(
-                    'Unlock ElinaCura',
-                    style: Theme.of(context).textTheme.titleLarge,
+    if (_unlocked) return widget.child;
+    final p = _P.of(context);
+    return Scaffold(
+      backgroundColor: p.bg,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const _Backdrop(accent: _violet),
+          SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: _Glass(
+                  padding: const EdgeInsets.fromLTRB(26, 30, 26, 26),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 108,
+                        height: 108,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [BoxShadow(color: _violet.withValues(alpha: p.dark ? 0.3 : 0.18), blurRadius: 34, spreadRadius: -6)],
+                        ),
+                        child: ClipOval(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: p.dark ? Colors.white.withValues(alpha: 0.10) : Colors.white.withValues(alpha: 0.4),
+                                border: Border.all(color: p.dark ? Colors.white.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.85), width: 1.5),
+                              ),
+                              alignment: Alignment.center,
+                              child: const EcLogo(size: 72),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Text('Unlock ElinaCura', style: TextStyle(color: p.ink, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.8)),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Use Face ID or your passcode to continue.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: p.muted, fontSize: 13.5, height: 1.4, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 26),
+                      _PrimaryButton(label: 'Unlock', icon: Icons.fingerprint_rounded, onPressed: _maybeUnlock),
+                    ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Use Face ID or your passcode to continue.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: EcColors.of(context).textSecondary,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  EcGlassButton(
-                    label: 'Unlock',
-                    icon: Icons.fingerprint_rounded,
-                    onPressed: _maybeUnlock,
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      );
-    }
-    return widget.child;
+        ],
+      ),
+    );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Caregiver profile picker (logic unchanged)
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────── Caregiver picker ──
 class CaregiverProfilePickerScreen extends ConsumerWidget {
   const CaregiverProfilePickerScreen({super.key});
 
