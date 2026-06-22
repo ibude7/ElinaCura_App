@@ -140,6 +140,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
+  void _skip() {
+    HapticFeedback.selectionClick();
+    context.go('/auth');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,6 +156,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           SafeArea(
             child: Column(
               children: [
+                _TopBar(onSkip: _skip, showSkip: _index < _count - 1),
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
@@ -624,7 +630,32 @@ class _Glass extends StatelessWidget {
                 color: isDark ? Colors.white.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.9),
               ),
             ),
-            child: Padding(padding: padding, child: child),
+            child: Stack(
+              children: [
+                Padding(padding: padding, child: child),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: IgnorePointer(
+                    child: Container(
+                      height: math.min(radius, 16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white.withValues(alpha: isDark ? 0.16 : 0.65),
+                            Colors.white.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -643,6 +674,7 @@ class _WellnessBento extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    final p = Curves.easeOutCubic.transform(focus);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -654,7 +686,7 @@ class _WellnessBento extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const _IconBadge(icon: Icons.favorite_rounded, color: _coral),
+                  const _Heartbeat(child: _IconBadge(icon: Icons.favorite_rounded, color: _coral)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -674,7 +706,7 @@ class _WellnessBento extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              SizedBox(height: 46, width: double.infinity, child: CustomPaint(painter: _SparkPainter(values: const [58, 64, 60, 72, 67, 80, 74, 88, 79, 72], color: _coral))),
+              SizedBox(height: 46, width: double.infinity, child: CustomPaint(painter: _SparkPainter(values: const [58, 64, 60, 72, 67, 80, 74, 88, 79, 72], color: _coral, progress: p))),
             ],
           ),
         )),
@@ -682,9 +714,9 @@ class _WellnessBento extends StatelessWidget {
         _reveal(focus, delta, 4, 30, SizedBox(
           height: 150,
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            const Expanded(flex: 6, child: _HydrationCard()),
+            Expanded(flex: 6, child: _HydrationCard(progress: p)),
             const SizedBox(width: 12),
-            Expanded(flex: 5, child: _RingStatCard(value: 0.94, score: '94', label: 'Sleep', sub: 'Restful', color: _violet)),
+            Expanded(flex: 5, child: _RingStatCard(value: 0.94, score: '94', label: 'Sleep', sub: 'Restful', color: _violet, progress: p)),
           ]),
         )),
         const SizedBox(height: 12),
@@ -701,7 +733,8 @@ class _WellnessBento extends StatelessWidget {
 }
 
 class _HydrationCard extends StatelessWidget {
-  const _HydrationCard();
+  const _HydrationCard({this.progress = 1});
+  final double progress;
 
   @override
   Widget build(BuildContext context) {
@@ -710,7 +743,7 @@ class _HydrationCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Positioned.fill(child: CustomPaint(painter: _WavePainter(level: 0.6, color: _blue))),
+          Positioned.fill(child: CustomPaint(painter: _WavePainter(level: 0.6, color: _blue, progress: progress))),
           Padding(
             padding: const EdgeInsets.all(15),
             child: Column(
@@ -740,6 +773,7 @@ class _FitnessBento extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = Curves.easeOutCubic.transform(focus);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -750,7 +784,7 @@ class _FitnessBento extends StatelessWidget {
               width: 96,
               height: 96,
               child: CustomPaint(
-                painter: _ActivityRingsPainter(values: [0.86, 0.72, 1.0], colors: [_coral, _green, _blue]),
+                painter: _ActivityRingsPainter(values: const [0.86, 0.72, 1.0], colors: const [_coral, _green, _blue], progress: p),
                 child: const Center(child: Icon(Icons.bolt_rounded, color: _orange, size: 22)),
               ),
             ),
@@ -776,7 +810,7 @@ class _FitnessBento extends StatelessWidget {
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Expanded(flex: 5, child: _StatCard(icon: Icons.favorite_rounded, color: _coral, label: 'Avg HR', value: '123', unit: 'BPM', footer: 'Cardio zone')),
             const SizedBox(width: 12),
-            const Expanded(flex: 6, child: _WeeklyCard()),
+            Expanded(flex: 6, child: _WeeklyCard(progress: p)),
           ]),
         )),
         const SizedBox(height: 12),
@@ -794,7 +828,8 @@ class _FitnessBento extends StatelessWidget {
 }
 
 class _WeeklyCard extends StatelessWidget {
-  const _WeeklyCard();
+  const _WeeklyCard({this.progress = 1});
+  final double progress;
 
   @override
   Widget build(BuildContext context) {
@@ -818,7 +853,7 @@ class _WeeklyCard extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 2.5),
                     child: FractionallySizedBox(
-                      heightFactor: hs[i],
+                      heightFactor: (hs[i] * progress).clamp(0.02, 1.0),
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter, colors: [Color(0xFFFFB38A), _orange]),
@@ -846,6 +881,7 @@ class _SleepBento extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    final p = Curves.easeOutCubic.transform(focus);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -871,7 +907,7 @@ class _SleepBento extends StatelessWidget {
                 const _TrendPill(label: 'Good', color: _green),
               ]),
               const SizedBox(height: 14),
-              const SizedBox(height: 48, child: _SleepStages()),
+              SizedBox(height: 48, child: _SleepStages(progress: p)),
             ],
           ),
         )),
@@ -881,7 +917,7 @@ class _SleepBento extends StatelessWidget {
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Expanded(child: _StatCard(icon: Icons.dark_mode_rounded, color: _violet, label: 'Deep', value: '1h 21m', footer: '18% of night')),
             const SizedBox(width: 12),
-            Expanded(child: _RingStatCard(value: 0.92, score: '92', label: 'Sleep', sub: 'Score', color: _violet)),
+            Expanded(child: _RingStatCard(value: 0.92, score: '92', label: 'Sleep', sub: 'Score', color: _violet, progress: p)),
           ]),
         )),
         const SizedBox(height: 12),
@@ -898,7 +934,8 @@ class _SleepBento extends StatelessWidget {
 }
 
 class _SleepStages extends StatelessWidget {
-  const _SleepStages();
+  const _SleepStages({this.progress = 1});
+  final double progress;
 
   @override
   Widget build(BuildContext context) {
@@ -911,7 +948,7 @@ class _SleepStages extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2),
             child: FractionallySizedBox(
-              heightFactor: heights[i],
+              heightFactor: (heights[i] * progress).clamp(0.02, 1.0),
               child: Container(
                 decoration: BoxDecoration(
                   color: deep[i] ? _violet : _violet.withValues(alpha: 0.32),
@@ -935,6 +972,7 @@ class _MedsBento extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    final p = Curves.easeOutCubic.transform(focus);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -958,7 +996,7 @@ class _MedsBento extends StatelessWidget {
                 SizedBox(
                   width: 44, height: 44,
                   child: CustomPaint(
-                    painter: _RingPainter(value: 0.98, color: _green, stroke: 5),
+                    painter: _RingPainter(value: 0.98, color: _green, stroke: 5, progress: p),
                     child: Center(child: Text('98', style: TextStyle(color: _ink(context), fontSize: 12, fontWeight: FontWeight.w800))),
                   ),
                 ),
@@ -1087,6 +1125,22 @@ class _IconBadge extends StatelessWidget {
   }
 }
 
+class _Heartbeat extends StatelessWidget {
+  const _Heartbeat({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return child
+        .animate(onPlay: (c) => c.repeat())
+        .scaleXY(begin: 1.0, end: 1.15, duration: 150.ms, curve: Curves.easeOut)
+        .then()
+        .scaleXY(begin: 1.15, end: 1.0, duration: 250.ms, curve: Curves.easeIn)
+        .then()
+        .scaleXY(begin: 1.0, end: 1.0, duration: 760.ms);
+  }
+}
+
 class _TrendPill extends StatelessWidget {
   const _TrendPill({required this.label, required this.color});
   final String label;
@@ -1160,12 +1214,13 @@ class _StatCard extends StatelessWidget {
 }
 
 class _RingStatCard extends StatelessWidget {
-  const _RingStatCard({required this.value, required this.score, required this.label, required this.sub, required this.color});
+  const _RingStatCard({required this.value, required this.score, required this.label, required this.sub, required this.color, this.progress = 1});
   final double value;
   final String score;
   final String label;
   final String sub;
   final Color color;
+  final double progress;
 
   @override
   Widget build(BuildContext context) {
@@ -1178,7 +1233,7 @@ class _RingStatCard extends StatelessWidget {
           SizedBox(
             width: 62, height: 62,
             child: CustomPaint(
-              painter: _RingPainter(value: value, color: color, stroke: 6),
+              painter: _RingPainter(value: value, color: color, stroke: 6, progress: progress),
               child: Center(child: Text(score, style: TextStyle(color: _ink(context), fontSize: 16, fontWeight: FontWeight.w800))),
             ),
           ),
@@ -1305,6 +1360,46 @@ class _FloatChip extends StatelessWidget {
   }
 }
 
+// ──────────────────────────────────────────────────────────── Top bar ──
+class _TopBar extends StatelessWidget {
+  const _TopBar({required this.onSkip, required this.showSkip});
+  final VoidCallback onSkip;
+  final bool showSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ink = isDark ? Colors.white : const Color(0xFF3A3F49);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 8, 12, 2),
+      child: Row(
+        children: [
+          Opacity(opacity: isDark ? 0.95 : 0.85, child: const EcLogo(size: 26)),
+          const SizedBox(width: 9),
+          Text(
+            'ElinaCura',
+            style: TextStyle(color: ink, fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: -0.3),
+          ),
+          const Spacer(),
+          AnimatedOpacity(
+            duration: EcTokens.motionFast,
+            opacity: showSkip ? 1 : 0,
+            child: TextButton(
+              onPressed: showSkip ? onSkip : null,
+              style: TextButton.styleFrom(
+                foregroundColor: isDark ? Colors.white70 : const Color(0xFF5A606A),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                minimumSize: const Size(0, 36),
+              ),
+              child: const Text('Skip', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ──────────────────────────────────────────────────────── Bottom chrome ──
 class _BottomChrome extends StatefulWidget {
   const _BottomChrome({required this.page, required this.count, required this.label, required this.onPrimary});
@@ -1403,33 +1498,38 @@ class _Dots extends StatelessWidget {
 
 // ═══════════════════════════════════════════════════════════ Painters ══
 class _RingPainter extends CustomPainter {
-  const _RingPainter({required this.value, required this.color, this.stroke = 7});
+  const _RingPainter({required this.value, required this.color, this.stroke = 7, this.progress = 1});
   final double value;
   final Color color;
   final double stroke;
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final r = (size.shortestSide - stroke) / 2;
     canvas.drawCircle(center, r, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..color = color.withValues(alpha: 0.18));
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: r),
-      -math.pi / 2,
-      value.clamp(0.0, 1.0) * 2 * math.pi,
-      false,
-      Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color,
-    );
+    final sweep = value.clamp(0.0, 1.0) * progress.clamp(0.0, 1.0) * 2 * math.pi;
+    if (sweep > 0.0001) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: r),
+        -math.pi / 2,
+        sweep,
+        false,
+        Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color,
+      );
+    }
   }
 
   @override
-  bool shouldRepaint(covariant _RingPainter old) => old.value != value || old.color != color;
+  bool shouldRepaint(covariant _RingPainter old) => old.value != value || old.color != color || old.progress != progress;
 }
 
 class _ActivityRingsPainter extends CustomPainter {
-  const _ActivityRingsPainter({required this.values, required this.colors});
+  const _ActivityRingsPainter({required this.values, required this.colors, this.progress = 1});
   final List<double> values;
   final List<Color> colors;
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1442,28 +1542,33 @@ class _ActivityRingsPainter extends CustomPainter {
       if (r <= 0) continue;
       final color = colors[i % colors.length];
       canvas.drawCircle(center, r, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..color = color.withValues(alpha: 0.16));
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: r),
-        -math.pi / 2,
-        values[i].clamp(0.0, 1.0) * 2 * math.pi,
-        false,
-        Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color,
-      );
+      final sweep = values[i].clamp(0.0, 1.0) * progress.clamp(0.0, 1.0) * 2 * math.pi;
+      if (sweep > 0.0001) {
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: r),
+          -math.pi / 2,
+          sweep,
+          false,
+          Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color,
+        );
+      }
     }
   }
 
   @override
-  bool shouldRepaint(covariant _ActivityRingsPainter old) => old.values != values || old.colors != colors;
+  bool shouldRepaint(covariant _ActivityRingsPainter old) => old.values != values || old.colors != colors || old.progress != progress;
 }
 
 class _SparkPainter extends CustomPainter {
-  const _SparkPainter({required this.values, required this.color});
+  const _SparkPainter({required this.values, required this.color, this.progress = 1});
   final List<double> values;
   final Color color;
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (values.length < 2) return;
+    final p = progress.clamp(0.0, 1.0);
     final minV = values.reduce(math.min);
     final maxV = values.reduce(math.max);
     final span = (maxV - minV).abs() < 1e-6 ? 1.0 : (maxV - minV);
@@ -1480,24 +1585,44 @@ class _SparkPainter extends CustomPainter {
       path.cubicTo(mx, prev.dy, mx, cur.dy, cur.dx, cur.dy);
     }
     final area = Path.from(path)..lineTo(pts.last.dx, size.height)..lineTo(pts.first.dx, size.height)..close();
+
+    final revealW = (size.width * p).clamp(0.0, size.width);
+    canvas.save();
+    canvas.clipRect(Rect.fromLTWH(0, 0, revealW <= 0 ? 0.01 : revealW, size.height));
     canvas.drawPath(area, Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color.withValues(alpha: 0.28), color.withValues(alpha: 0)]).createShader(Offset.zero & size));
     canvas.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 3..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round..color = color);
-    canvas.drawCircle(pts.last, 4.5, Paint()..color = color);
-    canvas.drawCircle(pts.last, 2, Paint()..color = Colors.white);
+    canvas.restore();
+
+    // tip marker at the leading edge
+    final tipX = revealW;
+    var tipY = pts.last.dy;
+    for (var i = 1; i < pts.length; i++) {
+      if (pts[i].dx >= tipX) {
+        final t = ((tipX - pts[i - 1].dx) / (pts[i].dx - pts[i - 1].dx)).clamp(0.0, 1.0);
+        tipY = pts[i - 1].dy + (pts[i].dy - pts[i - 1].dy) * t;
+        break;
+      }
+    }
+    if (p > 0.02) {
+      canvas.drawCircle(Offset(tipX.clamp(0.0, size.width), tipY), 4.5, Paint()..color = color);
+      canvas.drawCircle(Offset(tipX.clamp(0.0, size.width), tipY), 2, Paint()..color = Colors.white);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant _SparkPainter old) => old.values != values || old.color != color;
+  bool shouldRepaint(covariant _SparkPainter old) => old.values != values || old.color != color || old.progress != progress;
 }
 
 class _WavePainter extends CustomPainter {
-  const _WavePainter({required this.level, required this.color});
+  const _WavePainter({required this.level, required this.color, this.progress = 1});
   final double level;
   final Color color;
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final baseY = size.height * (1 - level);
+    final lvl = level * progress.clamp(0.0, 1.0);
+    final baseY = size.height * (1 - lvl);
     final path = Path()..moveTo(0, baseY);
     for (var x = 0.0; x <= size.width; x += 1) {
       path.lineTo(x, baseY + math.sin(x / size.width * 2 * math.pi + 0.6) * 5);
@@ -1510,5 +1635,5 @@ class _WavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _WavePainter old) => old.level != level || old.color != color;
+  bool shouldRepaint(covariant _WavePainter old) => old.level != level || old.color != color || old.progress != progress;
 }
