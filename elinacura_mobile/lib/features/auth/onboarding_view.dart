@@ -7,49 +7,40 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/ec_theme.dart';
-import '../../core/theme/ec_tokens.dart';
 import '../../shared/widgets/ec_logo.dart';
 
 // ════════════════════════════════════════════════════════════════════════
 //  ElinaCura — Onboarding
-//  A living brushed-silver canvas with a dense bento of premium glass widgets
-//  driven by ONE shared real-time clock: every page streams live data — a
-//  scrolling PPG trace, ticking vitals, a counting-up calorie burn, a
-//  ticking dose countdown, a rotating feature constellation — all in sync.
+//  A cinematic, editorial flow on a solid canvas. Each chapter is one
+//  commanding, living health visual: a real-time ECG, activity rings, a
+//  sleep hypnogram, a medication schedule, and an AI companion orb.
+//  Driven by a single shared real-time clock so the whole thing breathes.
 // ════════════════════════════════════════════════════════════════════════
 
-const _coral = Color(0xFFFF6F61);
-const _blue = Color(0xFF4B7BFF);
-const _green = Color(0xFF34C759);
-const _orange = Color(0xFFFF8A3D);
-const _violet = Color(0xFF8B6FE8);
-const _amber = Color(0xFFFFB23E);
-const _cyan = Color(0xFF22C7D6);
+class _Palette {
+  const _Palette(this.dark);
+  final bool dark;
 
-String _fmt(int n) {
-  final s = n.toString();
-  final b = StringBuffer();
-  for (var i = 0; i < s.length; i++) {
-    if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
-    b.write(s[i]);
-  }
-  return b.toString();
+  Color get bg => dark ? const Color(0xFF0A0B0F) : const Color(0xFFEDEAE2);
+  Color get surface => dark ? const Color(0xFF14161C) : const Color(0xFFF7F5F0);
+  Color get ink => dark ? const Color(0xFFF4F5F8) : const Color(0xFF14161C);
+  Color get muted => dark ? const Color(0xFF8A90A0) : const Color(0xFF6C7178);
+  Color get faint => dark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.07);
+  Color get hairline => dark ? Colors.white.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.10);
 }
 
-enum _PageKind { intro, wellness, fitness, sleep, meds, finale }
+const _red = Color(0xFFFF4D45);
+const _orange = Color(0xFFFF8A2B);
+const _indigo = Color(0xFF6E6BFF);
+const _green = Color(0xFF18C77E);
+const _blue = Color(0xFF3E8BFF);
+const _violet = Color(0xFF8B6FE8);
 
-class _OnbPage {
-  const _OnbPage({
-    required this.kind,
-    required this.eyebrow,
-    required this.title,
-    this.subtitle = '',
-    required this.cta,
-    required this.accent,
-  });
+enum _Chapter { intro, vitals, fitness, sleep, meds, ai }
 
-  final _PageKind kind;
+class _PageData {
+  const _PageData({required this.kind, required this.eyebrow, required this.title, required this.subtitle, required this.cta, required this.accent});
+  final _Chapter kind;
   final String eyebrow;
   final String title;
   final String subtitle;
@@ -57,39 +48,35 @@ class _OnbPage {
   final Color accent;
 }
 
-const _pages = <_OnbPage>[
-  _OnbPage(kind: _PageKind.intro, eyebrow: 'ELINACURA', title: 'The everything\nhealth app', cta: 'Continue', accent: _violet),
-  _OnbPage(kind: _PageKind.wellness, eyebrow: 'WELLNESS', title: 'Wellness', subtitle: 'Understand the impact of your habits and lifestyle on your health.', cta: 'Continue', accent: _coral),
-  _OnbPage(kind: _PageKind.fitness, eyebrow: 'FITNESS', title: 'Fitness', subtitle: 'Build, track, and maintain your strength and endurance.', cta: 'Continue', accent: _orange),
-  _OnbPage(kind: _PageKind.sleep, eyebrow: 'SLEEP', title: 'Sleep', subtitle: 'Discover your sleep patterns to achieve consistent, restorative rest.', cta: 'Continue', accent: _violet),
-  _OnbPage(kind: _PageKind.meds, eyebrow: 'MEDICATION', title: 'Medication', subtitle: 'Stay on top of every dose with smart reminders and refill alerts.', cta: 'Continue', accent: _blue),
-  _OnbPage(kind: _PageKind.finale, eyebrow: "YOU'RE READY", title: "You're all set", subtitle: 'Create your free account to bring it all together — private, encrypted, and yours.', cta: 'Get started', accent: _violet),
+const _pages = <_PageData>[
+  _PageData(kind: _Chapter.intro, eyebrow: 'ELINACURA', title: 'The everything\nhealth app', subtitle: 'One intelligent companion for your whole body — vitals, movement, sleep and medication.', cta: 'Continue', accent: _violet),
+  _PageData(kind: _Chapter.vitals, eyebrow: 'LIVE VITALS', title: 'Every heartbeat,\nunderstood', subtitle: 'Heart rate, oxygen and recovery, read in real time and explained in plain language.', cta: 'Continue', accent: _red),
+  _PageData(kind: _Chapter.fitness, eyebrow: 'MOVEMENT', title: 'Progress you\ncan feel', subtitle: 'Close your rings, log every session, and watch your momentum compound.', cta: 'Continue', accent: _orange),
+  _PageData(kind: _Chapter.sleep, eyebrow: 'SLEEP', title: 'Wake up\nknowing why', subtitle: 'Stages, efficiency and recovery, so every morning starts informed.', cta: 'Continue', accent: _indigo),
+  _PageData(kind: _Chapter.meds, eyebrow: 'MEDICATION', title: 'Never miss\na dose', subtitle: 'Smart reminders, refill alerts and adherence you can actually keep.', cta: 'Continue', accent: _green),
+  _PageData(kind: _Chapter.ai, eyebrow: 'AI COMPANION', title: 'Health that\nthinks ahead', subtitle: 'Everything you track, synthesized into clear guidance by a private intelligence.', cta: 'Create your account', accent: _blue),
 ];
 
 // ════════════════════════════════════════════════════ Shared live clock ══
 class _ClockScope extends InheritedWidget {
-  const _ClockScope({required this.clock, required super.child});
+  const _ClockScope({required this.clock, required this.palette, required super.child});
   final ValueNotifier<double> clock;
+  final _Palette palette;
 
-  static ValueNotifier<double> of(BuildContext context) =>
-      (context.getElementForInheritedWidgetOfExactType<_ClockScope>()!.widget as _ClockScope).clock;
+  static ValueNotifier<double> clockOf(BuildContext c) => (c.getElementForInheritedWidgetOfExactType<_ClockScope>()!.widget as _ClockScope).clock;
+  static _Palette paletteOf(BuildContext c) => (c.getElementForInheritedWidgetOfExactType<_ClockScope>()!.widget as _ClockScope).palette;
 
   @override
-  bool updateShouldNotify(_ClockScope old) => old.clock != clock;
+  bool updateShouldNotify(_ClockScope old) => old.clock != clock || old.palette.dark != palette.dark;
 }
 
-/// Rebuilds only its [builder] subtree on every clock tick (seconds elapsed).
 class _Live extends StatelessWidget {
   const _Live({required this.builder});
   final Widget Function(BuildContext context, double t) builder;
 
   @override
   Widget build(BuildContext context) {
-    final clock = _ClockScope.of(context);
-    return ValueListenableBuilder<double>(
-      valueListenable: clock,
-      builder: (c, t, _) => builder(c, t),
-    );
+    return ValueListenableBuilder<double>(valueListenable: _ClockScope.clockOf(context), builder: (c, t, _) => builder(c, t));
   }
 }
 
@@ -102,20 +89,18 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerProviderStateMixin {
   static const _debugStart = int.fromEnvironment('OB_PAGE');
-
   final _pageController = PageController(initialPage: _debugStart);
   final _page = ValueNotifier<double>(_debugStart.toDouble());
   final _clock = ValueNotifier<double>(0);
   late final Ticker _ticker;
   int _index = _debugStart;
-
   int get _count => _pages.length;
 
   @override
   void initState() {
     super.initState();
     _pageController.addListener(() => _page.value = _pageController.page ?? _index.toDouble());
-    _ticker = createTicker((elapsed) => _clock.value = elapsed.inMicroseconds / 1e6)..start();
+    _ticker = createTicker((e) => _clock.value = e.inMicroseconds / 1e6)..start();
   }
 
   @override
@@ -130,7 +115,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   void _next() {
     if (_index < _count - 1) {
       HapticFeedback.lightImpact();
-      _pageController.nextPage(duration: EcTokens.motionSlow, curve: Curves.easeOutCubic);
+      _pageController.nextPage(duration: const Duration(milliseconds: 560), curve: Curves.easeOutCubic);
     } else {
       HapticFeedback.mediumImpact();
       context.go('/auth');
@@ -144,18 +129,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: _ClockScope(
-        clock: _clock,
-        child: Stack(
+    final palette = _Palette(Theme.of(context).brightness == Brightness.dark);
+    return _ClockScope(
+      clock: _clock,
+      palette: palette,
+      child: Scaffold(
+        backgroundColor: palette.bg,
+        body: Stack(
           fit: StackFit.expand,
           children: [
-            const _SilverBackground(),
+            const Positioned.fill(child: IgnorePointer(child: _Grain())),
             SafeArea(
               child: Column(
                 children: [
-                  _TopBar(onSkip: _skip, showSkip: _index < _count - 1),
+                  _TopBar(page: _page, count: _count, onSkip: _skip, showSkip: _index < _count - 1),
                   Expanded(
                     child: PageView.builder(
                       controller: _pageController,
@@ -165,10 +152,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                         HapticFeedback.selectionClick();
                         setState(() => _index = i);
                       },
-                      itemBuilder: (context, i) => _OnbPageView(page: _page, index: i, count: _count, data: _pages[i]),
+                      itemBuilder: (context, i) => _ChapterView(page: _page, index: i, data: _pages[i]),
                     ),
                   ),
-                  _BottomChrome(page: _page, count: _count, label: _pages[_index].cta, onPrimary: _next),
+                  _BottomChrome(page: _page, count: _count, label: _pages[_index].cta, accent: _pages[_index].accent, onPrimary: _next),
                 ],
               ),
             ),
@@ -179,86 +166,65 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   }
 }
 
-// ═══════════════════════════════════════════════════════ Background ══
-class _SilverBackground extends StatelessWidget {
-  const _SilverBackground();
-
+// ─────────────────────────────────────────────────────────── Grain ──
+class _Grain extends StatelessWidget {
+  const _Grain();
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isDark
-              ? const [Color(0xFF1B1E25), Color(0xFF15171C), Color(0xFF0D0E12)]
-              : const [Color(0xFFB7BDC8), Color(0xFFC9CED6), Color(0xFFE9EBEF)],
-        ),
-      ),
-      child: RepaintBoundary(
-        child: _Live(
-          builder: (context, t) => CustomPaint(
-            size: Size.infinite,
-            painter: _SilverPainter(t: t, isDark: isDark),
-            child: const SizedBox.expand(),
-          ),
-        ),
-      ),
-    );
+    final p = _ClockScope.paletteOf(context);
+    return RepaintBoundary(child: CustomPaint(painter: _GrainPainter(dark: p.dark)));
   }
 }
 
-class _SilverPainter extends CustomPainter {
-  const _SilverPainter({required this.t, required this.isDark});
-  final double t;
-  final bool isDark;
-
-  void _glow(Canvas c, Offset center, double r, Color color) {
-    c.drawCircle(center, r, Paint()..shader = RadialGradient(colors: [color, color.withValues(alpha: 0)]).createShader(Rect.fromCircle(center: center, radius: r)));
-  }
+class _GrainPainter extends CustomPainter {
+  _GrainPainter({required this.dark});
+  final bool dark;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final w = size.width, h = size.height;
-    _glow(canvas, Offset(w * (0.30 + 0.16 * math.sin(t * 0.22)), h * (0.14 + 0.05 * math.cos(t * 0.18))), w * 0.9, Colors.white.withValues(alpha: isDark ? 0.05 : 0.42));
-    _glow(canvas, Offset(w * (0.78 + 0.1 * math.cos(t * 0.17)), h * (0.82 + 0.04 * math.sin(t * 0.2))), w * 0.8, (isDark ? Colors.black : const Color(0xFF8A91A0)).withValues(alpha: isDark ? 0.34 : 0.22));
-    _glow(canvas, Offset(w * (0.12 + 0.05 * math.sin(t * 0.26)), h * 0.5), w * 0.55, Colors.white.withValues(alpha: isDark ? 0.03 : 0.22));
-    final band = (0.15 + 0.7 * ((t * 0.05) % 1.0)) * h;
-    canvas.drawRect(
-      Rect.fromLTWH(0, band - h * 0.25, w, h * 0.5),
-      Paint()..shader = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Colors.white.withValues(alpha: 0), Colors.white.withValues(alpha: isDark ? 0.03 : 0.13), Colors.white.withValues(alpha: 0)], stops: const [0.0, 0.5, 1.0]).createShader(Rect.fromLTWH(0, band - h * 0.25, w, h * 0.5)),
-    );
+    final rnd = math.Random(7);
+    final n = (size.width * size.height / 900).clamp(400, 4000).toInt();
+    final paint = Paint()
+      ..strokeWidth = 1
+      ..strokeCap = StrokeCap.round
+      ..color = (dark ? Colors.white : Colors.black).withValues(alpha: dark ? 0.022 : 0.02);
+    final pts = <Offset>[for (var i = 0; i < n; i++) Offset(rnd.nextDouble() * size.width, rnd.nextDouble() * size.height)];
+    canvas.drawPoints(PointMode.points, pts, paint);
   }
 
   @override
-  bool shouldRepaint(covariant _SilverPainter old) => old.t != t || old.isDark != isDark;
+  bool shouldRepaint(covariant _GrainPainter old) => old.dark != dark;
 }
 
 // ──────────────────────────────────────────────────────────── Top bar ──
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onSkip, required this.showSkip});
+  const _TopBar({required this.page, required this.count, required this.onSkip, required this.showSkip});
+  final ValueNotifier<double> page;
+  final int count;
   final VoidCallback onSkip;
   final bool showSkip;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final ink = isDark ? Colors.white : const Color(0xFF3A3F49);
+    final p = _ClockScope.paletteOf(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 8, 12, 2),
+      padding: const EdgeInsets.fromLTRB(22, 10, 14, 6),
       child: Row(children: [
-        Opacity(opacity: isDark ? 0.95 : 0.85, child: const EcLogo(size: 26)),
+        Opacity(opacity: p.dark ? 0.95 : 0.9, child: const EcLogo(size: 24)),
         const SizedBox(width: 9),
-        Text('ElinaCura', style: TextStyle(color: ink, fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: -0.3)),
+        Text('ElinaCura', style: TextStyle(color: p.ink, fontWeight: FontWeight.w800, fontSize: 15.5, letterSpacing: -0.3)),
         const Spacer(),
+        ValueListenableBuilder<double>(
+          valueListenable: page,
+          builder: (c, v, _) => Text('${(v.round() + 1).toString().padLeft(2, '0')} / ${count.toString().padLeft(2, '0')}', style: TextStyle(color: p.muted, fontSize: 12.5, fontWeight: FontWeight.w700, letterSpacing: 1, fontFeatures: const [FontFeature.tabularFigures()])),
+        ),
         AnimatedOpacity(
-          duration: EcTokens.motionFast,
+          duration: const Duration(milliseconds: 180),
           opacity: showSkip ? 1 : 0,
           child: TextButton(
             onPressed: showSkip ? onSkip : null,
-            style: TextButton.styleFrom(foregroundColor: isDark ? Colors.white70 : const Color(0xFF5A606A), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), minimumSize: const Size(0, 36)),
-            child: const Text('Skip', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            style: TextButton.styleFrom(foregroundColor: p.muted, padding: const EdgeInsets.symmetric(horizontal: 10), minimumSize: const Size(0, 36)),
+            child: const Text('Skip', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
           ),
         ),
       ]),
@@ -266,959 +232,556 @@ class _TopBar extends StatelessWidget {
   }
 }
 
-// ────────────────────────────────────────────────────────── Page view ──
-class _OnbPageView extends StatelessWidget {
-  const _OnbPageView({required this.page, required this.index, required this.count, required this.data});
+// ──────────────────────────────────────────────────────── Chapter view ──
+class _ChapterView extends StatelessWidget {
+  const _ChapterView({required this.page, required this.index, required this.data});
   final ValueNotifier<double> page;
   final int index;
-  final int count;
-  final _OnbPage data;
+  final _PageData data;
 
   @override
   Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
     return AnimatedBuilder(
       animation: page,
       builder: (context, _) {
         final delta = page.value - index;
         final focus = (1 - delta.abs()).clamp(0.0, 1.0);
-        return Opacity(
-          opacity: Curves.easeOut.transform(focus.clamp(0.0, 1.0)),
-          child: data.kind == _PageKind.intro
-              ? _IntroContent(delta: delta, focus: focus)
-              : _FeaturePage(data: data, index: index, count: count, delta: delta, focus: focus),
+        final eased = Curves.easeOut.transform(focus);
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(26, 4, 26, 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    _HeroGlow(color: data.accent, opacity: eased),
+                    Opacity(
+                      opacity: eased,
+                      child: Transform.translate(
+                        offset: Offset(delta * -36, 0),
+                        child: Transform.scale(
+                          scale: 0.92 + 0.08 * eased,
+                          child: Center(child: _Hero(kind: data.kind, accent: data.accent)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 6),
+              _revealText(focus, delta, 0, Row(children: [
+                Container(width: 18, height: 2, color: data.accent),
+                const SizedBox(width: 9),
+                Text(data.eyebrow, style: TextStyle(color: data.accent, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 2.6)),
+              ])),
+              const SizedBox(height: 14),
+              _revealText(focus, delta, 1, Text(data.title, style: TextStyle(color: p.ink, fontSize: 40, height: 1.02, fontWeight: FontWeight.w800, letterSpacing: -1.6))),
+              const SizedBox(height: 12),
+              _revealText(focus, delta, 2, Text(data.subtitle, style: TextStyle(color: p.muted, fontSize: 15.5, height: 1.42, fontWeight: FontWeight.w500))),
+              const SizedBox(height: 6),
+            ],
+          ),
         );
       },
     );
   }
+
+  Widget _revealText(double focus, double delta, int order, Widget child) {
+    final start = order * 0.1;
+    final t = ((focus - start) / (1 - start)).clamp(0.0, 1.0);
+    final e = Curves.easeOutCubic.transform(t);
+    return Opacity(opacity: e, child: Transform.translate(offset: Offset(0, (1 - e) * 22), child: child));
+  }
 }
 
-Widget _reveal(double focus, double delta, int order, double parallax, Widget child) {
-  final start = order * 0.08;
-  final t = ((focus - start) / (1 - start)).clamp(0.0, 1.0);
-  final e = Curves.easeOutCubic.transform(t);
-  return Opacity(opacity: e, child: Transform.translate(offset: Offset(delta * -parallax, (1 - e) * 26), child: child));
-}
-
-Widget _layer(double delta, double factor, Widget child) => Transform.translate(offset: Offset(delta * factor, 0), child: child);
-
-// ───────────────────────────────────────────────────────────── Intro ──
-class _IntroContent extends StatelessWidget {
-  const _IntroContent({required this.delta, required this.focus});
-  final double delta;
-  final double focus;
+class _Hero extends StatelessWidget {
+  const _Hero({required this.kind, required this.accent});
+  final _Chapter kind;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final ink = isDark ? Colors.white : const Color(0xFF5E646E);
-    return Center(
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: SizedBox(
-          width: 330,
-          height: 640,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _reveal(focus, delta, 0, 10, SizedBox(
-                width: 320,
-                height: 284,
-                child: Stack(
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.none,
-                  children: [
-                    const _PulseRing(delayMs: 0),
-                    const _PulseRing(delayMs: 1400),
-                    _layer(delta, 8, const _LogoOrb()),
-                    Positioned(top: 10, left: 2, child: _layer(delta, 60, _FloatChip(icon: Icons.favorite_rounded, color: _coral, live: (t) => '${(72 + 3 * math.sin(t * 0.9)).round()} BPM'))),
-                    Positioned(top: 60, right: -4, child: _layer(delta, 84, const _FloatChip(icon: Icons.nightlight_round, color: _violet, label: 'Sleep 94'))),
-                    Positioned(bottom: 54, left: -8, child: _layer(delta, 76, _FloatChip(icon: Icons.directions_walk_rounded, color: _green, live: (t) => '${_fmt(8210 + (t * 0.8).floor())} steps'))),
-                    Positioned(bottom: 4, right: 6, child: _layer(delta, 56, _FloatChip(icon: Icons.bolt_rounded, color: _orange, live: (t) => '${420 + (t * 0.5).floor()} kcal'))),
-                  ],
-                ),
-              )),
-              const SizedBox(height: 30),
-              _reveal(focus, delta, 1, 22, Text('The everything\nhealth app', textAlign: TextAlign.center, style: TextStyle(fontSize: 36, height: 1.1, fontWeight: FontWeight.w800, letterSpacing: -1.3, color: ink))),
-              const SizedBox(height: 12),
-              _reveal(focus, delta, 2, 34, SizedBox(width: 300, child: Text('Vitals, movement, sleep and medication — together in one calm, intelligent space.', textAlign: TextAlign.center, style: TextStyle(fontSize: 14.5, height: 1.45, fontWeight: FontWeight.w500, color: isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF6B7078))))),
-            ],
+    final hero = switch (kind) {
+      _Chapter.intro => const _IntroHero(),
+      _Chapter.vitals => const _VitalsHero(),
+      _Chapter.fitness => const _FitnessHero(),
+      _Chapter.sleep => const _SleepHero(),
+      _Chapter.meds => const _MedsHero(),
+      _Chapter.ai => const _AiHero(),
+    };
+    return FittedBox(fit: BoxFit.scaleDown, child: SizedBox(width: 360, height: 400, child: hero));
+  }
+}
+
+/// Localized accent light behind the hero — lets each chapter's colour bathe
+/// the screen without ever touching the solid background.
+class _HeroGlow extends StatelessWidget {
+  const _HeroGlow({required this.color, required this.opacity});
+  final Color color;
+  final double opacity;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return IgnorePointer(
+      child: _Live(builder: (c, t) {
+        final breathe = 0.9 + 0.1 * math.sin(t * 0.7);
+        final a = ((p.dark ? 0.22 : 0.13) * opacity * breathe).clamp(0.0, 1.0);
+        return Center(
+          child: Container(
+            width: 320,
+            height: 320,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(colors: [color.withValues(alpha: a), color.withValues(alpha: 0)]),
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }
 
-class _LogoOrb extends StatelessWidget {
-  const _LogoOrb();
-
+// ═══════════════════════════════════════════════════════════ Intro ══
+class _IntroHero extends StatelessWidget {
+  const _IntroHero();
   @override
   Widget build(BuildContext context) {
-    return _Glass(
-      radius: 999,
-      padding: const EdgeInsets.all(34),
-      child: const SizedBox(width: 92, height: 92, child: Center(child: EcLogo(size: 90))),
-    ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 1, end: 1.04, duration: 3600.ms, curve: Curves.easeInOut);
+    final p = _ClockScope.paletteOf(context);
+    return Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // streaming signal line crossing the brand
+          SizedBox(
+            width: 360,
+            height: 120,
+            child: _Live(builder: (c, t) => CustomPaint(painter: _EcgPainter(phase: t * 1.1, color: _violet, dark: p.dark, grid: false, glow: true))),
+          ),
+          const _PulseRing(delayMs: 0, color: _violet),
+          const _PulseRing(delayMs: 1500, color: _violet),
+          Container(
+            width: 132,
+            height: 132,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: p.surface,
+              border: Border.all(color: p.hairline, width: 1.5),
+              boxShadow: [BoxShadow(color: _violet.withValues(alpha: p.dark ? 0.3 : 0.18), blurRadius: 40, spreadRadius: -6)],
+            ),
+            alignment: Alignment.center,
+            child: const EcLogo(size: 84),
+          ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 1, end: 1.035, duration: 3400.ms, curve: Curves.easeInOut),
+        ],
+      ),
+    );
   }
 }
 
 class _PulseRing extends StatelessWidget {
-  const _PulseRing({required this.delayMs});
+  const _PulseRing({required this.delayMs, required this.color});
   final int delayMs;
-
+  final Color color;
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 150,
       height: 150,
-      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.6), width: 1.5)),
-    ).animate(onPlay: (c) => c.repeat()).scaleXY(begin: 0.7, end: 1.7, duration: 3000.ms, delay: delayMs.ms, curve: Curves.easeOut).fadeOut(duration: 3000.ms, delay: delayMs.ms, curve: Curves.easeOut);
+      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color.withValues(alpha: 0.5), width: 1.5)),
+    ).animate(onPlay: (c) => c.repeat()).scaleXY(begin: 0.85, end: 2.2, duration: 3200.ms, delay: delayMs.ms, curve: Curves.easeOut).fadeOut(duration: 3200.ms, delay: delayMs.ms, curve: Curves.easeOut);
   }
 }
 
-// ─────────────────────────────────────────────────────────── Feature ──
-class _FeaturePage extends StatelessWidget {
-  const _FeaturePage({required this.data, required this.index, required this.count, required this.delta, required this.focus});
-  final _OnbPage data;
-  final int index;
-  final int count;
-  final double delta;
-  final double focus;
-
+// ═══════════════════════════════════════════════════════════ Vitals ══
+class _VitalsHero extends StatelessWidget {
+  const _VitalsHero();
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final titleColor = isDark ? Colors.white : const Color(0xFFF6F8FB);
-    final subColor = isDark ? Colors.white.withValues(alpha: 0.64) : const Color(0xFF555B65);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _reveal(focus, delta, 0, 16, Row(children: [
-            Container(width: 7, height: 7, decoration: BoxDecoration(color: data.accent, shape: BoxShape.circle)),
+    final p = _ClockScope.paletteOf(context);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Live(builder: (c, t) {
+          final bpm = (72 + 2.6 * math.sin(t * 0.9) + 1.2 * math.sin(t * 2.3)).round();
+          return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Icon(Icons.favorite_rounded, color: _red, size: 30).animate(onPlay: (a) => a.repeat()).scaleXY(begin: 1, end: 1.18, duration: 160.ms, curve: Curves.easeOut).then().scaleXY(begin: 1.18, end: 1, duration: 260.ms).then().scaleXY(begin: 1, end: 1, duration: 700.ms),
+            const SizedBox(width: 14),
+            Text('$bpm', style: TextStyle(color: p.ink, fontSize: 92, height: 0.9, fontWeight: FontWeight.w800, letterSpacing: -4, fontFeatures: const [FontFeature.tabularFigures()])),
             const SizedBox(width: 8),
-            Text(data.eyebrow, style: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF676D77), fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 2.2)),
-            const Spacer(),
-            Text('${(index + 1).toString().padLeft(2, '0')} / ${count.toString().padLeft(2, '0')}', style: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF7C828C), fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1)),
-          ])),
-          const SizedBox(height: 12),
-          _reveal(focus, delta, 1, 22, Text(data.title, style: TextStyle(fontSize: 44, height: 1.0, fontWeight: FontWeight.w800, letterSpacing: -1.6, color: titleColor))),
-          const SizedBox(height: 12),
-          _reveal(focus, delta, 2, 32, Text(data.subtitle, style: TextStyle(fontSize: 15, height: 1.4, fontWeight: FontWeight.w500, color: subColor))),
-          const SizedBox(height: 22),
-          Expanded(
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.topCenter,
-                child: SizedBox(width: 342, child: _Bento(kind: data.kind, delta: delta, focus: focus)),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Bento extends StatelessWidget {
-  const _Bento({required this.kind, required this.delta, required this.focus});
-  final _PageKind kind;
-  final double delta;
-  final double focus;
-
-  @override
-  Widget build(BuildContext context) {
-    return switch (kind) {
-      _PageKind.wellness => _WellnessBento(delta: delta, focus: focus),
-      _PageKind.fitness => _FitnessBento(delta: delta, focus: focus),
-      _PageKind.sleep => _SleepBento(delta: delta, focus: focus),
-      _PageKind.meds => _MedsBento(delta: delta, focus: focus),
-      _PageKind.finale => _FinaleBento(delta: delta, focus: focus),
-      _PageKind.intro => const SizedBox.shrink(),
-    };
-  }
-}
-
-// ═══════════════════════════════════════════════════════════ Glass ══
-class _Glass extends StatelessWidget {
-  const _Glass({required this.child, this.padding = const EdgeInsets.all(16), this.radius = 26});
-  final Widget child;
-  final EdgeInsets padding;
-  final double radius;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final br = BorderRadius.circular(radius);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: br,
-        boxShadow: [BoxShadow(color: (isDark ? Colors.black : const Color(0xFF2A2F3A)).withValues(alpha: isDark ? 0.38 : 0.16), blurRadius: 30, spreadRadius: -12, offset: const Offset(0, 16))],
-      ),
-      child: ClipRRect(
-        borderRadius: br,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: br,
-              gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: isDark ? [Colors.white.withValues(alpha: 0.10), Colors.white.withValues(alpha: 0.04)] : [Colors.white.withValues(alpha: 0.82), Colors.white.withValues(alpha: 0.58)]),
-              border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.9)),
-            ),
-            child: Stack(children: [
-              Padding(padding: padding, child: child),
-              Positioned(top: 0, left: 0, right: 0, child: IgnorePointer(child: Container(height: math.min(radius, 16), decoration: BoxDecoration(borderRadius: BorderRadius.vertical(top: Radius.circular(radius)), gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.white.withValues(alpha: isDark ? 0.16 : 0.65), Colors.white.withValues(alpha: 0)]))))),
-            ]),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-Color _ink(BuildContext c) => Theme.of(c).colorScheme.onSurface;
-
-// ═══════════════════════════════════════════════════════════ Wellness ══
-class _WellnessBento extends StatelessWidget {
-  const _WellnessBento({required this.delta, required this.focus});
-  final double delta;
-  final double focus;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = Curves.easeOutCubic.transform(focus);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _reveal(focus, delta, 3, 18, const _LiveHeartCard()),
-        const SizedBox(height: 12),
-        _reveal(focus, delta, 4, 30, SizedBox(
-          height: 150,
-          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Expanded(flex: 6, child: _HydrationCard(progress: p)),
-            const SizedBox(width: 12),
-            Expanded(flex: 5, child: _RingStatCard(value: 0.94, score: 94, label: 'Sleep', sub: 'Restful', color: _violet, progress: p)),
-          ]),
-        )),
-        const SizedBox(height: 12),
-        _reveal(focus, delta, 5, 42, const Row(children: [
-          _LiveStat(label: 'SpO₂', base: 98, jitter: 1, unit: '%', color: _blue, speed: 0.9),
-          SizedBox(width: 10),
-          _LiveStat(label: 'HRV', base: 64, jitter: 4, unit: ' ms', color: _green, speed: 0.6),
-          SizedBox(width: 10),
-          _MiniStat(label: 'Stress', value: 'Low', color: _amber),
-        ])),
-      ],
-    );
-  }
-}
-
-class _LiveHeartCard extends StatelessWidget {
-  const _LiveHeartCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return _Glass(
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            const _Heartbeat(child: _IconBadge(icon: Icons.favorite_rounded, color: _coral)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    Flexible(child: Text('Heart rate', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 12.5, fontWeight: FontWeight.w600))),
-                    const SizedBox(width: 8),
-                    const _LiveDot(color: _coral),
-                    const SizedBox(width: 4),
-                    const Text('LIVE', style: TextStyle(color: _coral, fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
-                  ]),
-                  _Live(builder: (c, t) {
-                    final bpm = (72 + 2.4 * math.sin(t * 0.9) + 1.2 * math.sin(t * 2.3)).round();
-                    return Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-                      Text('$bpm', style: TextStyle(color: _ink(c), fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.8)),
-                      const SizedBox(width: 3),
-                      Text('BPM', style: TextStyle(color: ec.textMuted, fontSize: 12, fontWeight: FontWeight.w700)),
-                    ]);
-                  }),
-                ],
-              ),
-            ),
-          ]),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 48,
-            width: double.infinity,
-            child: _Live(builder: (c, t) => CustomPaint(painter: _PpgPainter(phase: t * 1.25, color: _coral))),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HydrationCard extends StatelessWidget {
-  const _HydrationCard({this.progress = 1});
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    return _Glass(
-      padding: EdgeInsets.zero,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(child: _Live(builder: (c, t) => CustomPaint(painter: _WavePainter(level: 0.6, color: _blue, progress: progress, phase: t * 0.8)))),
-          Padding(
-            padding: const EdgeInsets.all(15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Align(alignment: Alignment.topRight, child: Text('1.4 / 2.4 L', style: TextStyle(color: const Color(0xFF31415E), fontSize: 12, fontWeight: FontWeight.w700))),
-                const Spacer(),
-                const Text('Hydration', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
-                const Text('On pace today', style: TextStyle(color: Colors.white70, fontSize: 11.5, fontWeight: FontWeight.w500)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ════════════════════════════════════════════════════════════ Fitness ══
-class _FitnessBento extends StatelessWidget {
-  const _FitnessBento({required this.delta, required this.focus});
-  final double delta;
-  final double focus;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = Curves.easeOutCubic.transform(focus);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _reveal(focus, delta, 3, 18, _Glass(
-          padding: const EdgeInsets.all(18),
-          child: Row(children: [
-            SizedBox(
-              width: 96,
-              height: 96,
-              child: _Live(builder: (c, t) {
-                final breathe = 1 + 0.02 * math.sin(t * 1.5);
-                return Transform.scale(
-                  scale: breathe,
-                  child: CustomPaint(
-                    painter: _ActivityRingsPainter(values: const [0.86, 0.72, 1.0], colors: const [_coral, _green, _blue], progress: p),
-                    child: const Center(child: Icon(Icons.bolt_rounded, color: _orange, size: 22)),
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(width: 18),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _RingLegend(color: _coral, label: 'Move', live: (t) => '${412 + (t * 0.7).floor()} kcal'),
-                  const SizedBox(height: 11),
-                  const _RingLegend(color: _green, label: 'Exercise', value: '38 min'),
-                  const SizedBox(height: 11),
-                  const _RingLegend(color: _blue, label: 'Stand', value: '12 hrs'),
-                ],
-              ),
-            ),
-          ]),
-        )),
-        const SizedBox(height: 12),
-        _reveal(focus, delta, 4, 30, SizedBox(
-          height: 146,
-          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Expanded(flex: 5, child: _StatCard(icon: Icons.favorite_rounded, color: _coral, label: 'Avg HR', unit: 'BPM', footer: 'Cardio zone', live: (t) => '${(123 + 4 * math.sin(t * 0.8) + 2 * math.sin(t * 2.1)).round()}')),
-            const SizedBox(width: 12),
-            Expanded(flex: 6, child: _WeeklyCard(progress: p)),
-          ]),
-        )),
-        const SizedBox(height: 12),
-        _reveal(focus, delta, 5, 42, Row(children: [
-          _MiniStat(label: 'Distance', value: '5.2 km', color: _blue),
-          const SizedBox(width: 10),
-          _MiniStat(label: 'Pace', value: "8'30\"", color: _violet),
-          const SizedBox(width: 10),
-          _MiniStat(label: 'Streak', value: '12 d', color: _orange),
-        ])),
-      ],
-    );
-  }
-}
-
-class _WeeklyCard extends StatelessWidget {
-  const _WeeklyCard({this.progress = 1});
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return _Glass(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('This week', style: TextStyle(color: ec.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
-          Text('4h 12m', style: TextStyle(color: _ink(context), fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 44,
-            child: _Live(builder: (c, t) {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: List.generate(7, (i) {
-                  const hs = [0.45, 0.7, 0.4, 0.9, 0.6, 1.0, 0.55];
-                  // last (today) bar pulses gently as a "live" bar
-                  final live = i == 6 ? (0.55 + 0.12 * (0.5 + 0.5 * math.sin(t * 2.2))) : hs[i];
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2.5),
-                      child: FractionallySizedBox(
-                        heightFactor: (live * progress).clamp(0.02, 1.0),
-                        child: Container(decoration: BoxDecoration(gradient: const LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter, colors: [Color(0xFFFFB38A), _orange]), borderRadius: BorderRadius.circular(5))),
-                      ),
-                    ),
-                  );
-                }),
-              );
-            }),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════ Sleep ══
-class _SleepBento extends StatelessWidget {
-  const _SleepBento({required this.delta, required this.focus});
-  final double delta;
-  final double focus;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final p = Curves.easeOutCubic.transform(focus);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _reveal(focus, delta, 3, 18, _Glass(
-          padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                _Live(builder: (c, t) {
-                  // slow calming breathing
-                  final s = 1 + 0.06 * math.sin(t * 0.7);
-                  return Transform.scale(scale: s, child: const _IconBadge(icon: Icons.nightlight_round, color: _violet));
-                }),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Time asleep', style: TextStyle(color: ec.textMuted, fontSize: 12.5, fontWeight: FontWeight.w600)),
-                      Text('7h 32m', style: TextStyle(color: _ink(context), fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.8)),
-                    ],
-                  ),
-                ),
-                const _TrendPill(label: 'Good', color: _green),
+            Padding(
+              padding: const EdgeInsets.only(top: 18),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                const _LiveTag(color: _red),
+                const SizedBox(height: 2),
+                Text('BPM', style: TextStyle(color: p.muted, fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: 1)),
               ]),
-              const SizedBox(height: 14),
-              SizedBox(height: 48, child: _SleepStages(progress: p)),
-            ],
-          ),
-        )),
-        const SizedBox(height: 12),
-        _reveal(focus, delta, 4, 30, SizedBox(
-          height: 142,
-          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Expanded(child: _StatCard(icon: Icons.dark_mode_rounded, color: _violet, label: 'Deep', value: '1h 21m', footer: '18% of night')),
-            const SizedBox(width: 12),
-            Expanded(child: _RingStatCard(value: 0.92, score: 92, label: 'Sleep', sub: 'Score', color: _violet, progress: p)),
-          ]),
-        )),
-        const SizedBox(height: 12),
-        _reveal(focus, delta, 5, 42, Row(children: [
-          _MiniStat(label: 'REM', value: '1h 05m', color: _blue),
-          const SizedBox(width: 10),
-          _LiveStat(label: 'Efficiency', base: 92, jitter: 1, unit: '%', color: _green, speed: 0.5),
-          const SizedBox(width: 10),
-          _MiniStat(label: 'HR dip', value: '14%', color: _cyan),
-        ])),
-      ],
-    );
-  }
-}
-
-class _SleepStages extends StatelessWidget {
-  const _SleepStages({this.progress = 1});
-  final double progress;
-
-  static const _heights = [0.35, 0.55, 0.3, 0.7, 1.0, 0.6, 0.85, 0.45, 0.7, 0.4, 0.6, 0.3];
-  static const _deep = [false, true, false, true, true, false, true, false, true, false, true, false];
-
-  @override
-  Widget build(BuildContext context) {
-    return _Live(builder: (c, t) {
-      // a soft "playback" highlight sweeps across the night
-      final head = (t * 0.12) % 1.0 * _heights.length;
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: List.generate(_heights.length, (i) {
-          final d = (i - head).abs();
-          final glow = (1 - (d / 1.6)).clamp(0.0, 1.0);
-          final base = _deep[i] ? _violet : _violet.withValues(alpha: 0.32);
-          final col = Color.lerp(base, Colors.white, glow * 0.5)!;
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              child: FractionallySizedBox(
-                heightFactor: (_heights[i] * progress).clamp(0.02, 1.0),
-                child: Container(decoration: BoxDecoration(color: col, borderRadius: BorderRadius.circular(4))),
-              ),
             ),
-          );
+          ]);
         }),
-      );
-    });
-  }
-}
-
-// ════════════════════════════════════════════════════════ Medication ══
-class _MedsBento extends StatelessWidget {
-  const _MedsBento({required this.delta, required this.focus});
-  final double delta;
-  final double focus;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final p = Curves.easeOutCubic.transform(focus);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _reveal(focus, delta, 3, 18, _Glass(
-          padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Today's plan", style: TextStyle(color: ec.textMuted, fontSize: 12.5, fontWeight: FontWeight.w600)),
-                      Text('2 of 3 taken', style: TextStyle(color: _ink(context), fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 44, height: 44, child: CustomPaint(painter: _RingPainter(value: 0.98, color: _green, stroke: 5, progress: p), child: Center(child: Text('${(98 * p).round()}', style: TextStyle(color: _ink(context), fontSize: 12, fontWeight: FontWeight.w800))))),
-              ]),
-              const SizedBox(height: 14),
-              const _MedRow(name: 'Metformin', dose: '500 mg • 8:00 AM', color: _violet, done: true),
-              const SizedBox(height: 10),
-              const _MedRow(name: 'Vitamin D', dose: '1000 IU • 9:00 AM', color: _amber, done: true),
-              const SizedBox(height: 10),
-              const _MedRow(name: 'Omega-3', dose: '1 softgel • 1:00 PM', color: _blue, done: false),
-            ],
-          ),
-        )),
-        const SizedBox(height: 12),
-        _reveal(focus, delta, 4, 30, SizedBox(
-          height: 120,
-          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Expanded(child: _StatCard(icon: Icons.schedule_rounded, color: _blue, label: 'Next dose in', footer: 'Omega-3', mono: true, live: (t) {
-              final r = (16338 - t).floor().clamp(0, 1 << 31); // ~4h 32m countdown
-              final h = r ~/ 3600, m = (r % 3600) ~/ 60, s = r % 60;
-              return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-            })),
-            const SizedBox(width: 12),
-            Expanded(child: _StatCard(icon: Icons.event_repeat_rounded, color: _coral, label: 'Refill in', value: '5', unit: 'days', footer: 'Metformin')),
-          ]),
-        )),
-      ],
-    );
-  }
-}
-
-// ── Finale (rotating constellation) ─────────────────────────────────────
-class _FinaleBento extends StatelessWidget {
-  const _FinaleBento({required this.delta, required this.focus});
-  final double delta;
-  final double focus;
-
-  static const _icons = <(IconData, Color)>[
-    (Icons.favorite_rounded, _coral),
-    (Icons.directions_run_rounded, _orange),
-    (Icons.nightlight_round, _violet),
-    (Icons.medication_rounded, _blue),
-    (Icons.monitor_heart_rounded, _green),
-    (Icons.bolt_rounded, _amber),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Build dots once so their pulse controllers persist across frames.
-    final dots = [for (final e in _icons) _FeatureDot(icon: e.$1, color: e.$2)];
-    return _reveal(
-      focus,
-      delta,
-      3,
-      14,
-      Center(
-        child: SizedBox(
-          width: 300,
-          height: 300,
-          child: _Live(builder: (c, t) {
-            final rot = t * 0.16;
-            return Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
-              children: [
-                Container(width: 250, height: 250, decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [Colors.white.withValues(alpha: isDark ? 0.06 : 0.45), Colors.white.withValues(alpha: 0)]))),
-                for (var i = 0; i < dots.length; i++)
-                  Transform.translate(
-                    offset: Offset.fromDirection(-math.pi / 2 + i * (2 * math.pi / dots.length) + rot, 116),
-                    child: dots[i],
-                  ),
-                const _LogoOrb(),
-              ],
-            );
-          }),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeatureDot extends StatelessWidget {
-  const _FeatureDot({required this.icon, required this.color});
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return _Glass(radius: 999, padding: const EdgeInsets.all(13), child: Icon(icon, color: color, size: 22))
-        .animate(onPlay: (c) => c.repeat(reverse: true))
-        .scaleXY(begin: 0.92, end: 1.08, duration: 2200.ms, curve: Curves.easeInOut);
-  }
-}
-
-// ════════════════════════════════════════════════════════ Components ══
-class _IconBadge extends StatelessWidget {
-  const _IconBadge({required this.icon, required this.color});
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: color.withValues(alpha: 0.16), border: Border.all(color: color.withValues(alpha: 0.26))),
-      child: Icon(icon, color: color, size: 22),
-    );
-  }
-}
-
-class _Heartbeat extends StatelessWidget {
-  const _Heartbeat({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return child
-        .animate(onPlay: (c) => c.repeat())
-        .scaleXY(begin: 1.0, end: 1.15, duration: 150.ms, curve: Curves.easeOut)
-        .then().scaleXY(begin: 1.15, end: 1.0, duration: 250.ms, curve: Curves.easeIn)
-        .then().scaleXY(begin: 1.0, end: 1.0, duration: 760.ms);
-  }
-}
-
-class _LiveDot extends StatelessWidget {
-  const _LiveDot({required this.color});
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(width: 7, height: 7, decoration: BoxDecoration(color: color, shape: BoxShape.circle))
-        .animate(onPlay: (c) => c.repeat(reverse: true))
-        .fade(begin: 0.3, end: 1, duration: 720.ms, curve: Curves.easeInOut);
-  }
-}
-
-class _TrendPill extends StatelessWidget {
-  const _TrendPill({required this.label, required this.color});
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(999)),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(Icons.check_circle_rounded, color: color, size: 13),
-        const SizedBox(width: 4),
-        Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 11)),
-      ]),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({required this.icon, required this.color, required this.label, this.value, this.unit, this.footer, this.live, this.mono = false});
-  final IconData icon;
-  final Color color;
-  final String label;
-  final String? value;
-  final String? unit;
-  final String? footer;
-  final String Function(double t)? live;
-  final bool mono;
-
-  Widget _valueRow(BuildContext context, String v) {
-    final ec = EcColors.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      children: [
-        Text(v, style: TextStyle(color: _ink(context), fontSize: mono ? 21 : 24, fontWeight: FontWeight.w800, letterSpacing: mono ? -0.4 : -0.8, fontFeatures: const [FontFeature.tabularFigures()])),
-        if (unit != null) ...[const SizedBox(width: 3), Text(unit!, style: TextStyle(color: ec.textMuted, fontSize: 12, fontWeight: FontWeight.w700))],
+        const SizedBox(height: 10),
+        SizedBox(width: 360, height: 150, child: _Live(builder: (c, t) => CustomPaint(painter: _EcgPainter(phase: t * 1.2, color: _red, dark: p.dark, grid: true, glow: true)))),
+        const SizedBox(height: 22),
+        Row(children: [
+          const _BigStat(label: 'BLOOD O₂', base: 98, jitter: 1, unit: '%', color: _red, speed: 0.8),
+          _divider(p),
+          const _BigStat(label: 'HRV', base: 64, jitter: 4, unit: ' ms', color: _red, speed: 0.5),
+          _divider(p),
+          _BigStatStatic(label: 'RECOVERY', value: 'High', p: p),
+        ]),
       ],
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final valueArea = live != null
-        ? _Live(builder: (c, t) => FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: _valueRow(c, live!(t))))
-        : FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: _valueRow(context, value!));
-    return _Glass(
-      padding: const EdgeInsets.all(15),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Container(width: 30, height: 30, decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(9)), child: Icon(icon, color: color, size: 16)),
-            const Spacer(),
-            Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.right, style: TextStyle(color: ec.textMuted, fontSize: 11.5, fontWeight: FontWeight.w600))),
-          ]),
-          valueArea,
-          if (footer != null) Text(footer!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 11, fontWeight: FontWeight.w500)),
-        ],
-      ),
-    );
-  }
+  Widget _divider(_Palette p) => Container(width: 1, height: 34, margin: const EdgeInsets.symmetric(horizontal: 16), color: p.hairline);
 }
 
-class _RingStatCard extends StatelessWidget {
-  const _RingStatCard({required this.value, required this.score, required this.label, required this.sub, required this.color, this.progress = 1});
-  final double value;
-  final int score;
-  final String label;
-  final String sub;
+class _LiveTag extends StatelessWidget {
+  const _LiveTag({required this.color});
   final Color color;
-  final double progress;
-
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return _Glass(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(width: 62, height: 62, child: CustomPaint(painter: _RingPainter(value: value, color: color, stroke: 6, progress: progress), child: Center(child: Text('${(score * progress).round()}', style: TextStyle(color: _ink(context), fontSize: 16, fontWeight: FontWeight.w800))))),
-          const SizedBox(height: 10),
-          Text(label, style: TextStyle(color: _ink(context), fontSize: 13.5, fontWeight: FontWeight.w700)),
-          Text(sub, style: TextStyle(color: ec.textMuted, fontSize: 11, fontWeight: FontWeight.w500)),
-        ],
-      ),
-    );
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Container(width: 7, height: 7, decoration: BoxDecoration(color: color, shape: BoxShape.circle)).animate(onPlay: (c) => c.repeat(reverse: true)).fade(begin: 0.3, end: 1, duration: 720.ms),
+      const SizedBox(width: 5),
+      Text('LIVE', style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.4)),
+    ]);
   }
 }
 
-class _MiniStat extends StatelessWidget {
-  const _MiniStat({required this.label, required this.value, required this.color});
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return Expanded(
-      child: _Glass(
-        radius: 18,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              Container(width: 7, height: 7, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-              const SizedBox(width: 6),
-              Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 10.5, fontWeight: FontWeight.w700))),
-            ]),
-            const SizedBox(height: 6),
-            FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(value, style: TextStyle(color: _ink(context), fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: -0.4))),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LiveStat extends StatelessWidget {
-  const _LiveStat({required this.label, required this.base, required this.jitter, required this.unit, required this.color, required this.speed});
+class _BigStat extends StatelessWidget {
+  const _BigStat({required this.label, required this.base, required this.jitter, required this.unit, required this.color, required this.speed});
   final String label;
   final int base;
   final int jitter;
   final String unit;
   final Color color;
   final double speed;
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return Expanded(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+        Text(label, style: TextStyle(color: p.muted, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+        const SizedBox(height: 4),
+        _Live(builder: (c, t) {
+          final v = base + (jitter * math.sin(t * speed)).round();
+          return Text('$v$unit', style: TextStyle(color: p.ink, fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5, fontFeatures: const [FontFeature.tabularFigures()]));
+        }),
+      ]),
+    );
+  }
+}
+
+class _BigStatStatic extends StatelessWidget {
+  const _BigStatStatic({required this.label, required this.value, required this.p});
+  final String label;
+  final String value;
+  final _Palette p;
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+        Text(label, style: TextStyle(color: p.muted, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+        const SizedBox(height: 4),
+        Text(value, style: TextStyle(color: p.ink, fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+      ]),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════ Fitness ══
+class _FitnessHero extends StatelessWidget {
+  const _FitnessHero();
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 234,
+          height: 234,
+          child: _Live(builder: (c, t) {
+            final breathe = 1 + 0.015 * math.sin(t * 1.4);
+            return Transform.scale(
+              scale: breathe,
+              child: CustomPaint(
+                painter: _RingsPainter(values: const [0.86, 0.72, 1.0], colors: const [_red, _green, _blue], dark: p.dark),
+                child: Center(
+                  child: _Live(builder: (c, t) {
+                    final kcal = 412 + (t * 0.8).floor();
+                    return Column(mainAxisSize: MainAxisSize.min, children: [
+                      Text('$kcal', style: TextStyle(color: p.ink, fontSize: 40, height: 1, fontWeight: FontWeight.w800, letterSpacing: -1.5, fontFeatures: const [FontFeature.tabularFigures()])),
+                      Text('KCAL', style: TextStyle(color: p.muted, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2)),
+                    ]);
+                  }),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 26),
+        Row(children: [
+          _ringLegend(p, _red, 'Move', '420'),
+          _ringLegend(p, _green, 'Exercise', '38m'),
+          _ringLegend(p, _blue, 'Stand', '12h'),
+        ]),
+      ],
+    );
+  }
+
+  Widget _ringLegend(_Palette p, Color color, String label, String value) {
+    return Expanded(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+        Row(children: [Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)), const SizedBox(width: 6), Text(label, style: TextStyle(color: p.muted, fontSize: 11, fontWeight: FontWeight.w700))]),
+        const SizedBox(height: 3),
+        Text(value, style: TextStyle(color: p.ink, fontSize: 19, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+      ]),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════ Sleep ══
+class _SleepHero extends StatelessWidget {
+  const _SleepHero();
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('7', style: TextStyle(color: p.ink, fontSize: 88, height: 0.9, fontWeight: FontWeight.w800, letterSpacing: -4)),
+                Padding(padding: const EdgeInsets.only(top: 16, left: 2), child: Text('h', style: TextStyle(color: p.muted, fontSize: 30, fontWeight: FontWeight.w700))),
+                const SizedBox(width: 10),
+                Text('32', style: TextStyle(color: p.ink, fontSize: 88, height: 0.9, fontWeight: FontWeight.w800, letterSpacing: -4)),
+                Padding(padding: const EdgeInsets.only(top: 16, left: 2), child: Text('m', style: TextStyle(color: p.muted, fontSize: 30, fontWeight: FontWeight.w700))),
+              ]),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Padding(
+            padding: const EdgeInsets.only(top: 14),
+            child: _Live(builder: (c, t) => Transform.scale(scale: 1 + 0.07 * math.sin(t * 0.7), child: Icon(Icons.nightlight_round, color: _indigo, size: 40))),
+          ),
+        ]),
+        const SizedBox(height: 18),
+        SizedBox(width: 360, height: 132, child: _Live(builder: (c, t) => CustomPaint(painter: _HypnogramPainter(head: (t * 0.06) % 1.0, color: _indigo, dark: p.dark)))),
+        const SizedBox(height: 18),
+        Row(children: [
+          _sleepStat(p, 'DEEP', '1h 21m'),
+          _divider(p),
+          _sleepStat(p, 'REM', '1h 05m'),
+          _divider(p),
+          _sleepStat(p, 'EFFICIENCY', '92%'),
+        ]),
+      ],
+    );
+  }
+
+  Widget _divider(_Palette p) => Container(width: 1, height: 34, margin: const EdgeInsets.symmetric(horizontal: 16), color: p.hairline);
+
+  Widget _sleepStat(_Palette p, String label, String value) {
+    return Expanded(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+        Text(label, style: TextStyle(color: p.muted, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+        const SizedBox(height: 4),
+        Text(value, style: TextStyle(color: p.ink, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+      ]),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════ Meds ══
+class _MedsHero extends StatelessWidget {
+  const _MedsHero();
+  @override
+  Widget build(BuildContext context) {
+    final p = _ClockScope.paletteOf(context);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          SizedBox(width: 96, height: 96, child: CustomPaint(painter: _RingPainter(value: 0.98, color: _green, stroke: 9, track: p.faint), child: Center(child: Text('98%', style: TextStyle(color: p.ink, fontSize: 21, fontWeight: FontWeight.w800, letterSpacing: -0.5))))),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+              Text('On-time this week', style: TextStyle(color: p.muted, fontSize: 12.5, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Row(children: [const _LiveTag(color: _green), const SizedBox(width: 8), Text('Next in', style: TextStyle(color: p.muted, fontSize: 12.5, fontWeight: FontWeight.w600))]),
+              _Live(builder: (c, t) {
+                final r = (16338 - t).floor().clamp(0, 1 << 31);
+                final h = r ~/ 3600, m = (r % 3600) ~/ 60, s = r % 60;
+                return Text('$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}', style: TextStyle(color: p.ink, fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -1, fontFeatures: const [FontFeature.tabularFigures()]));
+              }),
+            ]),
+          ),
+        ]),
+        const SizedBox(height: 22),
+        _dose(p, 'Metformin', '500 mg · 8:00 AM', _violet, true),
+        _doseDivider(p),
+        _dose(p, 'Vitamin D', '1000 IU · 9:00 AM', _orange, true),
+        _doseDivider(p),
+        _dose(p, 'Omega-3', '1 softgel · 1:00 PM', _blue, false),
+      ],
+    );
+  }
+
+  Widget _doseDivider(_Palette p) => Container(height: 1, color: p.hairline, margin: const EdgeInsets.symmetric(vertical: 12));
+
+  Widget _dose(_Palette p, String name, String detail, Color color, bool done) {
+    return Row(children: [
+      Container(width: 38, height: 38, decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(11)), child: Icon(Icons.medication_rounded, color: color, size: 18)),
+      const SizedBox(width: 14),
+      Expanded(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+          Text(name, style: TextStyle(color: p.ink, fontSize: 15.5, fontWeight: FontWeight.w700)),
+          Text(detail, style: TextStyle(color: p.muted, fontSize: 12.5, fontWeight: FontWeight.w500)),
+        ]),
+      ),
+      Container(
+        width: 26, height: 26,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: done ? _green : Colors.transparent, border: Border.all(color: done ? _green : p.muted.withValues(alpha: 0.5), width: 2)),
+        child: Icon(Icons.check_rounded, size: 15, color: done ? Colors.white : Colors.transparent),
+      ),
+    ]);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════ AI ══
+class _AiHero extends StatelessWidget {
+  const _AiHero();
+  static const _domains = <(IconData, Color)>[
+    (Icons.favorite_rounded, _red),
+    (Icons.directions_run_rounded, _orange),
+    (Icons.nightlight_round, _indigo),
+    (Icons.medication_rounded, _green),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return Expanded(
-      child: _Glass(
-        radius: 18,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              _LiveDot(color: color),
-              const SizedBox(width: 6),
-              Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 10.5, fontWeight: FontWeight.w700))),
-            ]),
-            const SizedBox(height: 6),
-            _Live(builder: (c, t) {
-              final v = base + (jitter * math.sin(t * speed)).round();
-              return FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text('$v$unit', style: TextStyle(color: _ink(c), fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: -0.4, fontFeatures: const [FontFeature.tabularFigures()])));
+    final p = _ClockScope.paletteOf(context);
+    final dots = [for (final e in _domains) _DomainDot(icon: e.$1, color: e.$2, surface: p.surface, hairline: p.hairline)];
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 300,
+            height: 300,
+            child: _Live(builder: (c, t) {
+              return Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  CustomPaint(size: const Size(300, 300), painter: _OrbPainter(t: t, color: _blue, dark: p.dark)),
+                  for (var i = 0; i < dots.length; i++)
+                    Transform.translate(
+                      offset: Offset.fromDirection(-math.pi / 2 + i * (2 * math.pi / dots.length) + t * 0.25, 124),
+                      child: dots[i],
+                    ),
+                  Container(
+                    width: 96,
+                    height: 96,
+                    decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [_blue, _blue.withValues(alpha: 0.0)], stops: const [0.2, 1.0])),
+                  ),
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: p.surface,
+                      border: Border.all(color: _blue.withValues(alpha: 0.6), width: 1.5),
+                      boxShadow: [BoxShadow(color: _blue.withValues(alpha: 0.5), blurRadius: 30, spreadRadius: -2)],
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.auto_awesome_rounded, color: _blue, size: 28),
+                  ).animate(onPlay: (a) => a.repeat(reverse: true)).scaleXY(begin: 1, end: 1.08, duration: 1800.ms, curve: Curves.easeInOut),
+                ],
+              );
             }),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          const _AiInsight(),
+        ],
       ),
     );
   }
 }
 
-class _RingLegend extends StatelessWidget {
-  const _RingLegend({required this.color, required this.label, this.value, this.live});
-  final Color color;
-  final String label;
-  final String? value;
-  final String Function(double t)? live;
+class _AiInsight extends StatelessWidget {
+  const _AiInsight();
+  static const _items = [
+    'Analyzing recovery…',
+    'Sleep debt: low',
+    'Hydration on track',
+    'HRV trending up',
+    'Primed for a hard day',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final valueWidget = live != null
-        ? _Live(builder: (c, t) => Text(live!(t), style: TextStyle(color: _ink(c), fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: -0.3, fontFeatures: const [FontFeature.tabularFigures()])))
-        : Text(value!, style: TextStyle(color: _ink(context), fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: -0.3));
-    return Row(children: [
-      Container(width: 9, height: 9, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-      const SizedBox(width: 8),
-      Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: ec.textMuted, fontSize: 12.5, fontWeight: FontWeight.w600))),
-      const SizedBox(width: 6),
-      valueWidget,
-    ]);
-  }
-}
-
-class _MedRow extends StatelessWidget {
-  const _MedRow({required this.name, required this.dose, required this.color, required this.done});
-  final String name;
-  final String dose;
-  final Color color;
-  final bool done;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return Row(children: [
-      Container(width: 36, height: 36, decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(11)), child: Icon(Icons.medication_rounded, color: color, size: 17)),
-      const SizedBox(width: 12),
-      Expanded(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(name, style: TextStyle(color: _ink(context), fontSize: 14, fontWeight: FontWeight.w700)),
-            Text(dose, style: TextStyle(color: ec.textMuted, fontSize: 11.5, fontWeight: FontWeight.w500)),
-          ],
+    final p = _ClockScope.paletteOf(context);
+    return _Live(builder: (c, t) {
+      final i = (t / 2.6).floor() % _items.length;
+      return AnimatedSwitcher(
+        duration: const Duration(milliseconds: 450),
+        transitionBuilder: (child, anim) => FadeTransition(
+          opacity: anim,
+          child: SlideTransition(position: Tween(begin: const Offset(0, 0.35), end: Offset.zero).animate(anim), child: child),
         ),
-      ),
-      Container(
-        width: 24, height: 24,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: done ? _green : Colors.transparent, border: Border.all(color: done ? _green : ec.textMuted.withValues(alpha: 0.4), width: 2)),
-        child: Icon(Icons.check_rounded, size: 14, color: done ? Colors.white : Colors.transparent),
-      ),
-    ]);
+        child: Container(
+          key: ValueKey(i),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          decoration: BoxDecoration(color: p.surface, borderRadius: BorderRadius.circular(999), border: Border.all(color: p.hairline)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 7, height: 7, decoration: const BoxDecoration(color: _blue, shape: BoxShape.circle)),
+              const SizedBox(width: 9),
+              Text(_items[i], style: TextStyle(color: p.ink, fontSize: 13.5, fontWeight: FontWeight.w600, letterSpacing: -0.2)),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
 
-class _FloatChip extends StatelessWidget {
-  const _FloatChip({required this.icon, required this.color, this.label, this.live});
+class _DomainDot extends StatelessWidget {
+  const _DomainDot({required this.icon, required this.color, required this.surface, required this.hairline});
   final IconData icon;
   final Color color;
-  final String? label;
-  final String Function(double t)? live;
-
+  final Color surface;
+  final Color hairline;
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(color: _ink(context), fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: -0.2, fontFeatures: const [FontFeature.tabularFigures()]);
-    final content = live != null
-        ? _Live(builder: (c, t) => Text(live!(t), style: style))
-        : Text(label!, style: style);
-    return _Glass(
-      radius: 999,
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, color: color, size: 15), const SizedBox(width: 7), content]),
-    ).animate(onPlay: (c) => c.repeat(reverse: true)).moveY(begin: -5, end: 5, duration: 2900.ms, curve: Curves.easeInOut);
+    return Container(
+      width: 46, height: 46,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: surface, border: Border.all(color: hairline, width: 1)),
+      child: Icon(icon, color: color, size: 20),
+    ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 0.9, end: 1.08, duration: 2200.ms, curve: Curves.easeInOut);
   }
 }
 
 // ──────────────────────────────────────────────────────── Bottom chrome ──
 class _BottomChrome extends StatefulWidget {
-  const _BottomChrome({required this.page, required this.count, required this.label, required this.onPrimary});
+  const _BottomChrome({required this.page, required this.count, required this.label, required this.accent, required this.onPrimary});
   final ValueNotifier<double> page;
   final int count;
   final String label;
+  final Color accent;
   final VoidCallback onPrimary;
 
   @override
@@ -1230,34 +793,50 @@ class _BottomChromeState extends State<_BottomChrome> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final btnColor = isDark ? Colors.white : const Color(0xFF1C1D21);
-    final btnText = isDark ? const Color(0xFF15171C) : Colors.white;
-
+    final p = _ClockScope.paletteOf(context);
+    final btnColor = p.dark ? Colors.white : const Color(0xFF14161C);
+    final btnText = p.dark ? const Color(0xFF0A0B0F) : Colors.white;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),
+      padding: const EdgeInsets.fromLTRB(26, 6, 26, 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _Dots(page: widget.page, count: widget.count),
-          const SizedBox(height: 16),
+          _Progress(page: widget.page, count: widget.count, accent: widget.accent),
+          const SizedBox(height: 18),
           GestureDetector(
             onTapDown: (_) => setState(() => _pressed = true),
             onTapCancel: () => setState(() => _pressed = false),
             onTapUp: (_) => setState(() => _pressed = false),
             onTap: widget.onPrimary,
             child: AnimatedScale(
-              scale: _pressed ? 0.97 : 1,
-              duration: EcTokens.motionFast,
+              scale: _pressed ? 0.975 : 1,
+              duration: const Duration(milliseconds: 140),
               curve: Curves.easeOut,
               child: Container(
-                height: 58,
+                height: 60,
                 width: double.infinity,
-                decoration: BoxDecoration(color: btnColor, borderRadius: BorderRadius.circular(30), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.24), blurRadius: 24, spreadRadius: -6, offset: const Offset(0, 12))]),
+                decoration: BoxDecoration(
+                  color: btnColor,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: p.dark ? 0.3 : 0.18), blurRadius: 24, spreadRadius: -8, offset: const Offset(0, 12))],
+                ),
                 alignment: Alignment.center,
-                child: AnimatedSwitcher(
-                  duration: EcTokens.motionFast,
-                  child: Text(widget.label, key: ValueKey(widget.label), style: TextStyle(color: btnText, fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.2)),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 180),
+                          child: Text(widget.label, key: ValueKey(widget.label), style: TextStyle(color: btnText, fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.2)),
+                        ),
+                        const SizedBox(width: 10),
+                        Icon(Icons.arrow_forward_rounded, color: btnText, size: 20),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -1268,108 +847,106 @@ class _BottomChromeState extends State<_BottomChrome> {
   }
 }
 
-class _Dots extends StatelessWidget {
-  const _Dots({required this.page, required this.count});
+class _Progress extends StatelessWidget {
+  const _Progress({required this.page, required this.count, required this.accent});
   final ValueNotifier<double> page;
   final int count;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final active = isDark ? Colors.white : const Color(0xFF3F444D);
-    final idle = (isDark ? Colors.white : const Color(0xFF6B7079)).withValues(alpha: 0.3);
+    final p = _ClockScope.paletteOf(context);
     return ValueListenableBuilder<double>(
       valueListenable: page,
-      builder: (context, value, _) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(count, (i) {
-            final a = (1 - (value - i).abs()).clamp(0.0, 1.0);
-            return AnimatedContainer(
-              duration: EcTokens.motionFast,
-              width: 7 + 12 * a,
-              height: 7,
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              decoration: BoxDecoration(color: Color.lerp(idle, active, a), borderRadius: BorderRadius.circular(4)),
-            );
-          }),
-        );
+      builder: (context, v, _) {
+        final segs = <Widget>[];
+        for (var i = 0; i < count; i++) {
+          if (i > 0) segs.add(const SizedBox(width: 6));
+          final frac = (v + 1 - i).clamp(0.0, 1.0);
+          segs.add(Expanded(
+            child: Container(
+              height: 3.5,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(2),
+                color: Color.lerp(p.faint, accent, frac),
+              ),
+            ),
+          ));
+        }
+        return Row(children: segs);
       },
     );
   }
 }
 
 // ═══════════════════════════════════════════════════════════ Painters ══
-class _PpgPainter extends CustomPainter {
-  const _PpgPainter({required this.phase, required this.color});
+class _EcgPainter extends CustomPainter {
+  const _EcgPainter({required this.phase, required this.color, required this.dark, this.grid = false, this.glow = false});
   final double phase;
   final Color color;
+  final bool dark;
+  final bool grid;
+  final bool glow;
 
   double _wave(double f) {
     double g(double c, double w, double a) {
       final d = f - c;
       return a * math.exp(-(d * d) / (2 * w * w));
     }
-    return g(0.16, 0.034, 1.0) - g(0.27, 0.05, 0.30) + g(0.42, 0.06, 0.22);
+    return g(0.10, 0.020, 0.16) - g(0.205, 0.012, 0.26) + g(0.235, 0.010, 1.0) - g(0.27, 0.014, 0.34) + g(0.43, 0.052, 0.30);
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    const beats = 3.0;
-    final mid = size.height * 0.62;
-    final amp = size.height * 0.5;
+    if (grid) {
+      final gp = Paint()
+        ..color = (dark ? Colors.white : Colors.black).withValues(alpha: dark ? 0.05 : 0.045)
+        ..strokeWidth = 1;
+      for (var i = 1; i < 4; i++) {
+        final y = size.height * i / 4;
+        canvas.drawLine(Offset(0, y), Offset(size.width, y), gp);
+      }
+      // vertical monitor lines scrolling with the trace
+      final vspace = size.width / 7;
+      final off = (phase * vspace * 1.8) % vspace;
+      for (var x = size.width - off; x >= 0; x -= vspace) {
+        canvas.drawLine(Offset(x, 0), Offset(x, size.height), gp);
+      }
+    }
+    const beats = 2.6;
+    final mid = size.height * 0.6;
+    final amp = size.height * 0.46;
     final pts = <Offset>[];
-    for (double x = 0; x <= size.width; x += 1.5) {
+    for (double x = 0; x <= size.width; x += 1.4) {
       final f = (((x / size.width) * beats) + phase) % 1.0;
       pts.add(Offset(x, mid - _wave(f) * amp));
     }
     if (pts.length < 2) return;
     final path = Path()..addPolygon(pts, false);
-    final area = Path.from(path)..lineTo(size.width, size.height)..lineTo(0, size.height)..close();
-    canvas.drawPath(area, Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color.withValues(alpha: 0.22), color.withValues(alpha: 0)]).createShader(Offset.zero & size));
+    if (glow) {
+      canvas.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 5..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round..color = color.withValues(alpha: 0.35)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7));
+    }
     canvas.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.6..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round..color = color);
     final tip = pts.last;
-    canvas.drawCircle(tip, 6, Paint()..color = color.withValues(alpha: 0.22));
-    canvas.drawCircle(tip, 3, Paint()..color = color);
-    canvas.drawCircle(tip, 1.4, Paint()..color = Colors.white);
+    canvas.drawCircle(tip, 8, Paint()..color = color.withValues(alpha: 0.25));
+    canvas.drawCircle(tip, 3.2, Paint()..color = color);
+    canvas.drawCircle(tip, 1.5, Paint()..color = Colors.white);
   }
 
   @override
-  bool shouldRepaint(covariant _PpgPainter old) => old.phase != phase || old.color != color;
+  bool shouldRepaint(covariant _EcgPainter old) => old.phase != phase || old.color != color || old.dark != dark;
 }
 
-class _RingPainter extends CustomPainter {
-  const _RingPainter({required this.value, required this.color, this.stroke = 7, this.progress = 1});
-  final double value;
-  final Color color;
-  final double stroke;
-  final double progress;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final r = (size.shortestSide - stroke) / 2;
-    canvas.drawCircle(center, r, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..color = color.withValues(alpha: 0.18));
-    final sweep = value.clamp(0.0, 1.0) * progress.clamp(0.0, 1.0) * 2 * math.pi;
-    if (sweep > 0.0001) {
-      canvas.drawArc(Rect.fromCircle(center: center, radius: r), -math.pi / 2, sweep, false, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _RingPainter old) => old.value != value || old.color != color || old.progress != progress;
-}
-
-class _ActivityRingsPainter extends CustomPainter {
-  const _ActivityRingsPainter({required this.values, required this.colors, this.progress = 1});
+class _RingsPainter extends CustomPainter {
+  const _RingsPainter({required this.values, required this.colors, required this.dark});
   final List<double> values;
   final List<Color> colors;
-  final double progress;
+  final bool dark;
 
   @override
   void paint(Canvas canvas, Size size) {
-    const stroke = 11.0;
-    const gap = 4.0;
+    const stroke = 18.0;
+    const gap = 7.0;
     final center = size.center(Offset.zero);
     final maxR = (size.shortestSide - stroke) / 2;
     for (var i = 0; i < values.length; i++) {
@@ -1377,37 +954,109 @@ class _ActivityRingsPainter extends CustomPainter {
       if (r <= 0) continue;
       final color = colors[i % colors.length];
       canvas.drawCircle(center, r, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..color = color.withValues(alpha: 0.16));
-      final sweep = values[i].clamp(0.0, 1.0) * progress.clamp(0.0, 1.0) * 2 * math.pi;
-      if (sweep > 0.0001) {
-        canvas.drawArc(Rect.fromCircle(center: center, radius: r), -math.pi / 2, sweep, false, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color);
-      }
+      final sweep = values[i].clamp(0.0, 1.0) * 2 * math.pi;
+      final rect = Rect.fromCircle(center: center, radius: r);
+      canvas.drawArc(rect, -math.pi / 2, sweep, false, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color.withValues(alpha: 0.4)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8));
+      canvas.drawArc(rect, -math.pi / 2, sweep, false, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _ActivityRingsPainter old) => old.values != values || old.colors != colors || old.progress != progress;
+  bool shouldRepaint(covariant _RingsPainter old) => old.values != values || old.colors != colors || old.dark != dark;
 }
 
-class _WavePainter extends CustomPainter {
-  const _WavePainter({required this.level, required this.color, this.progress = 1, this.phase = 0});
-  final double level;
+class _RingPainter extends CustomPainter {
+  const _RingPainter({required this.value, required this.color, this.stroke = 8, required this.track});
+  final double value;
   final Color color;
-  final double progress;
-  final double phase;
+  final double stroke;
+  final Color track;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final lvl = level * progress.clamp(0.0, 1.0);
-    final baseY = size.height * (1 - lvl);
-    final path = Path()..moveTo(0, baseY);
-    for (var x = 0.0; x <= size.width; x += 1) {
-      final y = baseY + math.sin(x / size.width * 2 * math.pi * 1.4 + phase * 2 * math.pi) * 4 + math.sin(x / size.width * 2 * math.pi * 2.7 + phase * 3) * 2;
-      path.lineTo(x, y);
-    }
-    path..lineTo(size.width, size.height)..lineTo(0, size.height)..close();
-    canvas.drawPath(path, Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color, color.withValues(alpha: 0.8)]).createShader(Offset.zero & size));
+    final center = size.center(Offset.zero);
+    final r = (size.shortestSide - stroke) / 2;
+    canvas.drawCircle(center, r, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..color = track);
+    canvas.drawArc(Rect.fromCircle(center: center, radius: r), -math.pi / 2, value.clamp(0.0, 1.0) * 2 * math.pi, false, Paint()..style = PaintingStyle.stroke..strokeWidth = stroke..strokeCap = StrokeCap.round..color = color);
   }
 
   @override
-  bool shouldRepaint(covariant _WavePainter old) => old.level != level || old.color != color || old.progress != progress || old.phase != phase;
+  bool shouldRepaint(covariant _RingPainter old) => old.value != value || old.color != color || old.track != track;
+}
+
+class _HypnogramPainter extends CustomPainter {
+  const _HypnogramPainter({required this.head, required this.color, required this.dark});
+  final double head;
+  final Color color;
+  final bool dark;
+
+  // Sleep stages over the night (0 = deep .. 1 = awake), as level fractions.
+  static const _stages = [0.78, 0.55, 0.30, 0.30, 0.55, 0.80, 0.55, 0.30, 0.55, 0.78, 0.55, 0.78, 0.95];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final n = _stages.length;
+    final stepW = size.width / n;
+    final path = Path()..moveTo(0, size.height * (1 - _stages[0]));
+    for (var i = 0; i < n; i++) {
+      final y = size.height * (1 - _stages[i]);
+      path.lineTo(i * stepW, y);
+      path.lineTo((i + 1) * stepW, y);
+    }
+    final area = Path.from(path)..lineTo(size.width, size.height)..lineTo(0, size.height)..close();
+    canvas.drawPath(area, Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [color.withValues(alpha: 0.34), color.withValues(alpha: 0.04)]).createShader(Offset.zero & size));
+    canvas.drawPath(path, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.4..strokeJoin = StrokeJoin.round..color = color);
+
+    // a soft "playback" marker traveling across the night
+    final hx = head * size.width;
+    canvas.drawLine(Offset(hx, 0), Offset(hx, size.height), Paint()..color = color.withValues(alpha: 0.5)..strokeWidth = 1.5);
+    final idx = (head * n).floor().clamp(0, n - 1);
+    final my = size.height * (1 - _stages[idx]);
+    canvas.drawCircle(Offset(hx, my), 7, Paint()..color = color.withValues(alpha: 0.25));
+    canvas.drawCircle(Offset(hx, my), 3.2, Paint()..color = color);
+    canvas.drawCircle(Offset(hx, my), 1.5, Paint()..color = Colors.white);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HypnogramPainter old) => old.head != head || old.color != color || old.dark != dark;
+}
+
+class _OrbPainter extends CustomPainter {
+  const _OrbPainter({required this.t, required this.color, required this.dark});
+  final double t;
+  final Color color;
+  final bool dark;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final base = (dark ? Colors.white : Colors.black);
+    // faint orbit guide
+    canvas.drawCircle(center, 124, Paint()..style = PaintingStyle.stroke..strokeWidth = 1..color = base.withValues(alpha: 0.06));
+    // rotating arcs at several radii
+    final radii = [98.0, 78.0, 58.0];
+    final speeds = [0.5, -0.8, 1.2];
+    final spans = [1.4, 1.0, 1.8];
+    for (var i = 0; i < radii.length; i++) {
+      final start = t * speeds[i] + i * 2;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radii[i]),
+        start,
+        spans[i],
+        false,
+        Paint()..style = PaintingStyle.stroke..strokeWidth = 2.5..strokeCap = StrokeCap.round..color = color.withValues(alpha: 0.6 - i * 0.12),
+      );
+    }
+    // sparkle ticks around the core
+    final tick = Paint()..color = color.withValues(alpha: 0.5)..strokeWidth = 2..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 12; i++) {
+      final a = t * 0.4 + i * (2 * math.pi / 12);
+      final r1 = 42.0 + 3 * math.sin(t * 2 + i);
+      final r2 = r1 + 5;
+      canvas.drawLine(center + Offset.fromDirection(a, r1), center + Offset.fromDirection(a, r2), tick);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _OrbPainter old) => old.t != t || old.color != color || old.dark != dark;
 }
