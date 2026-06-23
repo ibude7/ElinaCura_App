@@ -38,16 +38,6 @@ const _violet = Color(0xFF8B6FE8);
 const _rose = Color(0xFFFF6F91);
 const _teal = Color(0xFF12C2C8);
 
-String _fmt(int n) {
-  final s = n.toString();
-  final b = StringBuffer();
-  for (var i = 0; i < s.length; i++) {
-    if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
-    b.write(s[i]);
-  }
-  return b.toString();
-}
-
 enum _Chapter { intro, vitals, fitness, sleep, meds, nutrition, care, ai }
 
 class _PageData {
@@ -298,7 +288,6 @@ class _ChapterView extends StatelessWidget {
                   alignment: Alignment.center,
                   clipBehavior: Clip.none,
                   children: [
-                    _HeroGlow(color: data.accent, opacity: eased),
                     // Hero is confined to a centred band so the floating cards
                     // sit in the clear top/bottom strips and never cover it.
                     Positioned.fill(
@@ -309,7 +298,7 @@ class _ChapterView extends StatelessWidget {
                             offset: Offset(delta * -28, 0),
                             child: FractionallySizedBox(
                               alignment: Alignment.center,
-                              heightFactor: 0.56,
+                              heightFactor: data.kind == _Chapter.intro ? 0.98 : 0.56,
                               child: Transform.scale(
                                 scale: 0.96 + 0.04 * eased,
                                 child: Center(child: _Hero(kind: data.kind, accent: data.accent)),
@@ -401,40 +390,10 @@ class _Hero extends StatelessWidget {
   }
 }
 
-/// Localized accent light behind the hero — lets each chapter's colour bathe
-/// the screen without ever touching the solid background.
-class _HeroGlow extends StatelessWidget {
-  const _HeroGlow({required this.color, required this.opacity});
-  final Color color;
-  final double opacity;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = _ClockScope.paletteOf(context);
-    return IgnorePointer(
-      child: _Live(builder: (c, t) {
-        final breathe = 0.9 + 0.1 * math.sin(t * 0.7);
-        final a = ((p.dark ? 0.22 : 0.13) * opacity * breathe).clamp(0.0, 1.0);
-        return Center(
-          child: Container(
-            width: 320,
-            height: 320,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [color.withValues(alpha: a), color.withValues(alpha: 0)]),
-            ),
-          ),
-        );
-      }),
-    );
-  }
-}
-
 // ════════════════════════════════════ Floating 3D liquid-glass bento ══
-/// A frosted glass pane that floats and tilts in 3D with a light-catch that
-/// shifts as it tilts. The blurred body is built once; only the transform and
-/// the specular highlight update each frame (so the backdrop blur isn't
-/// re-rendered every tick).
+/// A frosted glass pane that gently floats and tilts in 3D. The blurred body
+/// is built once (so the backdrop blur isn't re-rendered every tick); only the
+/// transform updates each frame.
 class _FloatingGlass extends StatelessWidget {
   const _FloatingGlass({required this.child, required this.seed, this.delta = 0, this.parallax = 0});
   final Widget child;
@@ -480,35 +439,12 @@ class _FloatingGlass extends StatelessWidget {
         ..setEntry(3, 2, 0.0014)
         ..rotateX(tiltX)
         ..rotateY(tiltY);
-      final hx = (-tiltY * 6).clamp(-1.0, 1.0);
-      final hy = (-tiltX * 6).clamp(-1.0, 1.0);
       return Transform.translate(
         offset: Offset(delta * parallax, bob),
         child: Transform(
           alignment: Alignment.center,
           transform: m,
-          child: Stack(
-            children: [
-              body,
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: ClipRRect(
-                    borderRadius: radius,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: Alignment(hx, hy),
-                          radius: 0.9,
-                          colors: [Colors.white.withValues(alpha: p.dark ? 0.16 : 0.5), Colors.white.withValues(alpha: 0)],
-                          stops: const [0.0, 0.72],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          child: body,
         ),
       );
     });
@@ -781,28 +717,6 @@ class _TileDots extends StatelessWidget {
   }
 }
 
-/// Bars tile: a live value and a scrolling bar chart (steps / refills).
-class _TileBars extends StatelessWidget {
-  const _TileBars({required this.icon, required this.label, required this.color, required this.live, this.width = 134});
-  final IconData icon;
-  final String label;
-  final Color color;
-  final String Function(double t) live;
-  final double width;
-  @override
-  Widget build(BuildContext context) {
-    final p = _ClockScope.paletteOf(context);
-    return SizedBox(
-      width: width,
-      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _tileHead(p, icon, color, label, trailing: _Live(builder: (c, t) => Text(live(t), style: _tileValue(p, size: 13)))),
-        const SizedBox(height: 11),
-        SizedBox(height: 22, width: double.infinity, child: _Live(builder: (c, t) => CustomPaint(painter: _BarsPainter(t: t, color: color, track: p.faint, count: 9)))),
-      ]),
-    );
-  }
-}
-
 // ── Painters used by the tiles ──
 class _GradientLinePainter extends CustomPainter {
   _GradientLinePainter({required this.t, required this.colors});
@@ -944,10 +858,9 @@ List<Widget> _floatingFor(_Chapter kind, double delta, double eased) {
   if (eased < 0.04) return const <Widget>[];
   switch (kind) {
     case _Chapter.intro:
-      return [
-        _fc(top: 2, right: -6, seed: 0.0, delta: delta, parallax: 24, eased: eased, child: _TileChart(icon: Icons.favorite_rounded, label: 'HEART RATE', color: _red, width: 138, live: (t) => '${(72 + 3 * math.sin(t * 0.9)).round()} bpm')),
-        _fc(bottom: 2, left: -6, seed: 2.3, delta: delta, parallax: 34, eased: eased, child: _TileBars(icon: Icons.directions_walk_rounded, label: 'STEPS TODAY', color: _green, width: 138, live: (t) => _fmt(8210 + (t * 0.8).floor()))),
-      ];
+      // The brand chapter stays clean and editorial — no floating dashboard
+      // cards competing with the emblem and the headline.
+      return const <Widget>[];
     case _Chapter.vitals:
       return [
         _fc(top: 2, right: -6, seed: 0.7, delta: delta, parallax: 26, eased: eased, child: _TileChart(icon: Icons.bloodtype_rounded, label: 'BLOOD O₂', color: _blue, width: 132, live: (t) => '${98 + math.sin(t * 0.5).round()}%')),
@@ -991,71 +904,153 @@ List<Widget> _floatingFor(_Chapter kind, double delta, double eased) {
 }
 
 // ═══════════════════════════════════════════════════════════ Intro ══
+/// Brand chapter — restrained and editorial. A single frosted glass lens
+/// holds the mark, ringed by a slow precision bezel and one travelling light.
+/// Monochrome, calm and expensive: the headline does the talking.
 class _IntroHero extends StatelessWidget {
   const _IntroHero();
+
   @override
   Widget build(BuildContext context) {
     final p = _ClockScope.paletteOf(context);
-    return Center(
+    return SizedBox(
+      width: 320,
+      height: 320,
       child: Stack(
         alignment: Alignment.center,
+        clipBehavior: Clip.none,
         children: [
-          // streaming signal line crossing the brand
-          SizedBox(
-            width: 360,
-            height: 120,
-            child: _Live(builder: (c, t) => CustomPaint(painter: _EcgPainter(phase: t * 1.1, color: _violet, dark: p.dark, grid: false, glow: true))),
+          // precision bezel + a single travelling light (per-frame painter)
+          Positioned.fill(
+            child: _Live(builder: (c, t) => CustomPaint(painter: _HaloPainter(t: t, dark: p.dark, accent: _violet))),
           ),
+          // one slow, soft echo
           const _PulseRing(delayMs: 0, color: _violet),
-          const _PulseRing(delayMs: 1500, color: _violet),
-          // brand mark on a frosted liquid-glass disc
-          Container(
-            width: 132,
-            height: 132,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: _violet.withValues(alpha: p.dark ? 0.3 : 0.18), blurRadius: 40, spreadRadius: -6)],
-            ),
-            child: ClipOval(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: p.dark ? Colors.white.withValues(alpha: 0.10) : Colors.white.withValues(alpha: 0.38),
-                    border: Border.all(color: p.dark ? Colors.white.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.85), width: 1.5),
-                  ),
-                  alignment: Alignment.center,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // glassy specular sheen
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: RadialGradient(
-                                center: const Alignment(-0.5, -0.6),
-                                radius: 0.95,
-                                colors: [Colors.white.withValues(alpha: p.dark ? 0.16 : 0.5), Colors.white.withValues(alpha: 0)],
-                                stops: const [0.0, 0.7],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const EcLogo(size: 84),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 1, end: 1.035, duration: 3400.ms, curve: Curves.easeInOut),
+          // the brand, caught in a glass lens
+          _BrandLens(p: p),
         ],
       ),
     );
   }
+}
+
+/// A large frosted glass lens with a crisp specular sheen — the brand mark
+/// reads clearly on transparent glass, with no colour behind it.
+class _BrandLens extends StatelessWidget {
+  const _BrandLens({required this.p});
+  final _Palette p;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 240,
+      height: 240,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: p.dark ? 0.40 : 0.12), blurRadius: 40, spreadRadius: -10, offset: const Offset(0, 14))],
+      ),
+      child: ClipOval(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: p.dark ? Colors.white.withValues(alpha: 0.10) : Colors.white.withValues(alpha: 0.40),
+              border: Border.all(color: p.dark ? Colors.white.withValues(alpha: 0.24) : Colors.white.withValues(alpha: 0.90), width: 1.5),
+            ),
+            alignment: Alignment.center,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // specular sheen, top-left
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          center: const Alignment(-0.5, -0.6),
+                          radius: 0.95,
+                          colors: [Colors.white.withValues(alpha: p.dark ? 0.18 : 0.55), Colors.white.withValues(alpha: 0)],
+                          stops: const [0.0, 0.7],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const EcLogo(size: 170),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 1, end: 1.03, duration: 3600.ms, curve: Curves.easeInOut);
+  }
+}
+
+/// A precision instrument bezel: two hairline rings, a slowly rotating tick
+/// scale, and one bright light travelling the inner track. Single accent —
+/// reads like a luxury watch complication, not a toy.
+class _HaloPainter extends CustomPainter {
+  _HaloPainter({required this.t, required this.dark, required this.accent});
+  final double t;
+  final bool dark;
+  final Color accent;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final mono = dark ? Colors.white : Colors.black;
+
+    // two hairline rings
+    final ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    canvas.drawCircle(center, 134, ringPaint..color = mono.withValues(alpha: dark ? 0.09 : 0.07));
+    canvas.drawCircle(center, 158, ringPaint..color = mono.withValues(alpha: dark ? 0.05 : 0.04));
+
+    // slowly rotating tick scale on the outer ring
+    final bezelRot = t * 0.06;
+    const ticks = 60;
+    final tickPaint = Paint()..strokeCap = StrokeCap.round;
+    for (var i = 0; i < ticks; i++) {
+      final a = bezelRot + i / ticks * 2 * math.pi;
+      final major = i % 5 == 0;
+      const r1 = 158.0;
+      final r0 = r1 - (major ? 7 : 3.5);
+      tickPaint
+        ..color = mono.withValues(alpha: major ? (dark ? 0.20 : 0.16) : (dark ? 0.10 : 0.08))
+        ..strokeWidth = major ? 1.6 : 1.0;
+      canvas.drawLine(
+        center + Offset(r0 * math.cos(a), r0 * math.sin(a)),
+        center + Offset(r1 * math.cos(a), r1 * math.sin(a)),
+        tickPaint,
+      );
+    }
+
+    // single travelling light on the inner ring, counter-rotating
+    final rect = Rect.fromCircle(center: center, radius: 134);
+    final head = -t * 0.5;
+    const tail = 1.1; // radians of trail
+    const segs = 16;
+    final arc = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.4
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < segs; i++) {
+      final f = (i + 1) / segs;
+      arc.color = accent.withValues(alpha: (dark ? 0.85 : 0.70) * f * f);
+      canvas.drawArc(rect, head - tail * (1 - f), tail / segs, false, arc);
+    }
+    final hp = center + Offset(134 * math.cos(head), 134 * math.sin(head));
+    canvas.drawCircle(hp, 6, Paint()
+      ..color = accent.withValues(alpha: 0.22)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));
+    canvas.drawCircle(hp, 2.6, Paint()..color = accent);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HaloPainter old) => old.t != t || old.dark != dark || old.accent != accent;
 }
 
 class _PulseRing extends StatelessWidget {
@@ -1065,8 +1060,8 @@ class _PulseRing extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 150,
-      height: 150,
+      width: 200,
+      height: 200,
       decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color.withValues(alpha: 0.5), width: 1.5)),
     ).animate(onPlay: (c) => c.repeat()).scaleXY(begin: 0.85, end: 2.2, duration: 3200.ms, delay: delayMs.ms, curve: Curves.easeOut).fadeOut(duration: 3200.ms, delay: delayMs.ms, curve: Curves.easeOut);
   }
