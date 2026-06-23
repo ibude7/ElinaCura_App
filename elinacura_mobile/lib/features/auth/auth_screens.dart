@@ -186,13 +186,19 @@ class _PrimaryButton extends StatelessWidget {
       child: Container(
         height: 54,
         decoration: BoxDecoration(
-          color: onPressed == null && !loading ? accent.withValues(alpha: 0.45) : accent,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: (onPressed == null && !loading)
+                ? [accent.withValues(alpha: 0.4), accent.withValues(alpha: 0.4)]
+                : [Color.alphaBlend(Colors.white.withValues(alpha: 0.16), accent), accent],
+          ),
           borderRadius: BorderRadius.circular(EcTokens.radiusMd),
           boxShadow: [
             BoxShadow(
               color: p.shadow,
-              blurRadius: 16,
-              spreadRadius: -4,
+              blurRadius: 14,
+              spreadRadius: -6,
               offset: const Offset(0, 6),
             ),
           ],
@@ -294,7 +300,7 @@ class _Field extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = _AuthPalette.of(context);
     OutlineInputBorder border(Color c, [double w = 1]) => OutlineInputBorder(
-          borderRadius: BorderRadius.circular(EcTokens.radiusSm),
+          borderRadius: BorderRadius.circular(EcTokens.radiusMd),
           borderSide: BorderSide(color: c, width: w),
         );
     return TextField(
@@ -311,8 +317,8 @@ class _Field extends StatelessWidget {
         prefixIcon: Icon(icon, size: 20, color: p.muted),
         suffixIcon: trailing,
         filled: true,
-        fillColor: p.faint,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        fillColor: p.surfaceRaised,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         enabledBorder: border(p.hairline),
         border: border(p.hairline),
         focusedBorder: border(accent, 1.5),
@@ -574,12 +580,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           children: [
             const _BrandLockup(),
             const SizedBox(height: 36),
-            Text(
-              'Care, made\npersonal.',
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: p.ink,
-                    height: 1.05,
-                  ),
+            SizedBox(
+              width: double.infinity,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Care, made personal.',
+                  maxLines: 1,
+                  softWrap: false,
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        color: p.ink,
+                        height: 1.05,
+                      ),
+                ),
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -726,93 +741,93 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     },
                   ),
                   const SizedBox(height: 24),
-                  _SurfaceCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        AnimatedSize(
-                          duration: EcTokens.motionBase,
-                          curve: EcTokens.curveEmphasized,
-                          child: _isSignUp
-                              ? Column(
-                                  children: [
-                                    _Field(
-                                      controller: _nameController,
-                                      label: 'Full name',
-                                      icon: Icons.badge_outlined,
-                                      accent: _accent,
-                                      textInputAction: TextInputAction.next,
-                                    ),
-                                    const SizedBox(height: 14),
-                                  ],
-                                )
-                              : const SizedBox.shrink(),
-                        ),
-                        _Field(
-                          controller: _emailController,
-                          label: 'Email address',
-                          icon: Icons.alternate_email_rounded,
-                          accent: _accent,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                        ),
-                        const SizedBox(height: 14),
-                        _Field(
-                          controller: _passwordController,
-                          label: 'Password',
-                          icon: Icons.lock_outline_rounded,
-                          accent: _accent,
-                          obscure: !_showPassword,
-                          trailing: IconButton(
-                            splashRadius: 20,
-                            icon: Icon(
-                              _showPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                              size: 20,
-                              color: p.muted,
-                            ),
-                            onPressed: () => setState(() => _showPassword = !_showPassword),
-                          ),
-                        ),
-                        if (_isSignUp) ...[
-                          const SizedBox(height: 10),
-                          _PasswordStrength(controller: _passwordController),
-                        ],
-                        if (_error != null) ...[
-                          const SizedBox(height: 14),
-                          _ErrorBanner(message: _error!),
-                        ],
-                        const SizedBox(height: 20),
-                        _PrimaryButton(
-                          label: _isSignUp ? 'Create account' : 'Sign in',
-                          icon: Icons.arrow_forward_rounded,
-                          loading: _loading,
-                          accent: _accent,
-                          onPressed: _loading ? null : _submit,
-                        ),
-                        if (!_isSignUp)
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: _loading ? null : _forgotPassword,
-                              style: TextButton.styleFrom(
-                                foregroundColor: _accent,
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                                minimumSize: const Size(0, 36),
+                  // Fields rest directly on the canvas — open and editorial,
+                  // no card-in-card. Their raised fill gives them presence.
+                  AnimatedSize(
+                    duration: EcTokens.motionBase,
+                    curve: EcTokens.curveEmphasized,
+                    child: _isSignUp
+                        ? Column(
+                            children: [
+                              _Field(
+                                controller: _nameController,
+                                label: 'Full name',
+                                icon: Icons.badge_outlined,
+                                accent: _accent,
+                                textInputAction: TextInputAction.next,
                               ),
-                              child: const Text(
-                                'Forgot password?',
-                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                              ),
-                            ),
-                          ),
-                      ],
+                              const SizedBox(height: 12),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  _Field(
+                    controller: _emailController,
+                    label: 'Email address',
+                    icon: Icons.alternate_email_rounded,
+                    accent: _accent,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: 12),
+                  _Field(
+                    controller: _passwordController,
+                    label: 'Password',
+                    icon: Icons.lock_outline_rounded,
+                    accent: _accent,
+                    obscure: !_showPassword,
+                    trailing: IconButton(
+                      splashRadius: 20,
+                      icon: Icon(
+                        _showPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                        size: 20,
+                        color: p.muted,
+                      ),
+                      onPressed: () => setState(() => _showPassword = !_showPassword),
                     ),
+                  ),
+                  if (_isSignUp) ...[
+                    const SizedBox(height: 10),
+                    _PasswordStrength(controller: _passwordController),
+                  ],
+                  if (_error != null) ...[
+                    const SizedBox(height: 12),
+                    _ErrorBanner(message: _error!),
+                  ],
+                  if (!_isSignUp)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _loading ? null : _forgotPassword,
+                        style: TextButton.styleFrom(
+                          foregroundColor: _accent,
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                          minimumSize: const Size(0, 36),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text(
+                          'Forgot password?',
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  SizedBox(height: _isSignUp ? 20 : 14),
+                  _PrimaryButton(
+                    label: _isSignUp ? 'Create account' : 'Sign in',
+                    icon: Icons.arrow_forward_rounded,
+                    loading: _loading,
+                    accent: _accent,
+                    onPressed: _loading ? null : _submit,
                   ),
                   const SizedBox(height: 20),
                   _OrDivider(label: _isSignUp ? 'or start faster with' : 'or continue with'),
                   const SizedBox(height: 16),
                   if (showApple) ...[
-                    _AppleButton(onPressed: _loading ? null : _apple),
+                    _OutlineButton(
+                      label: 'Continue with Apple',
+                      leading: Icon(Icons.apple, color: p.ink, size: 21),
+                      onPressed: _loading ? null : _apple,
+                    ),
                     const SizedBox(height: 10),
                   ],
                   _OutlineButton(
@@ -1180,39 +1195,6 @@ class _AuthToggle extends StatelessWidget {
             ),
             child: Text(label),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AppleButton extends StatelessWidget {
-  const _AppleButton({required this.onPressed});
-  final VoidCallback? onPressed;
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? Colors.white : Colors.black;
-    final fg = isDark ? Colors.black : Colors.white;
-    return _Pressable(
-      onTap: onPressed,
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(EcTokens.radiusMd),
-        ),
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.apple, color: fg, size: 22),
-            const SizedBox(width: 8),
-            Text(
-              'Continue with Apple',
-              style: TextStyle(color: fg, fontWeight: FontWeight.w600, fontSize: 14, letterSpacing: -0.15),
-            ),
-          ],
         ),
       ),
     );
