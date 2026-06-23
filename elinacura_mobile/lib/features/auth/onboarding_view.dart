@@ -1982,8 +1982,14 @@ class _BottomChromeState extends State<_BottomChrome> {
   @override
   Widget build(BuildContext context) {
     final p = _ClockScope.paletteOf(context);
-    final btnColor = p.dark ? Colors.white : const Color(0xFF14161C);
-    final btnText = p.dark ? const Color(0xFF0A0B0F) : Colors.white;
+    final dark = p.dark;
+    final radius = BorderRadius.circular(16);
+    // Glass CTA — brushed silver on dark, graphite on light. Never a flat white slab.
+    final fill = dark
+        ? [const Color(0xFFE2E5EB).withValues(alpha: 0.90), const Color(0xFFBFC4CE).withValues(alpha: 0.88), const Color(0xFF9DA3AF).withValues(alpha: 0.90)]
+        : [const Color(0xFF33373F).withValues(alpha: 0.92), const Color(0xFF1E2128).withValues(alpha: 0.93), const Color(0xFF14161C).withValues(alpha: 0.95)];
+    final btnText = dark ? const Color(0xFF14161C) : Colors.white;
+    final borderC = dark ? Colors.white.withValues(alpha: 0.65) : Colors.white.withValues(alpha: 0.14);
     return Padding(
       padding: const EdgeInsets.fromLTRB(26, 6, 26, 16),
       child: Column(
@@ -2000,29 +2006,41 @@ class _BottomChromeState extends State<_BottomChrome> {
               scale: _pressed ? 0.975 : 1,
               duration: const Duration(milliseconds: 140),
               curve: Curves.easeOut,
-              child: Container(
-                height: 60,
-                width: double.infinity,
+              child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: btnColor,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: p.dark ? 0.3 : 0.18), blurRadius: 24, spreadRadius: -8, offset: const Offset(0, 12))],
+                  borderRadius: radius,
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: dark ? 0.28 : 0.10), blurRadius: 16, spreadRadius: -8, offset: const Offset(0, 8))],
                 ),
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 180),
-                          child: Text(widget.label, key: ValueKey(widget.label), style: TextStyle(color: btnText, fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.2)),
+                child: ClipRRect(
+                  borderRadius: radius,
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                    child: Container(
+                      height: 52,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: radius,
+                        gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: fill, stops: const [0.0, 0.5, 1.0]),
+                        border: Border.all(color: borderC, width: 1),
+                      ),
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 180),
+                                child: Text(widget.label, key: ValueKey(widget.label), style: TextStyle(color: btnText, fontSize: 15.5, fontWeight: FontWeight.w700, letterSpacing: -0.2)),
+                              ),
+                              const SizedBox(width: 9),
+                              Icon(Icons.arrow_forward_rounded, color: btnText, size: 19),
+                            ],
+                          ),
                         ),
-                        const SizedBox(width: 10),
-                        Icon(Icons.arrow_forward_rounded, color: btnText, size: 20),
-                      ],
+                      ),
                     ),
                   ),
                 ),
