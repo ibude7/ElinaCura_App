@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// ElinaCura design tokens — "Aurora" premium system.
+/// ElinaCura design tokens — "Elina Glass" liquid system.
 ///
-/// A cool-toned, vibrant glassmorphism language tuned for a modern health,
-/// wellness & fitness product. Dark mode is the hero surface (deep indigo
-/// space + flowing aurora light); light mode is an airy, cool near-white.
-///
-/// Naming is kept stable across the app — values are re-tuned, new tokens are
-/// added, nothing the rest of the app depends on is removed.
+/// True liquid glass: neutral white-frosted surfaces, deep void backgrounds
+/// with ambient depth blobs, and solid semantic accent colors.
+/// No gradient fills — color comes from scene objects behind the glass.
 class EcTokens {
   EcTokens._();
 
@@ -15,25 +12,18 @@ class EcTokens {
   static const String fontFamily = 'Geist';
 
   // ───────────────────────────────────────────────────────────── Surfaces ──
-  // Dark is the signature surface; light stays cool and bright.
-  static const Color bgAppLight = Color(0xFFF1F2FB);
-  static const Color bgAppDark = Color(0xFF06070F);
+  // Pure void backgrounds — no gradient ramps.
+  static const Color bgVoid = Color(0xFF080810);       // deep indigo-void
+  static const Color bgVoidLight = Color(0xFFF3F4FD);  // airy cool light
+
+  // Legacy aliases kept for compatibility across the design system.
+  static const Color bgAppLight = bgVoidLight;
+  static const Color bgAppDark = bgVoid;
+
   static const Color bgCardLight = Color(0xFFFFFFFF);
   static const Color bgCardDark = Color(0xFF141A2B);
   static const Color bgRecessedLight = Color(0xFFE6E8F5);
   static const Color bgRecessedDark = Color(0xFF0A0C16);
-
-  /// Background gradient ramps (top → bottom).
-  static const List<Color> bgRampLight = [
-    Color(0xFFF7F8FF),
-    Color(0xFFEFF1FB),
-    Color(0xFFE7EAF7),
-  ];
-  static const List<Color> bgRampDark = [
-    Color(0xFF0A0C18),
-    Color(0xFF080A14),
-    Color(0xFF05060D),
-  ];
 
   // ───────────────────────────────────────────────────────────────── Text ──
   static const Color textPrimaryLight = Color(0xFF11131F);
@@ -46,12 +36,12 @@ class EcTokens {
   static const Color textCriticalDark = Color(0xFFFF9DB5);
 
   // ──────────────────────────────────────────────────────────────── Brand ──
-  // Vivid violet — premium, modern, energetic without being loud.
+  // Vivid violet — premium, modern.
   static const Color accentBrand = Color(0xFF6C4FF5);
   static const Color accentBrandDark = Color(0xFF9D86FF);
   static const Color accentBrandDeep = Color(0xFF5638D6);
 
-  // Wellness — mint / emerald.
+  // Wellness — mint.
   static const Color accentMint = Color(0xFF10D9A0);
   static const Color accentMintDark = Color(0xFF3DE9B6);
   static const Color accentMintFill = Color(0xFFD8F6EC);
@@ -62,18 +52,18 @@ class EcTokens {
   static const Color accentSkyFill = Color(0xFFDCE9FF);
   static const Color accentSkyText = Color(0xFF1E5BC6);
 
-  // Fitness / energy — coral & rose.
+  // Energy — coral.
   static const Color accentCoral = Color(0xFFFF6F91);
   static const Color accentEnergy = Color(0xFFFF8A5B);
   static const Color accentBlushFill = Color(0xFFFFE0E7);
   static const Color accentBlushText = Color(0xFFD11D54);
 
-  // Focus / vitamin — amber.
+  // Focus — amber.
   static const Color accentAmber = Color(0xFFFFB23E);
   static const Color accentAmberFill = Color(0xFFFFEFCC);
   static const Color accentAmberText = Color(0xFF9A6400);
 
-  // Calm — violet-plum (sleep / mindfulness).
+  // Calm — plum.
   static const Color accentPlum = Color(0xFFB15CFF);
 
   // ──────────────────────────────────────────────────────────── Statuses ──
@@ -83,8 +73,8 @@ class EcTokens {
   static const Color statusCritical = Color(0xFFE11D48);
 
   // ───────────────────────────────────────────────── Aurora accent hues ──
-  // Vibrant accent hues for hero data viz. Backgrounds use a SINGLE hue at a
-  // time (see onboarding) — never a multi-hue blend.
+  // Used for depth-scene blobs painted behind glass, and data viz.
+  // These are scene-level objects — NOT UI fills.
   static const Color auroraViolet = Color(0xFF7C5CFF);
   static const Color auroraIndigo = Color(0xFF4F46E5);
   static const Color auroraBlue = Color(0xFF3A86FF);
@@ -92,45 +82,7 @@ class EcTokens {
   static const Color auroraMint = Color(0xFF15E0A6);
   static const Color auroraCoral = Color(0xFFFF6F91);
   static const Color auroraPlum = Color(0xFFB15CFF);
-
-  /// Deep base used as the darkest stop of a single-hue backdrop ramp.
   static const Color auroraDeep = Color(0xFF241B66);
-
-  // ───────────────────────────────────────────────────────────── Gradients ──
-  static const List<Color> gradientBrand = [
-    Color(0xFF9D86FF),
-    Color(0xFF6C4FF5),
-    Color(0xFF5638D6),
-  ];
-  static const List<Color> gradientMint = [
-    Color(0xFF59F0C6),
-    Color(0xFF10C893),
-  ];
-  static const List<Color> gradientSky = [
-    Color(0xFF73B6FF),
-    Color(0xFF3A6BFF),
-  ];
-  static const List<Color> gradientCoral = [
-    Color(0xFFFFA17A),
-    Color(0xFFFF5C8A),
-  ];
-  static const List<Color> gradientPlum = [
-    Color(0xFFC78BFF),
-    Color(0xFF7C5CFF),
-  ];
-
-  /// Signature multi-stop aurora sweep.
-  static const List<Color> gradientAurora = [
-    Color(0xFF7C5CFF),
-    Color(0xFF3A86FF),
-    Color(0xFF15E0A6),
-  ];
-
-  static const LinearGradient brandSweep = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: gradientBrand,
-  );
 
   // ─────────────────────────────────────────────────────────────── Radii ──
   static const double radiusXs = 10;
@@ -143,7 +95,7 @@ class EcTokens {
   static const double radiusGlass = 34;
   static const double radiusFull = 999;
 
-  // ────────────────────────────────────────────────────── Spacing (8pt) ──
+  // ────────────────────────────────────────────────── Spacing (8pt) ──
   static const double space2 = 2;
   static const double space4 = 4;
   static const double space6 = 6;
@@ -158,11 +110,35 @@ class EcTokens {
   static const double space48 = 48;
   static const double space64 = 64;
 
-  // ──────────────────────────────────────────────── Liquid glass depths ──
-  static const double glassBlur = 30;
-  static const double glassBlurHeavy = 50;
+  // ─────────────────────────────────────── Liquid glass Z-depth system ──
+  // Blur intensity per depth layer (content → elevated → floating).
+  static const double glassBlurZ2 = 28; // base content
+  static const double glassBlurZ3 = 44; // elevated cards / headers
+  static const double glassBlurZ4 = 60; // floating (nav, modals, sheets)
+
+  // Legacy aliases kept for EcGlassSurface compatibility.
+  static const double glassBlur = glassBlurZ2;
+  static const double glassBlurHeavy = glassBlurZ4;
   static const double glassBlurLight = 18;
-  static const double glassBlurUltra = 64;
+  static const double glassBlurUltra = glassBlurZ4;
+
+  // Neutral white-fill opacity per Z-depth (dark mode).
+  // Glass is colorless — it reveals the ambient scene behind it through blur.
+  static const double glassZ2Opacity = 0.07;
+  static const double glassZ3Opacity = 0.10;
+  static const double glassZ4Opacity = 0.13;
+
+  // Specular edge opacities — directional light catch from top-left.
+  static const double glassSpecularTopOpacity = 0.22; // 1px top-edge line
+  static const double glassSpecularSideOpacity = 0.10; // 0.5px left-edge line
+  static const double glassBorderOpacity = 0.12;
+
+  // ────────────────────────────────────────────────── Typography (XL) ──
+  // Extended display scale beyond Material defaults.
+  static const double fontSizeDisplayXL = 80.0; // clock / data hero
+  static const double letterSpacingDisplayXL = -4.0;
+  static const double fontSizeDisplayLg = 52.0; // large stat / greeting
+  static const double letterSpacingDisplayLg = -2.5;
 
   // ──────────────────────────────────────────────────────────── Motion ──
   static const Duration motionInstant = Duration(milliseconds: 90);

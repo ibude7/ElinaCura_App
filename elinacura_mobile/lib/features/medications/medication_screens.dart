@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:dio/dio.dart';
@@ -16,6 +17,8 @@ import '../../shared/models/models.dart';
 import '../../core/theme/ec_tokens.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_widgets.dart';
+
+// ═══════════════════════════════════════════════ OCR CAPTURE SCREEN ══
 
 class OcrCaptureScreen extends ConsumerStatefulWidget {
   const OcrCaptureScreen({super.key});
@@ -101,7 +104,8 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
       _draft = draft;
       _nameController.text = draft.draft['medication_name']?.toString() ?? '';
       _doseController.text = draft.draft['dose']?.toString() ?? '';
-      _frequencyController.text = draft.draft['frequency']?.toString() ?? '';
+      _frequencyController.text =
+          draft.draft['frequency']?.toString() ?? '';
     });
   }
 
@@ -122,9 +126,8 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
       );
       ref.invalidate(healthOverviewProvider);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Medication added')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Medication added')));
         context.pop();
       }
     } catch (e) {
@@ -137,82 +140,142 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
   @override
   Widget build(BuildContext context) {
     return EcGlassScaffold(
-      appBar: const EcAppBar(title: 'Scan prescription'),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Scan label',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+        actions: [
+          if (_draft != null)
+            TextButton(
+              onPressed: () => setState(() => _draft = null),
+              child: const Text('Retake'),
+            ),
+        ],
+      ),
       body: _draft == null ? _buildCapture() : _buildReview(),
     );
   }
 
   Widget _buildCapture() {
-    return Padding(
-      padding: kEcGlassListPadding,
-      child: Column(
-        children: [
-          EcScreenHero(
-            eyebrow: 'Medication scan',
-            title: 'Capture the label clearly',
-            subtitle:
-                'Use OCR to turn medication packaging into a draft you can review before saving.',
-            icon: Icons.document_scanner_rounded,
-            trailing: EcPill(label: 'Review first', tone: EcPillTone.info),
-          ),
-          const SizedBox(height: 14),
-          Expanded(
-            child: _controller?.value.isInitialized == true
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(EcTokens.radiusGlass),
-                    child: CameraPreview(_controller!),
-                  )
-                : EcCard(
-                    elevated: true,
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.camera_alt_rounded,
-                            size: 48,
-                            color: EcColors.of(context).accentBrand,
-                          ),
-                          const SizedBox(height: 16),
-                          EcGlassButton(
-                            label: 'Start camera',
-                            onPressed: _initCamera,
-                          ),
-                        ],
-                      ),
-                    ),
+    final isReady = _controller?.value.isInitialized == true;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Camera preview
+        if (isReady)
+          ClipRRect(
+            child: CameraPreview(_controller!),
+          )
+        else
+          const ColoredBox(color: Colors.black),
+
+        // Glass frame overlay
+        if (isReady)
+          Center(
+            child: Container(
+              width: 280,
+              height: 180,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(EcTokens.radiusCard),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.60),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.10),
+                    blurRadius: 24,
                   ),
-          ),
-          if (_error != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                _error!,
-                style: TextStyle(color: EcColors.of(context).textCritical),
+                ],
               ),
             ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: EcGlassButton(
-                  label: 'Gallery',
-                  outlined: true,
-                  onPressed: _pickGallery,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: EcGlassButton(
-                  label: _loading ? 'Processing…' : 'Capture',
-                  loading: _loading,
-                  onPressed: _loading ? null : _capture,
-                ),
-              ),
-            ],
           ),
-        ],
-      ),
+
+        // Bottom controls
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: EcTokens.glassBlurZ4,
+                sigmaY: EcTokens.glassBlurZ4,
+              ),
+              child: Container(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  16,
+                  20,
+                  MediaQuery.paddingOf(context).bottom + 20,
+                ),
+                color: EcGlass.of(context).fillFloat,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isReady
+                          ? 'Align the label inside the frame'
+                          : 'Camera access required to scan labels',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.80),
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    if (_error != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _error!,
+                        style: const TextStyle(
+                          color: EcTokens.statusCritical,
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: EcGlassButton(
+                            label: 'Gallery',
+                            outlined: true,
+                            icon: Icons.photo_library_rounded,
+                            onPressed: _pickGallery,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: EcGlassButton(
+                            label: _loading
+                                ? 'Processing…'
+                                : isReady
+                                    ? 'Capture'
+                                    : 'Start camera',
+                            loading: _loading,
+                            icon: _loading ? null : Icons.camera_alt_rounded,
+                            onPressed: _loading ? null : _capture,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -220,47 +283,108 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
     return ListView(
       padding: kEcGlassListPadding,
       children: [
-        const EcScreenHero(
-          eyebrow: 'Review required',
-          title: 'Confirm each field',
-          subtitle:
-              'AI extraction gives you a head start. Check details before adding this medication to your care record.',
-          icon: Icons.fact_check_rounded,
-          trailing: EcPill(label: 'Draft', tone: EcPillTone.caution),
-        ),
-        const SizedBox(height: 16),
-        EcGlassSurface(
-          variant: EcGlassVariant.elevated,
-          borderRadius: EcTokens.radiusGlass,
-          child: Column(
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Medication name'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _doseController,
-                decoration: const InputDecoration(labelText: 'Dose'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _frequencyController,
-                decoration: const InputDecoration(labelText: 'Frequency'),
-              ),
-            ],
+        // ── Header
+        EcGlassEntrance(
+          index: 0,
+          child: EcGlassSurface(
+            variant: EcGlassVariant.elevated,
+            borderRadius: EcTokens.radiusGlass,
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: EcColors.of(context)
+                            .accentBrand
+                            .withValues(alpha: 0.14),
+                      ),
+                      child: Icon(
+                        Icons.fact_check_rounded,
+                        color: EcColors.of(context).accentBrand,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Review & confirm',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            'AI filled these — confirm before saving.',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_draft?.lowConfidenceFields.isNotEmpty ?? false)
+                      EcPill(
+                        label: 'Review required',
+                        tone: EcPillTone.caution,
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-        if (_draft!.lowConfidenceFields.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          EcPill(
-            label: 'Low confidence: ${_draft!.lowConfidenceFields.join(', ')}',
-            tone: EcPillTone.caution,
+        const SizedBox(height: 16),
+
+        // ── Fields
+        EcGlassEntrance(
+          index: 1,
+          child: EcGlassSurface(
+            variant: EcGlassVariant.elevated,
+            borderRadius: EcTokens.radiusGlass,
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _nameController,
+                  decoration:
+                      const InputDecoration(labelText: 'Medication name'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _doseController,
+                  decoration: const InputDecoration(labelText: 'Dose'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _frequencyController,
+                  decoration:
+                      const InputDecoration(labelText: 'Frequency'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_error != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _error!,
+            style: const TextStyle(
+              color: EcTokens.statusCritical,
+              fontSize: 12,
+            ),
           ),
         ],
         const SizedBox(height: 24),
         EcGlassButton(
           label: 'Save medication',
+          icon: Icons.check_rounded,
           loading: _loading,
           onPressed: _loading ? null : _confirm,
         ),
@@ -269,41 +393,126 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
   }
 }
 
+// ═══════════════════════════════════════════════ SCANNER SCREEN ══
+
 class ScannerScreen extends StatelessWidget {
   const ScannerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return EcGlassScaffold(
-      appBar: const EcAppBar(title: 'Barcode scanner'),
+    final bottom = MediaQuery.paddingOf(context).bottom;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text(
+          'Barcode scanner',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 17,
+          ),
+        ),
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // Camera
           MobileScanner(
             onDetect: (capture) {
               final barcodes = capture.barcodes;
               if (barcodes.isEmpty) return;
               final raw = barcodes.first.rawValue;
               if (raw != null) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('Scanned: $raw')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Scanned: $raw')),
+                );
               }
             },
           ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: EcScreenHero(
-                eyebrow: 'Food and product safety',
-                title: 'Center the barcode',
-                subtitle:
-                    'Scan groceries and labels to check them against your medication and health profile.',
-                icon: Icons.qr_code_scanner_rounded,
-                trailing: const EcPill(
-                  label: 'Live',
-                  tone: EcPillTone.positive,
+
+          // Glass viewfinder ring
+          Center(
+            child: Container(
+              width: 260,
+              height: 260,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.55),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    blurRadius: 30,
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.40),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.qr_code_2_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Bottom glass overlay
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: EcTokens.glassBlurZ4,
+                  sigmaY: EcTokens.glassBlurZ4,
+                ),
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(20, 16, 20, bottom + 20),
+                  color: Colors.black.withValues(alpha: 0.45),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Center a barcode in the ring',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.80),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Scans groceries and labels for medication interactions',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.50),
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -313,6 +522,8 @@ class ScannerScreen extends StatelessWidget {
     );
   }
 }
+
+// ═══════════════════════════════════════════════ REMINDERS SCREEN ══
 
 class RemindersScreen extends ConsumerWidget {
   const RemindersScreen({super.key});
@@ -342,65 +553,32 @@ class RemindersScreen extends ConsumerWidget {
         ),
         data: (items) {
           if (items.isEmpty) {
-            return const EcEmptyState(
+            return EcEmptyState(
               icon: Icons.alarm_rounded,
               title: 'No reminders scheduled',
               message:
-                  'Create reminders from your medication list to keep daily routines visible.',
+                  'Reminders are created automatically from your medication list.',
+              action: EcGlassButton(
+                label: 'Go to medications',
+                onPressed: () => context.push('/health'),
+              ),
             );
           }
-          return ListView.separated(
+          return ListView.builder(
             padding: kEcGlassListPadding,
             itemCount: items.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 10),
             itemBuilder: (context, i) {
               final r = items[i];
               return EcGlassEntrance(
                 index: i,
-                child: EcCard(
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: EcColors.of(context).accentAmberFill,
-                        ),
-                        child: Icon(
-                          Icons.alarm_rounded,
-                          color: EcColors.of(context).accentAmberText,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              r.medicationName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              [r.dose, r.nextDue, r.cadenceLabel]
-                                  .whereType<String>()
-                                  .where((s) => s.isNotEmpty)
-                                  .join(' · '),
-                              style: TextStyle(
-                                color: EcColors.of(context).textSecondary,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.notifications_active_rounded),
-                        onPressed: () => _scheduleReminder(ref, r, i),
-                      ),
-                    ],
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: EcTimelineNode(
+                    time: r.nextDue ?? r.cadenceLabel ?? '—',
+                    label: '${r.medicationName}${(r.dose?.isNotEmpty ?? false) ? ' — ${r.dose}' : ''}',
+                    done: false,
+                    isLast: i == items.length - 1,
+                    onTap: () => _scheduleReminder(ref, r, i),
                   ),
                 ),
               );
@@ -427,12 +605,16 @@ class RemindersScreen extends ConsumerWidget {
   }
 }
 
+// ═══════════════════════════════════════════ REFILL CALENDAR SCREEN ══
+
 class RefillCalendarScreen extends ConsumerWidget {
   const RefillCalendarScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final overview = ref.watch(healthOverviewProvider);
+    final ec = EcColors.of(context);
+
     return EcGlassScaffold(
       appBar: const EcAppBar(title: 'Refill calendar'),
       body: overview.when(
@@ -443,81 +625,139 @@ class RefillCalendarScreen extends ConsumerWidget {
         ),
         data: (data) => Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: EcScreenHero(
-                eyebrow: 'Refill planning',
-                title: 'Know what is running low',
-                subtitle:
-                    'Pair refill dates with your medication list so important prescriptions do not disappear from routine.',
-                icon: Icons.calendar_month_rounded,
-                trailing: EcPill(
-                  label: '${data.medications.length} meds',
-                  tone: EcPillTone.info,
-                ),
-              ),
-            ),
+            // ── Glass calendar
             EcGlassSurface(
-              variant: EcGlassVariant.subtle,
-              margin: const EdgeInsets.all(16),
+              variant: EcGlassVariant.elevated,
+              margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               borderRadius: EcTokens.radiusGlass,
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
               child: TableCalendar(
                 firstDay: DateTime.utc(2020),
                 lastDay: DateTime.utc(2030, 12, 31),
                 focusedDay: DateTime.now(),
-                calendarStyle: const CalendarStyle(markersMaxCount: 1),
+                calendarStyle: CalendarStyle(
+                  markersMaxCount: 1,
+                  todayDecoration: BoxDecoration(
+                    color: ec.accentBrand.withValues(alpha: 0.30),
+                    shape: BoxShape.circle,
+                  ),
+                  selectedDecoration: BoxDecoration(
+                    color: ec.accentBrand,
+                    shape: BoxShape.circle,
+                  ),
+                  defaultTextStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontFamily: EcTokens.fontFamily,
+                  ),
+                  weekendTextStyle: TextStyle(
+                    color: ec.textSecondary,
+                    fontFamily: EcTokens.fontFamily,
+                  ),
+                ),
+                headerStyle: HeaderStyle(
+                  titleTextStyle: TextStyle(
+                    fontFamily: EcTokens.fontFamily,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  formatButtonVisible: false,
+                  leftChevronIcon: Icon(
+                    Icons.chevron_left_rounded,
+                    color: ec.accentBrand,
+                  ),
+                  rightChevronIcon: Icon(
+                    Icons.chevron_right_rounded,
+                    color: ec.accentBrand,
+                  ),
+                ),
               ),
             ),
-            Expanded(
-              child: ListView(
-                padding: kEcGlassListPadding.copyWith(top: 0),
-                children: data.medications
-                    .asMap()
-                    .entries
-                    .map(
-                      (e) => EcGlassEntrance(
-                        index: e.key,
-                        child: EcCard(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.medication_rounded,
-                                color: EcColors.of(context).accentBrand,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      e.value.name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Text(
-                                      e.value.dose.isNotEmpty
-                                          ? e.value.dose
-                                          : 'No dose recorded',
-                                      style: TextStyle(
-                                        color: EcColors.of(
-                                          context,
-                                        ).textSecondary,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
+
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: EcSectionTitle(
+                title: 'All medications',
+                action: EcPill(
+                  label: '${data.medications.length} tracked',
+                  tone: EcPillTone.info,
+                ),
               ),
+            ),
+
+            // ── Medications list
+            Expanded(
+              child: data.medications.isEmpty
+                  ? EcEmptyState(
+                      icon: Icons.medication_rounded,
+                      title: 'No medications tracked',
+                      message:
+                          'Add medications to your profile to see refill schedules here.',
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
+                      itemCount: data.medications.length,
+                      itemBuilder: (context, i) {
+                        final m = data.medications[i];
+                        return EcGlassEntrance(
+                          index: i,
+                          child: EcGlassSurface(
+                            variant: EcGlassVariant.elevated,
+                            borderRadius: EcTokens.radiusCard,
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(14),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: ec.accentMint
+                                        .withValues(alpha: 0.14),
+                                  ),
+                                  child: Icon(
+                                    Icons.medication_rounded,
+                                    color: ec.accentMint,
+                                    size: 18,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        m.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14.5,
+                                        ),
+                                      ),
+                                      if (m.dose.isNotEmpty == true)
+                                        Text(
+                                          m.dose,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: ec.textSecondary,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                if (m.schedule.isNotEmpty)
+                                  EcPill(
+                                    label: m.schedule,
+                                    tone: EcPillTone.neutral,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/auth/auth_providers.dart';
 import '../../core/theme/ec_theme.dart';
+import '../../core/theme/ec_tokens.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../features/auth/auth_screens.dart';
@@ -12,25 +13,37 @@ import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/medications/medication_screens.dart';
 import '../../features/profile/profile_screens.dart';
 import '../../features/social/social_screens.dart';
-import '../../shared/widgets/ec_widgets.dart';
 
+/// Show the quick-add glass sheet from anywhere in the patient shell.
 void showQuickAddSheet(BuildContext context) {
   showEcGlassSheet(
     context,
     children: [
-      const Padding(
-        padding: EdgeInsets.fromLTRB(12, 4, 12, 14),
-        child: EcScreenHero(
-          eyebrow: 'Quick add',
-          title: 'What do you want to capture?',
-          subtitle:
-              'Add a scan, reminder, vital, or emergency action without leaving your care flow.',
-          icon: Icons.add_rounded,
+      Padding(
+        padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Quick add',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Capture something from your care flow.',
+              style: TextStyle(
+                color: EcColors.of(context).textSecondary,
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
       ),
+      const SizedBox(height: 8),
       _SheetTile(
         icon: Icons.document_scanner_rounded,
-        title: 'Scan medication',
+        title: 'Scan medication label',
+        subtitle: 'OCR → review → save',
         onTap: () {
           Navigator.pop(context);
           context.push('/ocr');
@@ -39,6 +52,7 @@ void showQuickAddSheet(BuildContext context) {
       _SheetTile(
         icon: Icons.monitor_heart_rounded,
         title: 'Log vitals',
+        subtitle: 'Blood pressure, heart rate…',
         onTap: () {
           Navigator.pop(context);
           context.push('/health');
@@ -46,7 +60,8 @@ void showQuickAddSheet(BuildContext context) {
       ),
       _SheetTile(
         icon: Icons.alarm_rounded,
-        title: 'Add reminder',
+        title: 'Set reminder',
+        subtitle: 'Schedule a medication alert',
         onTap: () {
           Navigator.pop(context);
           context.push('/reminders');
@@ -55,7 +70,8 @@ void showQuickAddSheet(BuildContext context) {
       _SheetTile(
         icon: Icons.emergency_rounded,
         title: 'Emergency',
-        iconColor: EcColors.of(context).textCritical,
+        subtitle: 'SOS and Medical ID',
+        iconColor: EcTokens.statusCritical,
         onTap: () {
           Navigator.pop(context);
           context.push('/emergency');
@@ -70,41 +86,70 @@ class _SheetTile extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.onTap,
+    this.subtitle,
     this.iconColor,
   });
 
   final IconData icon;
   final String title;
+  final String? subtitle;
   final VoidCallback onTap;
   final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    final color = iconColor ?? ec.accentBrand;
+
     return EcGlassSurface(
       onTap: onTap,
-      variant: EcGlassVariant.subtle,
-      borderRadius: 16,
+      variant: EcGlassVariant.regular,
+      borderRadius: EcTokens.radiusCard,
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          Icon(icon, color: iconColor),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: 0.14),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
           const SizedBox(width: 14),
           Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14.5,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                if (subtitle != null)
+                  Text(
+                    subtitle!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: ec.textMuted,
+                    ),
+                  ),
+              ],
             ),
           ),
-          Icon(
-            Icons.chevron_right_rounded,
-            color: EcColors.of(context).textMuted,
-          ),
+          Icon(Icons.chevron_right_rounded, color: ec.textMuted, size: 18),
         ],
       ),
     );
   }
 }
+
+// ─────────────────────────────────────────────────── Patient shell ──
 
 class PatientShell extends ConsumerStatefulWidget {
   const PatientShell({super.key, required this.child});
@@ -116,10 +161,11 @@ class PatientShell extends ConsumerStatefulWidget {
 }
 
 class _PatientShellState extends ConsumerState<PatientShell> {
+  /// Maps location → index in the 4-tab nav (0=Today, 1=Health, 2=Messages, 3=Profile).
   int _indexFromLocation(String location) {
     if (location.startsWith('/health')) return 1;
-    if (location.startsWith('/messages')) return 3;
-    if (location.startsWith('/profile')) return 4;
+    if (location.startsWith('/messages')) return 2;
+    if (location.startsWith('/profile')) return 3;
     return 0;
   }
 
@@ -129,8 +175,9 @@ class _PatientShellState extends ConsumerState<PatientShell> {
     final index = _indexFromLocation(location);
 
     return EcGlassScaffold(
+      extendBody: true,
       body: widget.child,
-      bottomNavigationBar: EcGlassBottomNav(
+      bottomNavigationBar: EcFloatingNav(
         selectedIndex: index,
         onSelected: (i) {
           switch (i) {
@@ -139,28 +186,22 @@ class _PatientShellState extends ConsumerState<PatientShell> {
             case 1:
               context.go('/health');
             case 2:
-              showQuickAddSheet(context);
-            case 3:
               context.go('/messages');
-            case 4:
+            case 3:
               context.go('/profile');
           }
         },
+        onAdd: () => showQuickAddSheet(context),
         destinations: const [
           EcGlassNavDestination(
             icon: Icons.home_outlined,
             selectedIcon: Icons.home_rounded,
-            label: 'Home',
+            label: 'Today',
           ),
           EcGlassNavDestination(
             icon: Icons.favorite_outline,
             selectedIcon: Icons.favorite_rounded,
             label: 'Health',
-          ),
-          EcGlassNavDestination(
-            icon: Icons.add_circle_outline,
-            selectedIcon: Icons.add_circle_rounded,
-            label: 'Add',
           ),
           EcGlassNavDestination(
             icon: Icons.chat_bubble_outline,
@@ -178,6 +219,8 @@ class _PatientShellState extends ConsumerState<PatientShell> {
   }
 }
 
+// ─────────────────────────────────────────────── Caregiver shell ──
+
 class CaregiverShell extends ConsumerWidget {
   const CaregiverShell({super.key, required this.child});
 
@@ -193,8 +236,9 @@ class CaregiverShell extends ConsumerWidget {
     }
 
     return EcGlassScaffold(
+      extendBody: true,
       body: child,
-      bottomNavigationBar: EcGlassBottomNav(
+      bottomNavigationBar: EcFloatingNav(
         selectedIndex: index,
         onSelected: (i) {
           switch (i) {
@@ -232,6 +276,8 @@ class CaregiverShell extends ConsumerWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────── Router ──
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);

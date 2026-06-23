@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'ec_tokens.dart';
 
-/// ElinaCura "Aurora" theme — premium liquid-glass health & fitness UI.
+/// ElinaCura "Elina Glass" theme — true liquid-glass health OS.
+/// No gradient fills anywhere — glass surfaces are neutral white-frosted.
 class EcTheme {
   EcTheme._();
 
@@ -13,7 +14,7 @@ class EcTheme {
       secondary: EcTokens.accentMint,
       onSecondary: Colors.white,
       tertiary: EcTokens.accentCoral,
-      surface: EcTokens.bgAppLight,
+      surface: EcTokens.bgVoidLight,
       onSurface: EcTokens.textPrimaryLight,
       surfaceContainerHighest: EcTokens.bgCardLight,
       error: EcTokens.statusCritical,
@@ -29,7 +30,7 @@ class EcTheme {
       secondary: EcTokens.accentMintDark,
       onSecondary: Color(0xFF06231B),
       tertiary: EcTokens.accentCoral,
-      surface: EcTokens.bgAppDark,
+      surface: EcTokens.bgVoid,
       onSurface: EcTokens.textPrimaryDark,
       surfaceContainerHighest: EcTokens.bgCardDark,
       error: EcTokens.statusCritical,
@@ -43,7 +44,7 @@ class EcTheme {
         ? EcTokens.textPrimaryDark
         : EcTokens.textPrimaryLight;
     return TextTheme(
-      // Display — onboarding / marketing heroes.
+      // Display — large data heroes and screen headings.
       displayLarge: TextStyle(
         fontSize: 46,
         fontWeight: FontWeight.w800,
@@ -66,34 +67,34 @@ class EcTheme {
         height: 1.08,
       ),
       headlineLarge: TextStyle(
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: FontWeight.w800,
-        letterSpacing: -1.1,
+        letterSpacing: -1.0,
         color: primary,
-        height: 1.06,
+        height: 1.10,
       ),
       headlineMedium: TextStyle(
-        fontSize: 25,
+        fontSize: 22,
         fontWeight: FontWeight.w800,
-        letterSpacing: -0.8,
+        letterSpacing: -0.7,
         color: primary,
-        height: 1.14,
+        height: 1.16,
       ),
       headlineSmall: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.5,
-        color: primary,
-        height: 1.18,
-      ),
-      titleLarge: TextStyle(
-        fontSize: 18,
+        fontSize: 19,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.4,
         color: primary,
+        height: 1.20,
+      ),
+      titleLarge: TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.3,
+        color: primary,
       ),
       titleMedium: TextStyle(
-        fontSize: 15.5,
+        fontSize: 15,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.2,
         color: primary,
@@ -111,7 +112,7 @@ class EcTheme {
         height: 1.5,
       ),
       labelLarge: TextStyle(
-        fontSize: 14,
+        fontSize: 13.5,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.1,
         color: primary,
@@ -147,15 +148,15 @@ class EcTheme {
             : SystemUiOverlayStyle.dark,
         titleTextStyle: TextStyle(
           fontFamily: EcTokens.fontFamily,
-          fontSize: 19,
+          fontSize: 18,
           fontWeight: FontWeight.w800,
-          letterSpacing: -0.6,
+          letterSpacing: -0.5,
           color: primaryText,
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.transparent,
-        indicatorColor: accent.withValues(alpha: isDark ? 0.24 : 0.14),
+        indicatorColor: Colors.white.withValues(alpha: isDark ? 0.10 : 0.20),
         elevation: 0,
         height: 72,
         iconTheme: WidgetStateProperty.resolveWith((states) {
@@ -178,9 +179,7 @@ class EcTheme {
         backgroundColor: accent,
         foregroundColor: Colors.white,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(EcTokens.radiusLg),
-        ),
+        shape: const CircleBorder(),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -246,9 +245,11 @@ class EcTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(EcTokens.radiusMd),
-          borderSide: BorderSide(color: accent.withValues(alpha: 0.7), width: 1.6),
+          borderSide:
+              BorderSide(color: accent.withValues(alpha: 0.7), width: 1.6),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
         labelStyle: TextStyle(
           fontFamily: EcTokens.fontFamily,
           color: isDark
@@ -260,9 +261,8 @@ class EcTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: isDark
-            ? const Color(0xF0141A2B)
-            : const Color(0xF0FFFFFF),
+        backgroundColor:
+            isDark ? const Color(0xF0141A2B) : const Color(0xF0FFFFFF),
         contentTextStyle: TextStyle(
           fontFamily: EcTokens.fontFamily,
           color: primaryText,
@@ -388,13 +388,13 @@ class EcColors extends ThemeExtension<EcColors> {
     accentSky: Color(0xFF6FB0FF),
     accentCoral: EcTokens.accentCoral,
     accentPlum: EcTokens.accentPlum,
-    accentMintFill: Color(0x2910D9A0),
+    accentMintFill: Color(0x1A10D9A0),
     accentMintText: Color(0xFF5FEAC2),
-    accentBlushFill: Color(0x29FF6F91),
+    accentBlushFill: Color(0x1AFF6F91),
     accentBlushText: Color(0xFFFF9DB5),
-    accentAmberFill: Color(0x29FFB23E),
+    accentAmberFill: Color(0x1AFFB23E),
     accentAmberText: Color(0xFFFFD27A),
-    accentSkyFill: Color(0x293A86FF),
+    accentSkyFill: Color(0x1A3A86FF),
   );
 
   @override
@@ -463,15 +463,19 @@ class EcColors extends ThemeExtension<EcColors> {
   }
 }
 
-/// Glass surface tokens for liquid glass UI.
+/// Glass surface tokens — neutral white-tinted depth system.
+/// Glass fills are intentionally colorless; the ambient depth scene provides
+/// the color that bleeds through via BackdropFilter blur.
 class EcGlass extends ThemeExtension<EcGlass> {
   const EcGlass({
     required this.fill,
     required this.fillElevated,
     required this.fillSubtle,
+    required this.fillFloat,
     required this.border,
     required this.borderStrong,
-    required this.highlight,
+    required this.specularTop,
+    required this.specularSide,
     required this.navFill,
     required this.tintBrand,
     required this.shadowColor,
@@ -480,9 +484,11 @@ class EcGlass extends ThemeExtension<EcGlass> {
   final Color fill;
   final Color fillElevated;
   final Color fillSubtle;
+  final Color fillFloat;
   final Color border;
   final Color borderStrong;
-  final Color highlight;
+  final Color specularTop;
+  final Color specularSide;
   final Color navFill;
   final Color tintBrand;
   final Color shadowColor;
@@ -490,26 +496,33 @@ class EcGlass extends ThemeExtension<EcGlass> {
   static EcGlass of(BuildContext context) =>
       Theme.of(context).extension<EcGlass>()!;
 
+  // Light mode: higher white opacity (glass on light background)
   static final EcGlass light = EcGlass(
-    fill: Colors.white.withValues(alpha: 0.80),
-    fillElevated: Colors.white.withValues(alpha: 0.92),
-    fillSubtle: Colors.white.withValues(alpha: 0.55),
-    border: Colors.white.withValues(alpha: 0.95),
-    borderStrong: Colors.white,
-    highlight: Colors.white,
-    navFill: Colors.white.withValues(alpha: 0.82),
+    fill: Colors.white.withValues(alpha: 0.72),
+    fillElevated: Colors.white.withValues(alpha: 0.85),
+    fillSubtle: Colors.white.withValues(alpha: 0.50),
+    fillFloat: Colors.white.withValues(alpha: 0.90),
+    border: Colors.black.withValues(alpha: 0.06),
+    borderStrong: Colors.black.withValues(alpha: 0.12),
+    specularTop: Colors.white,
+    specularSide: Colors.white.withValues(alpha: 0.70),
+    navFill: Colors.white.withValues(alpha: 0.88),
     tintBrand: EcTokens.accentBrand,
     shadowColor: const Color(0xFF211A4D),
   );
 
+  // Dark mode: neutral white tint on deep void background.
+  // Color comes from ambient depth blobs blurred through the glass.
   static final EcGlass dark = EcGlass(
-    fill: const Color(0xFF161B2E).withValues(alpha: 0.58),
-    fillElevated: const Color(0xFF1C2440).withValues(alpha: 0.74),
-    fillSubtle: const Color(0xFF10131F).withValues(alpha: 0.52),
-    border: Colors.white.withValues(alpha: 0.12),
-    borderStrong: Colors.white.withValues(alpha: 0.24),
-    highlight: Colors.white.withValues(alpha: 0.16),
-    navFill: const Color(0xFF0B0E18).withValues(alpha: 0.74),
+    fill: Colors.white.withValues(alpha: EcTokens.glassZ2Opacity),
+    fillElevated: Colors.white.withValues(alpha: EcTokens.glassZ3Opacity),
+    fillSubtle: Colors.white.withValues(alpha: 0.04),
+    fillFloat: Colors.white.withValues(alpha: EcTokens.glassZ4Opacity),
+    border: Colors.white.withValues(alpha: EcTokens.glassBorderOpacity),
+    borderStrong: Colors.white.withValues(alpha: 0.22),
+    specularTop: Colors.white.withValues(alpha: EcTokens.glassSpecularTopOpacity),
+    specularSide: Colors.white.withValues(alpha: EcTokens.glassSpecularSideOpacity),
+    navFill: Colors.white.withValues(alpha: EcTokens.glassZ4Opacity),
     tintBrand: EcTokens.accentBrandDark,
     shadowColor: Colors.black,
   );
@@ -519,9 +532,11 @@ class EcGlass extends ThemeExtension<EcGlass> {
     Color? fill,
     Color? fillElevated,
     Color? fillSubtle,
+    Color? fillFloat,
     Color? border,
     Color? borderStrong,
-    Color? highlight,
+    Color? specularTop,
+    Color? specularSide,
     Color? navFill,
     Color? tintBrand,
     Color? shadowColor,
@@ -530,9 +545,11 @@ class EcGlass extends ThemeExtension<EcGlass> {
       fill: fill ?? this.fill,
       fillElevated: fillElevated ?? this.fillElevated,
       fillSubtle: fillSubtle ?? this.fillSubtle,
+      fillFloat: fillFloat ?? this.fillFloat,
       border: border ?? this.border,
       borderStrong: borderStrong ?? this.borderStrong,
-      highlight: highlight ?? this.highlight,
+      specularTop: specularTop ?? this.specularTop,
+      specularSide: specularSide ?? this.specularSide,
       navFill: navFill ?? this.navFill,
       tintBrand: tintBrand ?? this.tintBrand,
       shadowColor: shadowColor ?? this.shadowColor,
@@ -546,9 +563,11 @@ class EcGlass extends ThemeExtension<EcGlass> {
       fill: Color.lerp(fill, other.fill, t)!,
       fillElevated: Color.lerp(fillElevated, other.fillElevated, t)!,
       fillSubtle: Color.lerp(fillSubtle, other.fillSubtle, t)!,
+      fillFloat: Color.lerp(fillFloat, other.fillFloat, t)!,
       border: Color.lerp(border, other.border, t)!,
       borderStrong: Color.lerp(borderStrong, other.borderStrong, t)!,
-      highlight: Color.lerp(highlight, other.highlight, t)!,
+      specularTop: Color.lerp(specularTop, other.specularTop, t)!,
+      specularSide: Color.lerp(specularSide, other.specularSide, t)!,
       navFill: Color.lerp(navFill, other.navFill, t)!,
       tintBrand: Color.lerp(tintBrand, other.tintBrand, t)!,
       shadowColor: Color.lerp(shadowColor, other.shadowColor, t)!,

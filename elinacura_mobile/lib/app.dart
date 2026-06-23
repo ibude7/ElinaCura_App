@@ -82,7 +82,7 @@ class _ElinaCuraAppState extends ConsumerState<ElinaCuraApp> {
         } else if (auth.valueOrNull != null) {
           content = BiometricGate(child: content);
         }
-        return EcLiquidBackground(child: content);
+        return EcVoidBackground(child: content);
       },
     );
   }

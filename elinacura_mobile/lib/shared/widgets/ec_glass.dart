@@ -8,26 +8,24 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/ec_tokens.dart';
 import '../../core/theme/ec_theme.dart';
 
-/// App-wide premium backdrop — a deep indigo "aurora" in dark mode and an airy,
-/// cool light field in light mode. Static and inexpensive so it can sit behind
-/// every screen; use the animated [EcAuroraBackground] for hero surfaces such
-/// as onboarding and auth.
-class EcLiquidBackground extends StatelessWidget {
-  const EcLiquidBackground({super.key, required this.child});
+// ─────────────────────────────────────────────────────── Background system ──
+
+/// App-wide void background — a pure deep dark canvas with three ambient
+/// depth blobs painted in [EcDepthScenePainter]. Glass surfaces BackdropFilter
+/// these blobs to produce their tinted look; the glass itself is neutral white.
+///
+/// Use this for all post-auth screens. [EcLiquidBackground] below remains
+/// only for onboarding / auth compatibility.
+class EcVoidBackground extends StatelessWidget {
+  const EcVoidBackground({super.key, required this.child});
 
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isDark ? EcTokens.bgRampDark : EcTokens.bgRampLight,
-        ),
-      ),
+    return ColoredBox(
+      color: isDark ? EcTokens.bgVoid : EcTokens.bgVoidLight,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -35,17 +33,7 @@ class EcLiquidBackground extends StatelessWidget {
             child: IgnorePointer(
               child: CustomPaint(
                 size: Size.infinite,
-                painter: EcAuroraPainter(
-                  t: 0.16,
-                  isDark: isDark,
-                  colors: const [
-                    EcTokens.auroraViolet,
-                    EcTokens.auroraIndigo,
-                    EcTokens.auroraDeep,
-                  ],
-                  intensity: isDark ? 0.5 : 0.4,
-                ),
-                child: const SizedBox.expand(),
+                painter: EcDepthScenePainter(isDark: isDark),
               ),
             ),
           ),
@@ -56,11 +44,95 @@ class EcLiquidBackground extends StatelessWidget {
   }
 }
 
+/// Paints three ambient color blobs at fixed positions.
+/// These are scene-level objects — the glass blur reveals them as color.
+/// Uses RadialGradient only in CustomPaint (scene lighting, not UI fills).
+class EcDepthScenePainter extends CustomPainter {
+  const EcDepthScenePainter({required this.isDark});
+
+  final bool isDark;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    if (isDark) {
+      // Blob 1 — violet, top-right (large)
+      _blob(canvas, size,
+          center: Offset(w * 0.90, h * 0.08),
+          radius: w * 0.88,
+          color: EcTokens.auroraViolet,
+          opacity: 0.30);
+      // Blob 2 — mint, bottom-left (medium)
+      _blob(canvas, size,
+          center: Offset(w * 0.05, h * 0.84),
+          radius: w * 0.62,
+          color: EcTokens.auroraMint,
+          opacity: 0.20);
+      // Blob 3 — sky, mid-right (small accent)
+      _blob(canvas, size,
+          center: Offset(w * 0.96, h * 0.52),
+          radius: w * 0.42,
+          color: EcTokens.auroraBlue,
+          opacity: 0.16);
+    } else {
+      // Light mode — subtler blobs
+      _blob(canvas, size,
+          center: Offset(w * 0.88, h * 0.06),
+          radius: w * 0.80,
+          color: EcTokens.auroraViolet,
+          opacity: 0.09);
+      _blob(canvas, size,
+          center: Offset(w * 0.06, h * 0.82),
+          radius: w * 0.58,
+          color: EcTokens.auroraMint,
+          opacity: 0.07);
+      _blob(canvas, size,
+          center: Offset(w * 0.94, h * 0.50),
+          radius: w * 0.38,
+          color: EcTokens.auroraBlue,
+          opacity: 0.06);
+    }
+  }
+
+  void _blob(
+    Canvas canvas,
+    Size size, {
+    required Offset center,
+    required double radius,
+    required Color color,
+    required double opacity,
+  }) {
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    final paint = Paint()
+      ..blendMode = BlendMode.plus
+      ..shader = RadialGradient(
+        colors: [
+          color.withValues(alpha: opacity),
+          color.withValues(alpha: opacity * 0.28),
+          color.withValues(alpha: 0),
+        ],
+        stops: const [0.0, 0.48, 1.0],
+      ).createShader(rect);
+    canvas.drawRect(Offset.zero & size, paint);
+  }
+
+  @override
+  bool shouldRepaint(EcDepthScenePainter old) => old.isDark != isDark;
+}
+
+/// Legacy background kept for onboarding / auth screens. Do not use post-auth.
+class EcLiquidBackground extends StatelessWidget {
+  const EcLiquidBackground({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => EcVoidBackground(child: child);
+}
+
 /// Animated liquid-aurora background for hero surfaces (onboarding / auth).
-///
-/// Slowly drifts several luminous orbs over the base field. Pass [colors] to
-/// tint the aurora to a feature's palette; the orbs cross-fade when [colors]
-/// changes, so callers can shift the mood per page.
 class EcAuroraBackground extends StatefulWidget {
   const EcAuroraBackground({
     super.key,
@@ -101,14 +173,8 @@ class _EcAuroraBackgroundState extends State<EcAuroraBackground>
           EcTokens.auroraIndigo,
           EcTokens.auroraDeep,
         ];
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: isDark ? EcTokens.bgRampDark : EcTokens.bgRampLight,
-        ),
-      ),
+    return ColoredBox(
+      color: isDark ? EcTokens.bgVoid : EcTokens.bgVoidLight,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -129,29 +195,6 @@ class _EcAuroraBackgroundState extends State<EcAuroraBackground>
               ),
             ),
           ),
-          if (widget.scrim)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: isDark
-                          ? [
-                              const Color(0xFF05060D).withValues(alpha: 0.0),
-                              const Color(0xFF05060D).withValues(alpha: 0.35),
-                            ]
-                          : [
-                              Colors.white.withValues(alpha: 0.0),
-                              Colors.white.withValues(alpha: 0.22),
-                            ],
-                      stops: const [0.55, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-            ),
           widget.child,
         ],
       ),
@@ -159,8 +202,7 @@ class _EcAuroraBackgroundState extends State<EcAuroraBackground>
   }
 }
 
-/// Paints soft, luminous aurora orbs. Reused by the static backdrop and the
-/// animated [EcAuroraBackground].
+/// Paints soft, luminous aurora orbs. Used by [EcAuroraBackground].
 class EcAuroraPainter extends CustomPainter {
   const EcAuroraPainter({
     required this.t,
@@ -170,16 +212,12 @@ class EcAuroraPainter extends CustomPainter {
     this.pan = 0,
   });
 
-  /// Looping phase in 0..1.
   final double t;
   final bool isDark;
   final List<Color> colors;
   final double intensity;
-
-  /// Horizontal parallax in "page" units; orbs pan as the user advances.
   final double pan;
 
-  // Relative center (x, y), radius factor, drift amount, color index, phase.
   static const _orbs = <List<double>>[
     [0.84, 0.04, 1.05, 0.06, 0, 0.0],
     [0.10, 0.26, 0.92, 0.05, 1, 1.7],
@@ -198,7 +236,6 @@ class EcAuroraPainter extends CustomPainter {
     for (var i = 0; i < _orbs.length; i++) {
       final o = _orbs[i];
       final phase = (t * 2 * math.pi) + o[5];
-      // Each orb pans a slightly different amount → layered depth as you swipe.
       final parallax = pan * w * (0.05 + 0.03 * (i.isEven ? 1 : -1));
       final cx = (o[0] + o[3] * math.sin(phase)) * w - parallax;
       final cy = (o[1] + o[3] * 0.8 * math.cos(phase * 0.85)) * h;
@@ -228,9 +265,15 @@ class EcAuroraPainter extends CustomPainter {
       old.colors != colors;
 }
 
-enum EcGlassVariant { regular, elevated, tinted, subtle }
+// ─────────────────────────────────────────────────────── Glass surfaces ──
 
-/// Frosted glass surface with specular border and depth shadow.
+enum EcGlassVariant { regular, elevated, tinted, subtle, float }
+
+/// Neutral frosted glass surface with specular edge highlights and depth shadow.
+///
+/// Glass is intentionally colorless — its appearance is determined by the
+/// ambient depth blobs painted behind it via [EcVoidBackground]. The [tint]
+/// param adds a very subtle semantic color overlay (e.g. sent messages).
 class EcGlassSurface extends StatelessWidget {
   const EcGlassSurface({
     super.key,
@@ -258,19 +301,24 @@ class EcGlassSurface extends StatelessWidget {
     final glass = EcGlass.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final fill = switch (variant) {
-      EcGlassVariant.elevated => glass.fillElevated,
-      EcGlassVariant.tinted => (tint ?? glass.tintBrand).withValues(
-        alpha: isDark ? 0.18 : 0.14,
+    final (fill, effectiveBlur) = switch (variant) {
+      EcGlassVariant.elevated => (glass.fillElevated, EcTokens.glassBlurZ3),
+      EcGlassVariant.float => (glass.fillFloat, EcTokens.glassBlurZ4),
+      EcGlassVariant.subtle => (glass.fillSubtle, EcTokens.glassBlurZ2 * 0.6),
+      EcGlassVariant.tinted => (
+        (tint ?? glass.tintBrand).withValues(
+          alpha: isDark ? 0.16 : 0.12,
+        ),
+        EcTokens.glassBlurZ2,
       ),
-      EcGlassVariant.subtle => glass.fillSubtle,
-      EcGlassVariant.regular => glass.fill,
+      EcGlassVariant.regular => (glass.fill, blur),
     };
 
-    final isElevated = variant == EcGlassVariant.elevated;
+    final isElevated = variant == EcGlassVariant.elevated ||
+        variant == EcGlassVariant.float;
     final shadowOpacity = isElevated
-        ? (isDark ? 0.42 : 0.20)
-        : (isDark ? 0.24 : 0.12);
+        ? (isDark ? 0.46 : 0.18)
+        : (isDark ? 0.28 : 0.10);
 
     Widget surface = Container(
       margin: margin,
@@ -279,42 +327,59 @@ class EcGlassSurface extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: glass.shadowColor.withValues(alpha: shadowOpacity),
-            blurRadius: isElevated ? 40 : 22,
-            spreadRadius: isElevated ? -12 : -8,
-            offset: Offset(0, isElevated ? 22 : 12),
+            blurRadius: isElevated ? 44 : 22,
+            spreadRadius: isElevated ? -14 : -6,
+            offset: Offset(0, isElevated ? 24 : 10),
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+          filter: ImageFilter.blur(
+            sigmaX: effectiveBlur,
+            sigmaY: effectiveBlur,
+          ),
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(color: glass.border, width: 1),
+              border: Border.all(
+                color: glass.border,
+                width: 0.8,
+              ),
               color: fill,
             ),
             child: Stack(
               children: [
-                // Specular sheen — a soft top-left highlight that reads as a
-                // light catch on the glass.
-                Positioned.fill(
+                // Specular top-edge — 1px white line (directional light catch)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  height: 1,
                   child: IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(borderRadius),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            glass.highlight
-                                .withValues(alpha: isDark ? 0.10 : 0.45),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.0, 0.5],
-                        ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(borderRadius),
+                        topRight: Radius.circular(borderRadius),
                       ),
+                      child: ColoredBox(color: glass.specularTop),
+                    ),
+                  ),
+                ),
+                // Specular left-edge — 0.5px white line
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 0.5,
+                  child: IgnorePointer(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(borderRadius),
+                        bottomLeft: Radius.circular(borderRadius),
+                      ),
+                      child: ColoredBox(color: glass.specularSide),
                     ),
                   ),
                 ),
@@ -335,8 +400,8 @@ class EcGlassSurface extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(borderRadius),
-          splashColor: glass.tintBrand.withValues(alpha: 0.12),
-          highlightColor: glass.tintBrand.withValues(alpha: 0.06),
+          splashColor: Colors.white.withValues(alpha: 0.08),
+          highlightColor: Colors.white.withValues(alpha: 0.04),
           child: surface,
         ),
       );
@@ -346,79 +411,294 @@ class EcGlassSurface extends StatelessWidget {
   }
 }
 
-/// Frosted top bar — use inside tab pages or via [EcAppBar] on full screens.
-class EcGlassHeader extends StatelessWidget {
-  const EcGlassHeader({
-    super.key,
-    required this.title,
-    this.actions,
-    this.showEmergency = true,
-    this.showBack = false,
+// ─────────────────────────────────────────────────────── Navigation ──
+
+/// Navigation destination descriptor for [EcFloatingNav].
+class EcGlassNavDestination {
+  const EcGlassNavDestination({
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
   });
 
-  final String title;
-  final List<Widget>? actions;
-  final bool showEmergency;
-  final bool showBack;
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+}
 
-  static double heightOf(BuildContext context) =>
-      MediaQuery.paddingOf(context).top + kToolbarHeight;
+/// Floating glass pill navigation bar — detached from screen edges.
+///
+/// Renders 4 tab destinations with a spring-animated solid-white indicator.
+/// An elevated glass orb + button sits centered above the pill for quick-add.
+///
+/// Use with [EcGlassScaffold] `extendBody: true` so scroll content slides
+/// underneath. Each screen is responsible for its own bottom scroll padding
+/// via [kEcNavBottomPadding].
+class EcFloatingNav extends StatelessWidget {
+  const EcFloatingNav({
+    super.key,
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.destinations,
+    this.onAdd,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  final List<EcGlassNavDestination> destinations;
+  final VoidCallback? onAdd;
+
+  static const double _pillHeight = 64.0;
+  static const double _orbDiameter = 52.0;
+  static const double _orbRise = 18.0; // how far orb sits above pill top
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.paddingOf(context).bottom;
+    final hasAdd = onAdd != null;
+    final totalHeight = _pillHeight + bottom + 16 + (hasAdd ? _orbRise : 0);
+
+    return SizedBox(
+      height: totalHeight,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Glass pill
+          Positioned(
+            left: 24,
+            right: 24,
+            bottom: bottom + 12,
+            height: _pillHeight,
+            child: _FloatingPill(
+              selectedIndex: selectedIndex,
+              onSelected: onSelected,
+              destinations: destinations,
+            ),
+          ),
+          // + orb
+          if (hasAdd)
+            Positioned(
+              bottom: bottom + 12 + _pillHeight - (_orbDiameter / 2) + _orbRise,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: _AddOrb(onTap: onAdd!),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FloatingPill extends StatelessWidget {
+  const _FloatingPill({
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.destinations,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  final List<EcGlassNavDestination> destinations;
 
   @override
   Widget build(BuildContext context) {
     final glass = EcGlass.of(context);
-    final top = MediaQuery.paddingOf(context).top;
+    final ec = EcColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: glass.navFill.withValues(alpha: isDark(context) ? 0.84 : 0.72),
-        border: Border(
-          bottom: BorderSide(color: glass.border.withValues(alpha: 0.55)),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(EcTokens.radiusGlass),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: EcTokens.glassBlurZ4,
+          sigmaY: EcTokens.glassBlurZ4,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: glass.fillFloat,
+            borderRadius: BorderRadius.circular(EcTokens.radiusGlass),
+            border: Border.all(color: glass.borderStrong, width: 0.8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.50 : 0.14),
+                blurRadius: 40,
+                spreadRadius: -8,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Specular top edge
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                height: 1,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(EcTokens.radiusGlass),
+                    topRight: Radius.circular(EcTokens.radiusGlass),
+                  ),
+                  child: ColoredBox(color: glass.specularTop),
+                ),
+              ),
+              // Tab items
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final itemWidth =
+                      constraints.maxWidth / destinations.length;
+                  return SizedBox(
+                    height: double.infinity,
+                    child: Stack(
+                      children: [
+                        // Animated indicator capsule (solid white, no gradient)
+                        AnimatedPositioned(
+                          duration: EcTokens.motionBase,
+                          curve: Curves.easeOutBack,
+                          left: itemWidth * selectedIndex + 8,
+                          width: itemWidth - 16,
+                          top: 8,
+                          bottom: 8,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.circular(EcTokens.radiusXl),
+                              color: Colors.white.withValues(
+                                alpha: isDark ? 0.12 : 0.60,
+                              ),
+                              border: Border.all(
+                                color: glass.borderStrong,
+                                width: 0.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Tab items
+                        Row(
+                          children: List.generate(destinations.length, (i) {
+                            final d = destinations[i];
+                            final selected = i == selectedIndex;
+                            return Expanded(
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => onSelected(i),
+                                  borderRadius: BorderRadius.circular(
+                                    EcTokens.radiusXl,
+                                  ),
+                                  splashColor:
+                                      Colors.white.withValues(alpha: 0.06),
+                                  highlightColor: Colors.transparent,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      AnimatedSwitcher(
+                                        duration: EcTokens.motionFast,
+                                        child: Icon(
+                                          selected
+                                              ? d.selectedIcon
+                                              : d.icon,
+                                          key: ValueKey(selected),
+                                          size: selected ? 24 : 22,
+                                          color: selected
+                                              ? (isDark
+                                                  ? Colors.white
+                                                  : ec.accentBrand)
+                                              : ec.textMuted,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      AnimatedDefaultTextStyle(
+                                        duration: EcTokens.motionFast,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: selected
+                                              ? FontWeight.w700
+                                              : FontWeight.w500,
+                                          color: selected
+                                              ? (isDark
+                                                  ? Colors.white
+                                                  : ec.accentBrand)
+                                              : ec.textMuted,
+                                          letterSpacing: -0.1,
+                                          fontFamily: EcTokens.fontFamily,
+                                        ),
+                                        child: Text(d.label),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
-      child: ClipRect(
+    );
+  }
+}
+
+class _AddOrb extends StatelessWidget {
+  const _AddOrb({required this.onTap});
+
+  final VoidCallback onTap;
+
+  static const double _size = EcFloatingNav._orbDiameter;
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: _size,
+      height: _size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: ec.accentBrand.withValues(alpha: isDark ? 0.50 : 0.30),
+            blurRadius: 28,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipOval(
         child: BackdropFilter(
           filter: ImageFilter.blur(
-            sigmaX: EcTokens.glassBlurLight,
-            sigmaY: EcTokens.glassBlurLight,
+            sigmaX: EcTokens.glassBlurZ4,
+            sigmaY: EcTokens.glassBlurZ4,
           ),
-          child: Padding(
-            padding: EdgeInsets.only(top: top),
-            child: SizedBox(
-              height: kToolbarHeight + 6,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: NavigationToolbar(
-                  leading: showBack
-                      ? IconButton(
-                          icon: const Icon(Icons.arrow_back_rounded),
-                          onPressed: () => Navigator.maybePop(context),
-                        )
-                      : const SizedBox(width: 8),
-                  middle: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      title,
-                      style:
-                          Theme.of(context).appBarTheme.titleTextStyle ??
-                          Theme.of(context).textTheme.titleLarge,
-                    ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              splashColor: Colors.white.withValues(alpha: 0.18),
+              highlightColor: Colors.transparent,
+              child: Ink(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: ec.accentBrand,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.30),
+                    width: 1.2,
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ...?actions,
-                      if (showEmergency)
-                        IconButton.filledTonal(
-                          icon: const Icon(
-                            Icons.emergency_rounded,
-                            color: EcTokens.statusCritical,
-                          ),
-                          tooltip: 'Emergency',
-                          onPressed: () => context.push('/emergency'),
-                        ),
-                    ],
-                  ),
+                ),
+                child: const Icon(
+                  Icons.add_rounded,
+                  color: Colors.white,
+                  size: 26,
                 ),
               ),
             ),
@@ -429,35 +709,46 @@ class EcGlassHeader extends StatelessWidget {
   }
 }
 
-bool isDark(BuildContext context) =>
-    Theme.of(context).brightness == Brightness.dark;
-
-/// Tab content below the shell nav — no nested scaffold.
-class EcTabPage extends StatelessWidget {
-  const EcTabPage({
+/// Legacy bottom nav — preserved for caregiver shell (3 tabs, no add button).
+/// For the patient shell, prefer [EcFloatingNav].
+class EcGlassBottomNav extends StatelessWidget {
+  const EcGlassBottomNav({
     super.key,
-    required this.title,
-    required this.body,
-    this.showEmergency = true,
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.destinations,
   });
 
-  final String title;
-  final Widget body;
-  final bool showEmergency;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  final List<EcGlassNavDestination> destinations;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        EcGlassHeader(title: title, showEmergency: showEmergency),
-        Expanded(child: body),
-      ],
+    return EcFloatingNav(
+      selectedIndex: selectedIndex,
+      onSelected: onSelected,
+      destinations: destinations,
     );
   }
 }
 
-/// Scaffold with liquid background and optional frosted app bar slot.
+// ─────────────────────────────────────────────────── Layout scaffolds ──
+
+bool isDark(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+/// Standard padding at the top of a tab-page list.
+const kEcGlassTabPadding = EdgeInsets.fromLTRB(16, 8, 16, 16);
+
+/// Standard padding for full-screen scrollable lists (accounts for floating nav).
+const kEcGlassListPadding = EdgeInsets.fromLTRB(16, 8, 16, 24);
+
+/// Bottom clearance for the floating nav (use as ListView bottom padding).
+const kEcNavBottomPadding = 104.0;
+
+/// Scaffold with transparent background. Set [extendBody] true when using
+/// [EcFloatingNav] so content scrolls behind the nav.
 class EcGlassScaffold extends StatelessWidget {
   const EcGlassScaffold({
     super.key,
@@ -493,73 +784,79 @@ class EcGlassScaffold extends StatelessWidget {
   }
 }
 
-/// Frosted bottom navigation bar wrapper.
-class EcGlassNavBar extends StatelessWidget {
-  const EcGlassNavBar({super.key, required this.child});
+/// Header for full-screen pushed routes (not tabs).
+class EcGlassHeader extends StatelessWidget {
+  const EcGlassHeader({
+    super.key,
+    required this.title,
+    this.actions,
+    this.showEmergency = true,
+    this.showBack = false,
+  });
 
-  final Widget child;
+  final String title;
+  final List<Widget>? actions;
+  final bool showEmergency;
+  final bool showBack;
+
+  static double heightOf(BuildContext context) =>
+      MediaQuery.paddingOf(context).top + kToolbarHeight;
 
   @override
   Widget build(BuildContext context) {
     final glass = EcGlass.of(context);
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: EcTokens.glassBlurHeavy,
-          sigmaY: EcTokens.glassBlurHeavy,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: glass.navFill,
-            border: Border(top: BorderSide(color: glass.border)),
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
+    final top = MediaQuery.paddingOf(context).top;
 
-/// Premium glass FAB with solid brand fill.
-class EcGlassFab extends StatelessWidget {
-  const EcGlassFab({super.key, required this.onPressed, required this.icon});
-
-  final VoidCallback onPressed;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: ec.accentBrand.withValues(alpha: 0.35),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: glass.navFill,
+        border: Border(
+          bottom: BorderSide(color: glass.border),
+        ),
       ),
-      child: ClipOval(
+      child: ClipRect(
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onPressed,
-              child: Ink(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: ec.accentBrand,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.35),
-                    width: 1.5,
+          filter: ImageFilter.blur(
+            sigmaX: EcTokens.glassBlurZ3,
+            sigmaY: EcTokens.glassBlurZ3,
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(top: top),
+            child: SizedBox(
+              height: kToolbarHeight + 6,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: NavigationToolbar(
+                  leading: showBack
+                      ? IconButton(
+                          icon: const Icon(Icons.arrow_back_rounded),
+                          onPressed: () => Navigator.maybePop(context),
+                        )
+                      : const SizedBox(width: 8),
+                  middle: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      title,
+                      style: Theme.of(context).appBarTheme.titleTextStyle ??
+                          Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...?actions,
+                      if (showEmergency)
+                        IconButton.filledTonal(
+                          icon: const Icon(
+                            Icons.emergency_rounded,
+                            color: EcTokens.statusCritical,
+                          ),
+                          tooltip: 'Emergency',
+                          onPressed: () => context.push('/emergency'),
+                        ),
+                    ],
                   ),
                 ),
-                child: Icon(icon, color: Colors.white, size: 28),
               ),
             ),
           ),
@@ -569,50 +866,29 @@ class EcGlassFab extends StatelessWidget {
   }
 }
 
-/// Glass action chip for quick actions.
-class EcGlassChip extends StatelessWidget {
-  const EcGlassChip({
+/// Tab content wrapper — headerless for new immersive screens.
+/// Screens manage their own header treatment inline.
+class EcTabPage extends StatelessWidget {
+  const EcTabPage({
     super.key,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.tint,
+    required this.title,
+    required this.body,
+    this.showEmergency = true,
   });
 
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final Color? tint;
+  final String title;
+  final Widget body;
+  final bool showEmergency;
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final color = tint ?? ec.accentBrand;
-    return EcGlassSurface(
-      onTap: onTap,
-      variant: EcGlassVariant.regular,
-      borderRadius: EcTokens.radiusHero,
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
+    return body;
   }
 }
 
-/// Primary CTA with glass sheen overlay.
+// ─────────────────────────────────────────────── Buttons & interactive ──
+
+/// Primary CTA — solid brand fill, no gradient.
 class EcGlassButton extends StatelessWidget {
   const EcGlassButton({
     super.key,
@@ -648,14 +924,14 @@ class EcGlassButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null) ...[
-                  Icon(icon, size: 22),
+                  Icon(icon, size: 20),
                   const SizedBox(width: 8),
                 ],
                 Text(
                   label,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -670,16 +946,20 @@ class EcGlassButton extends StatelessWidget {
       child: InkWell(
         onTap: loading ? null : onPressed,
         borderRadius: radius,
+        splashColor: Colors.white.withValues(alpha: 0.18),
+        highlightColor: Colors.transparent,
         child: Ink(
           height: 52,
           decoration: BoxDecoration(
             borderRadius: radius,
             color: ec.accentBrand,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.22),
+            ),
             boxShadow: [
               BoxShadow(
-                color: ec.accentBrand.withValues(alpha: 0.30),
-                blurRadius: 20,
+                color: ec.accentBrand.withValues(alpha: 0.32),
+                blurRadius: 22,
                 offset: const Offset(0, 6),
               ),
             ],
@@ -698,7 +978,7 @@ class EcGlassButton extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (icon != null) ...[
-                        Icon(icon, color: Colors.white, size: 22),
+                        Icon(icon, color: Colors.white, size: 20),
                         const SizedBox(width: 8),
                       ],
                       Text(
@@ -719,9 +999,8 @@ class EcGlassButton extends StatelessWidget {
   }
 }
 
-/// Premium gradient call-to-action — refined single-hue fill, soft outer glow,
-/// a glass rim, a slow specular light-sweep and tactile press feedback. The
-/// hero button of the design language.
+/// Large solid-color CTA — used for primary actions on onboarding/auth.
+/// Kept for backward compatibility with auth screens.
 class EcGradientButton extends StatefulWidget {
   const EcGradientButton({
     super.key,
@@ -762,9 +1041,12 @@ class _EcGradientButtonState extends State<EcGradientButton>
 
   @override
   Widget build(BuildContext context) {
-    final colors = widget.gradient ?? EcTokens.gradientBrand;
-    final glowColor = widget.glow ?? colors[colors.length ~/ 2];
+    final ec = EcColors.of(context);
+    // Use solid brand color — no gradient fill — for the "gradient" button.
+    final primaryColor = ec.accentBrand;
+    final glowColor = widget.glow ?? primaryColor;
     final radius = BorderRadius.circular(EcTokens.radiusLg);
+
     return AnimatedScale(
       scale: _pressed ? 0.975 : 1,
       duration: EcTokens.motionFast,
@@ -776,13 +1058,13 @@ class _EcGradientButtonState extends State<EcGradientButton>
           borderRadius: radius,
           boxShadow: [
             BoxShadow(
-              color: glowColor.withValues(alpha: 0.46),
+              color: glowColor.withValues(alpha: 0.42),
               blurRadius: 40,
               spreadRadius: -8,
               offset: const Offset(0, 16),
             ),
             BoxShadow(
-              color: glowColor.withValues(alpha: 0.22),
+              color: glowColor.withValues(alpha: 0.20),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -799,121 +1081,51 @@ class _EcGradientButtonState extends State<EcGradientButton>
             child: Ink(
               decoration: BoxDecoration(
                 borderRadius: radius,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: colors,
-                ),
+                color: primaryColor,
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.26),
                   width: 1.2,
                 ),
               ),
-              child: ClipRRect(
-                borderRadius: radius,
-                child: SizedBox(
-                  height: widget.height,
-                  width: double.infinity,
-                  child: Stack(
-                    children: [
-                      // top sheen
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        top: 0,
-                        height: widget.height * 0.5,
-                        child: IgnorePointer(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.white.withValues(alpha: 0.22),
-                                  Colors.white.withValues(alpha: 0),
-                                ],
-                              ),
-                            ),
+              child: SizedBox(
+                height: widget.height,
+                width: double.infinity,
+                child: Center(
+                  child: widget.loading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.4,
+                            color: Colors.white,
                           ),
-                        ),
-                      ),
-                      // slow specular light-sweep
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: AnimatedBuilder(
-                            animation: _sweep,
-                            builder: (context, _) => LayoutBuilder(
-                              builder: (context, c) {
-                                final w = c.maxWidth;
-                                final x = (-0.4 + 1.8 * _sweep.value) * w;
-                                return Stack(
-                                  children: [
-                                    Positioned(
-                                      left: x,
-                                      top: 0,
-                                      bottom: 0,
-                                      width: w * 0.16,
-                                      child: Transform.rotate(
-                                        angle: 0.38,
-                                        child: DecoratedBox(
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                Colors.white.withValues(alpha: 0),
-                                                Colors.white.withValues(alpha: 0.20),
-                                                Colors.white.withValues(alpha: 0),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: widget.loading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.4,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 18),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        widget.label,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
-                                          letterSpacing: -0.3,
-                                        ),
-                                      ),
-                                      if (widget.icon != null) ...[
-                                        const SizedBox(width: 10),
-                                        Icon(widget.icon,
-                                            color: Colors.white, size: 20),
-                                      ],
-                                    ],
+                        )
+                      : Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 18),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  widget.label,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                    letterSpacing: -0.3,
                                   ),
                                 ),
-                              ),
-                      ),
-                    ],
-                  ),
+                                if (widget.icon != null) ...[
+                                  const SizedBox(width: 10),
+                                  Icon(widget.icon,
+                                      color: Colors.white, size: 20),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -924,218 +1136,44 @@ class _EcGradientButtonState extends State<EcGradientButton>
   }
 }
 
-/// Staggered fade/slide entrance for glass lists.
-class EcGlassEntrance extends StatelessWidget {
-  const EcGlassEntrance({super.key, required this.index, required this.child});
-
-  final int index;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return child
-        .animate()
-        .fadeIn(
-          duration: 320.ms,
-          delay: (EcTokens.staggerItem.inMilliseconds * index).ms,
-        )
-        .slideY(
-          begin: 0.05,
-          end: 0,
-          curve: Curves.easeOutCubic,
-          delay: (EcTokens.staggerItem.inMilliseconds * index).ms,
-        );
-  }
-}
-
-/// Glass menu row used across profile, settings, and more screens.
-class EcGlassListTile extends StatelessWidget {
-  const EcGlassListTile({
+/// Glass action chip for quick horizontal actions.
+class EcGlassChip extends StatelessWidget {
+  const EcGlassChip({
     super.key,
     required this.icon,
-    required this.title,
-    this.subtitle,
-    this.trailing,
-    this.iconColor,
-    this.onTap,
+    required this.label,
+    required this.onTap,
+    this.tint,
   });
 
   final IconData icon;
-  final String title;
-  final String? subtitle;
-  final Widget? trailing;
-  final Color? iconColor;
-  final VoidCallback? onTap;
+  final String label;
+  final VoidCallback onTap;
+  final Color? tint;
 
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    final color = tint ?? ec.accentBrand;
     return EcGlassSurface(
       onTap: onTap,
       variant: EcGlassVariant.regular,
       borderRadius: EcTokens.radiusHero,
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              color: (iconColor ?? ec.accentBrand).withValues(alpha: 0.14),
-            ),
-            child: Icon(icon, color: iconColor ?? ec.accentBrand, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14.5,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle!,
-                    style: TextStyle(color: ec.textSecondary, fontSize: 12),
-                  ),
-                ],
-              ],
+          Icon(icon, size: 17, color: color),
+          const SizedBox(width: 7),
+          Text(
+            label,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
             ),
           ),
-          trailing ?? Icon(Icons.chevron_right_rounded, color: ec.textMuted),
         ],
-      ),
-    );
-  }
-}
-
-/// Navigation destination for [EcGlassBottomNav].
-class EcGlassNavDestination {
-  const EcGlassNavDestination({
-    required this.icon,
-    required this.selectedIcon,
-    required this.label,
-  });
-
-  final IconData icon;
-  final IconData selectedIcon;
-  final String label;
-}
-
-/// Custom bottom nav with animated glass pill indicator.
-class EcGlassBottomNav extends StatelessWidget {
-  const EcGlassBottomNav({
-    super.key,
-    required this.selectedIndex,
-    required this.onSelected,
-    required this.destinations,
-  });
-
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-  final List<EcGlassNavDestination> destinations;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final glass = EcGlass.of(context);
-
-    return EcGlassNavBar(
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 9, 12, 8),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final itemWidth = constraints.maxWidth / destinations.length;
-              return SizedBox(
-                height: 66,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    AnimatedPositioned(
-                      duration: EcTokens.motionBase,
-                      curve: Curves.easeOutCubic,
-                      left: itemWidth * selectedIndex + 6,
-                      width: itemWidth - 12,
-                      top: 4,
-                      bottom: 4,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(22),
-                          color: ec.accentBrand.withValues(alpha: 0.14),
-                          border: Border.all(
-                            color: glass.border.withValues(alpha: 0.7),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: ec.accentBrand.withValues(alpha: 0.12),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Row(
-                      children: List.generate(destinations.length, (i) {
-                        final d = destinations[i];
-                        final selected = i == selectedIndex;
-                        return Expanded(
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => onSelected(i),
-                              borderRadius: BorderRadius.circular(20),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  AnimatedSwitcher(
-                                    duration: EcTokens.motionFast,
-                                    child: Icon(
-                                      selected ? d.selectedIcon : d.icon,
-                                      key: ValueKey(selected),
-                                      size: selected ? 25 : 23,
-                                      color: selected
-                                          ? ec.accentBrand
-                                          : ec.textMuted,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  AnimatedDefaultTextStyle(
-                                    duration: EcTokens.motionFast,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: selected
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                      color: selected
-                                          ? ec.accentBrand
-                                          : ec.textMuted,
-                                      letterSpacing: -0.1,
-                                    ),
-                                    child: Text(d.label),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
       ),
     );
   }
@@ -1171,8 +1209,8 @@ class EcGlassDangerButton extends StatelessWidget {
             border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
             boxShadow: [
               BoxShadow(
-                color: EcTokens.statusCritical.withValues(alpha: 0.35),
-                blurRadius: 24,
+                color: EcTokens.statusCritical.withValues(alpha: 0.40),
+                blurRadius: 28,
                 offset: const Offset(0, 8),
               ),
             ],
@@ -1204,6 +1242,170 @@ class EcGlassDangerButton extends StatelessWidget {
                     ],
                   ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// FAB — solid brand circle.
+class EcGlassFab extends StatelessWidget {
+  const EcGlassFab({super.key, required this.onPressed, required this.icon});
+
+  final VoidCallback onPressed;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: ec.accentBrand.withValues(alpha: 0.38),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: ec.accentBrand,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 58,
+            height: 58,
+            child: Icon(icon, color: Colors.white, size: 27),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────── Motion / utility ──
+
+/// Staggered fade/slide entrance for glass lists.
+class EcGlassEntrance extends StatelessWidget {
+  const EcGlassEntrance({super.key, required this.index, required this.child});
+
+  final int index;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return child
+        .animate()
+        .fadeIn(
+          duration: 320.ms,
+          delay: (EcTokens.staggerItem.inMilliseconds * index).ms,
+        )
+        .slideY(
+          begin: 0.05,
+          end: 0,
+          curve: Curves.easeOutCubic,
+          delay: (EcTokens.staggerItem.inMilliseconds * index).ms,
+        );
+  }
+}
+
+/// Glass menu row — profile, settings, more screens.
+class EcGlassListTile extends StatelessWidget {
+  const EcGlassListTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.iconColor,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final Color? iconColor;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    final color = iconColor ?? ec.accentBrand;
+    return EcGlassSurface(
+      onTap: onTap,
+      variant: EcGlassVariant.regular,
+      borderRadius: EcTokens.radiusHero,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(13),
+              color: color.withValues(alpha: 0.14),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14.5,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: TextStyle(
+                      color: ec.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          trailing ?? Icon(Icons.chevron_right_rounded, color: ec.textMuted, size: 18),
+        ],
+      ),
+    );
+  }
+}
+
+/// Frosted nav bar wrapper (legacy — for non-floating usage).
+class EcGlassNavBar extends StatelessWidget {
+  const EcGlassNavBar({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final glass = EcGlass.of(context);
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: EcTokens.glassBlurZ4,
+          sigmaY: EcTokens.glassBlurZ4,
+        ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: glass.navFill,
+            border: Border(top: BorderSide(color: glass.border)),
+          ),
+          child: child,
         ),
       ),
     );
@@ -1243,12 +1445,6 @@ Future<T?> showEcGlassDialog<T>({
   );
 }
 
-/// Standard scroll padding above bottom nav.
-const kEcGlassListPadding = EdgeInsets.fromLTRB(16, 8, 16, 24);
-
-/// List padding for screens inside the bottom tab shell (nav is outside).
-const kEcGlassTabPadding = EdgeInsets.fromLTRB(16, 12, 16, 16);
-
 /// Frosted modal bottom sheet.
 Future<T?> showEcGlassSheet<T>(
   BuildContext context, {
@@ -1262,7 +1458,7 @@ Future<T?> showEcGlassSheet<T>(
       return Padding(
         padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         child: EcGlassSurface(
-          variant: EcGlassVariant.elevated,
+          variant: EcGlassVariant.float,
           borderRadius: EcTokens.radiusHero,
           padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
           child: SafeArea(
@@ -1272,7 +1468,7 @@ Future<T?> showEcGlassSheet<T>(
                 Container(
                   width: 36,
                   height: 4,
-                  margin: const EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: 14),
                   decoration: BoxDecoration(
                     color: EcGlass.of(ctx).border,
                     borderRadius: BorderRadius.circular(2),
