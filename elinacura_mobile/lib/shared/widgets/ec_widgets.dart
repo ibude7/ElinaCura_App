@@ -1244,12 +1244,3 @@ class EcAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-BoxDecoration _headerDecoration(BuildContext context) {
-  final glass = EcGlass.of(context);
-  return BoxDecoration(
-    color: glass.navFill,
-    border: Border(
-      bottom: BorderSide(color: glass.border),
-    ),
-  );
-}

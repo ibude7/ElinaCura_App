@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -120,13 +122,13 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen> {
       );
       return;
     }
-    EcHaptics.lightTap();
+    unawaited(EcHaptics.lightTap());
     setState(() => _listening = true);
     await _speech.listen(
       onResult: (r) {
         _controller.text = r.recognizedWords;
         if (r.finalResult) {
-          _resolve(r.recognizedWords);
+          unawaited(_resolve(r.recognizedWords));
         }
       },
       onSoundLevelChange: (l) {
@@ -159,16 +161,16 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen> {
         answer = result.displayReply;
         intent = result.intent;
         if (result.intent == 'log_medication') {
-          if (mounted) context.push('/reminders');
+          if (mounted) unawaited(context.push('/reminders'));
         } else if (result.intent == 'weekly_digest') {
-          if (mounted) context.push('/digest');
+          if (mounted) unawaited(context.push('/digest'));
         }
       } catch (_) {}
     }
 
     await Future<void>.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
-    EcHaptics.doseConfirmed();
+    unawaited(EcHaptics.doseConfirmed());
     setState(() {
       _turns = [..._turns, _VoiceTurn(question: text, answer: answer, intent: intent)];
       _processing = false;

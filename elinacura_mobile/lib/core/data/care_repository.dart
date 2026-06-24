@@ -5,14 +5,12 @@ import '../../core/domain/api_result.dart';
 import '../api/api_client.dart';
 import '../auth/auth_providers.dart';
 import 'engagement_repository.dart';
-import 'health_repository.dart';
 
 /// Unified care data — timeline events, rhythm, inbox items.
 class CareRepository {
-  CareRepository(this._api, this._health, this._engagement);
+  CareRepository(this._api, this._engagement);
 
   final ApiClient _api;
-  final HealthRepository _health;
   final EngagementRepository _engagement;
 
   Future<ApiResult<List<CareTimelineEvent>>> getTimeline(String profileId) async {
@@ -121,7 +119,6 @@ class CareInboxItem {
 final careRepositoryProvider = Provider<CareRepository>((ref) {
   return CareRepository(
     ref.watch(apiClientProvider),
-    ref.watch(healthRepositoryProvider),
     ref.watch(engagementRepositoryProvider),
   );
 });

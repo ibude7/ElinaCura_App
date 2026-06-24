@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 import 'dart:ui' show PointMode;
@@ -440,7 +441,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           _passwordController.text,
         );
       }
-      _routeAfterAuth();
+      unawaited(_routeAfterAuth());
     } catch (e) {
       if (mounted) setState(() => _error = _pretty(e));
     } finally {
@@ -456,7 +457,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     });
     try {
       await ref.read(authServiceProvider).signInWithGoogle();
-      _routeAfterAuth();
+      unawaited(_routeAfterAuth());
     } catch (e) {
       if (mounted) setState(() => _error = _pretty(e));
     } finally {
@@ -471,7 +472,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     });
     try {
       await ref.read(authServiceProvider).signInAnonymously();
-      _routeAfterAuth();
+      unawaited(_routeAfterAuth());
     } catch (e) {
       if (mounted) setState(() => _error = _pretty(e));
     } finally {
@@ -487,7 +488,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     });
     try {
       await ref.read(authServiceProvider).signInWithApple();
-      _routeAfterAuth();
+      unawaited(_routeAfterAuth());
     } on SignInWithAppleAuthorizationException catch (e) {
       if (e.code != AuthorizationErrorCode.canceled && mounted) {
         setState(() => _error = e.message);
