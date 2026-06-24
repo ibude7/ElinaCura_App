@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/auth/auth_providers.dart';
@@ -64,7 +65,7 @@ class _EmergencyBody extends StatelessWidget {
       children: [
         EcGlassEntrance(
           index: 0,
-          child: _SOSButton(),
+          child: _SOSButton(profile: profile),
         ),
         const SizedBox(height: 12),
         Text(
@@ -167,6 +168,10 @@ class _EmergencyBody extends StatelessWidget {
 }
 
 class _SOSButton extends StatelessWidget {
+  const _SOSButton({this.profile});
+
+  final HealthProfile? profile;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -187,6 +192,12 @@ class _SOSButton extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           EcGlassButton(
+            label: 'Send emergency brief',
+            icon: Icons.contact_emergency_rounded,
+            onPressed: () => _sendBrief(context),
+          ),
+          const SizedBox(height: 12),
+          EcGlassButton(
             label: l10n.emergencyTextServices,
             icon: Icons.message_rounded,
             outlined: true,
@@ -196,6 +207,56 @@ class _SOSButton extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _sendBrief(BuildContext context) async {
+    await EcHaptics.safetyFlag();
+    final brief = composeEmergencyBrief(profile);
+    String? phone;
+    for (final c in profile?.emergencyContacts ?? const <EmergencyContact>[]) {
+      if (c.phone != null && c.phone!.isNotEmpty) {
+        phone = c.phone;
+        break;
+      }
+    }
+    final smsUri = Uri(
+      scheme: 'sms',
+      path: phone ?? '',
+      queryParameters: {'body': brief},
+    );
+    try {
+      final ok = await launchUrl(smsUri);
+      if (!ok) {
+        await Share.share(brief, subject: 'Emergency medical brief');
+      }
+    } catch (_) {
+      await Share.share(brief, subject: 'Emergency medical brief');
+    }
+  }
+}
+
+/// Builds an EMT-ready one-message brief from the user's medical profile.
+String composeEmergencyBrief(HealthProfile? profile) {
+  final b = StringBuffer('EMERGENCY MEDICAL BRIEF\n');
+  b.writeln('Name: ${profile?.name ?? 'Unknown'}');
+  if (profile?.bloodType != null) b.writeln('Blood type: ${profile!.bloodType}');
+  if (profile?.allergies.isNotEmpty ?? false) {
+    b.writeln('Allergies: ${profile!.allergies.join(', ')}');
+  }
+  if (profile?.conditions.isNotEmpty ?? false) {
+    b.writeln('Conditions: ${profile!.conditions.join(', ')}');
+  }
+  if (profile?.medications.isNotEmpty ?? false) {
+    b.writeln('Medications: ${profile!.medications.take(8).join(', ')}');
+  }
+  final contacts = profile?.emergencyContacts ?? const <EmergencyContact>[];
+  if (contacts.isNotEmpty) {
+    final list = contacts
+        .map((c) => '${c.name}${c.phone != null ? ' (${c.phone})' : ''}')
+        .join('; ');
+    b.writeln('Emergency contacts: $list');
+  }
+  b.write('— Sent via ElinaCura');
+  return b.toString();
 }
 
 class _MedIdRow extends StatelessWidget {

@@ -28,9 +28,9 @@ class EcTheme {
     const scheme = ColorScheme.dark(
       primary: EcTokens.accentBrandDark,
       onPrimary: EcTokens.onAccentDark,
-      secondary: EcTokens.categoryActivity,
-      onSecondary: Colors.white,
-      tertiary: EcTokens.categorySleep,
+      secondary: EcTokens.accentJade,
+      onSecondary: EcTokens.onAccentDark,
+      tertiary: EcTokens.accentGold,
       surface: EcTokens.bgVoid,
       onSurface: EcTokens.textPrimaryDark,
       surfaceContainerHighest: EcTokens.bgCardDark,
@@ -44,50 +44,63 @@ class EcTheme {
     final primary = brightness == Brightness.dark
         ? EcTokens.textPrimaryDark
         : EcTokens.textPrimaryLight;
+    const display = EcTokens.fontFamilyDisplay;
+    const ui = EcTokens.fontFamily;
     return TextTheme(
       displayLarge: TextStyle(
+        fontFamily: display,
         fontSize: 46, fontWeight: FontWeight.w800,
         letterSpacing: -1.8, color: primary, height: 1.0,
       ),
       displayMedium: TextStyle(
+        fontFamily: display,
         fontSize: 37, fontWeight: FontWeight.w800,
         letterSpacing: -1.3, color: primary, height: 1.04,
       ),
       displaySmall: TextStyle(
-        fontSize: 30, fontWeight: FontWeight.w800,
+        fontFamily: display,
+        fontSize: 30, fontWeight: FontWeight.w700,
         letterSpacing: -1.0, color: primary, height: 1.08,
       ),
       headlineLarge: TextStyle(
-        fontSize: 28, fontWeight: FontWeight.w800,
+        fontFamily: display,
+        fontSize: 28, fontWeight: FontWeight.w700,
         letterSpacing: -1.0, color: primary, height: 1.10,
       ),
       headlineMedium: TextStyle(
-        fontSize: 22, fontWeight: FontWeight.w800,
+        fontFamily: display,
+        fontSize: 22, fontWeight: FontWeight.w700,
         letterSpacing: -0.7, color: primary, height: 1.16,
       ),
       headlineSmall: TextStyle(
-        fontSize: 19, fontWeight: FontWeight.w700,
+        fontFamily: display,
+        fontSize: 19, fontWeight: FontWeight.w600,
         letterSpacing: -0.4, color: primary, height: 1.20,
       ),
       titleLarge: TextStyle(
+        fontFamily: ui,
         fontSize: 17, fontWeight: FontWeight.w700,
         letterSpacing: -0.3, color: primary,
       ),
       titleMedium: TextStyle(
+        fontFamily: ui,
         fontSize: 15, fontWeight: FontWeight.w600,
         letterSpacing: -0.2, color: primary,
       ),
       bodyLarge: TextStyle(
+        fontFamily: ui,
         fontSize: 16, fontWeight: FontWeight.w400, color: primary, height: 1.5,
       ),
       bodyMedium: TextStyle(
+        fontFamily: ui,
         fontSize: 14.5, fontWeight: FontWeight.w400, color: primary, height: 1.5,
       ),
       labelLarge: TextStyle(
+        fontFamily: ui,
         fontSize: 13.5, fontWeight: FontWeight.w600,
         letterSpacing: -0.1, color: primary,
       ),
-    ).apply(fontFamily: EcTokens.fontFamily);
+    );
   }
 
   static ThemeData _base(ColorScheme scheme, Brightness brightness) {
@@ -106,6 +119,16 @@ class EcTheme {
       cardColor: Colors.transparent,
       splashColor: accent.withValues(alpha: 0.08),
       highlightColor: accent.withValues(alpha: 0.04),
+      // Shared-axis Z page transitions — pages feel layered in 3D space.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
+          TargetPlatform.android: ZoomPageTransitionsBuilder(),
+          TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
+          TargetPlatform.windows: ZoomPageTransitionsBuilder(),
+          TargetPlatform.linux: ZoomPageTransitionsBuilder(),
+        },
+      ),
       textTheme: _textTheme(brightness),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -461,14 +484,14 @@ class EcGlass extends ThemeExtension<EcGlass> {
     shadowColor: const Color(0xFF4285F4),
   );
 
-  /// Dark mode: frosted glass on deep navy.
+  /// Dark mode: frosted glass on Chromatic Obsidian.
   static final EcGlass dark = EcGlass(
-    fill: Colors.white.withValues(alpha: EcTokens.glassZ2Opacity),
-    fillElevated: Colors.white.withValues(alpha: EcTokens.glassZ3Opacity),
-    fillSubtle: Colors.white.withValues(alpha: 0.04),
-    fillFloat: Colors.white.withValues(alpha: EcTokens.glassZ4Opacity),
+    fill: Colors.white.withValues(alpha: EcTokens.glassZ3Opacity), // Frosted Sheet 4%
+    fillElevated: Colors.white.withValues(alpha: EcTokens.glassZ4Opacity), // Deep Frost 6%
+    fillSubtle: Colors.white.withValues(alpha: EcTokens.glassZ2Opacity), // Micro Frost 3%
+    fillFloat: Colors.white.withValues(alpha: EcTokens.glassZ4Opacity), // Deep Frost 6%
     border: Colors.white.withValues(alpha: EcTokens.glassBorderOpacity),
-    borderStrong: Colors.white.withValues(alpha: 0.20),
+    borderStrong: Colors.white.withValues(alpha: 0.18),
     specularTop: Colors.white.withValues(alpha: EcTokens.glassSpecularTopOpacity),
     specularSide: Colors.white.withValues(alpha: EcTokens.glassSpecularSideOpacity),
     navFill: Colors.white.withValues(alpha: EcTokens.glassZ4Opacity),

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth/auth_providers.dart';
+import '../../core/data/audit_log.dart';
 import '../../core/theme/ec_tokens.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_screen_header.dart';
 import '../../shared/widgets/ec_widgets.dart';
+import 'caregiver_live_view.dart';
 
 /// Caregiver Command Center — alert feed, heatmap, proof gallery (Rec #43).
 class CaregiverCommandCenter extends ConsumerWidget {
@@ -14,8 +16,19 @@ class CaregiverCommandCenter extends ConsumerWidget {
 
   final String profileId;
 
+  static final Set<String> _viewLogged = {};
+
+  void _recordViewOnce(WidgetRef ref) {
+    if (_viewLogged.add(profileId)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(auditLogServiceProvider).recordCaregiverView(profileId);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    _recordViewOnce(ref);
     final dashboard = ref.watch(caregiverDashboardProvider(profileId));
 
     return dashboard.when(
@@ -45,6 +58,8 @@ class CaregiverCommandCenter extends ConsumerWidget {
               color: EcTokens.categoryNutrition,
             ),
           ),
+          const SizedBox(height: 16),
+          const CaregiverLiveView(),
           const SizedBox(height: 16),
           EcSectionTitle(title: 'Safety alerts'),
           if (data.safetyEvents.isEmpty)

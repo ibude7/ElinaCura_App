@@ -4,28 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/auth/auth_providers.dart';
 import '../../core/data/local_prefs.dart';
 import '../../core/theme/ec_theme.dart';
+import '../../core/theme/ec_tokens.dart';
 import '../../shared/widgets/ec_engagement.dart';
 import '../../shared/widgets/ec_outcome_hero.dart';
 import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_widgets.dart';
-
-class _GroceryItem {
-  const _GroceryItem({required this.id, required this.name, required this.aisle});
-
-  final String id;
-  final String name;
-  final String aisle;
-}
-
-const _defaultGrocery = [
-  _GroceryItem(id: 'g1', name: 'Leafy greens', aisle: 'Produce'),
-  _GroceryItem(id: 'g2', name: 'Berries', aisle: 'Produce'),
-  _GroceryItem(id: 'g3', name: 'Whole grain bread', aisle: 'Bakery'),
-  _GroceryItem(id: 'g4', name: 'Low-sodium broth', aisle: 'Pantry'),
-  _GroceryItem(id: 'g5', name: 'Greek yogurt', aisle: 'Dairy'),
-  _GroceryItem(id: 'g6', name: 'Salmon fillet', aisle: 'Seafood'),
-];
+import 'condition_groceries.dart';
 
 class GroceryScreen extends ConsumerStatefulWidget {
   const GroceryScreen({super.key});
@@ -68,17 +53,9 @@ class _GroceryScreenState extends ConsumerState<GroceryScreen> {
     await LocalPrefs.writeBoolMap('ec.grocery.checked', _checked);
   }
 
-  List<_GroceryItem> _itemsForProfile() {
+  List<GroceryFood> _itemsForProfile() {
     final profile = ref.read(healthOverviewProvider).valueOrNull?.profile;
-    if (profile == null) return _defaultGrocery;
-    final items = [..._defaultGrocery];
-    if (profile.conditions.any((c) => c.toLowerCase().contains('diabet'))) {
-      items.add(const _GroceryItem(id: 'g7', name: 'Cinnamon oats', aisle: 'Pantry'));
-    }
-    if (profile.conditions.any((c) => c.toLowerCase().contains('heart'))) {
-      items.add(const _GroceryItem(id: 'g8', name: 'Walnuts', aisle: 'Pantry'));
-    }
-    return items;
+    return smartGroceryList(profile?.conditions ?? const []);
   }
 
   @override
@@ -86,8 +63,10 @@ class _GroceryScreenState extends ConsumerState<GroceryScreen> {
     final items = _itemsForProfile();
     final done = items.where((i) => _checked[i.id] == true).length;
     final ec = EcColors.of(context);
+    final profile = ref.watch(healthOverviewProvider).valueOrNull?.profile;
+    final tailoredFor = matchedConditionLabels(profile?.conditions ?? const []);
 
-    final byAisle = <String, List<_GroceryItem>>{};
+    final byAisle = <String, List<GroceryFood>>{};
     for (final item in items) {
       byAisle.putIfAbsent(item.aisle, () => []).add(item);
     }
@@ -109,6 +88,44 @@ class _GroceryScreenState extends ConsumerState<GroceryScreen> {
             ),
           ),
           const SizedBox(height: 16),
+          if (tailoredFor.isNotEmpty) ...[
+            Row(
+              children: [
+                Icon(Icons.auto_awesome_rounded,
+                    size: 14, color: EcTokens.accentGold),
+                const SizedBox(width: 6),
+                Text('Tailored for your conditions',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: ec.textSecondary)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final label in tailoredFor)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: EcTokens.accentJade.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(EcTokens.radiusFull),
+                      border: Border.all(
+                          color: EcTokens.accentJade.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(label,
+                        style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: EcTokens.accentJade)),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
           Row(
             children: [
               Expanded(

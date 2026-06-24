@@ -6,8 +6,10 @@ import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_providers.dart';
 import '../../core/theme/ec_theme.dart';
 import '../../core/theme/ec_tokens.dart';
+import '../../core/theme/ec_type.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_glass.dart';
+import '../../shared/widgets/ec_obsidian_kit.dart';
 import '../../shared/widgets/ec_screen_header.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
@@ -373,95 +375,111 @@ class MoreMenuScreen extends StatelessWidget {
       body: ListView(
         padding: kEcGlassListPadding,
         children: [
-          const EcSectionTitle(title: 'Care & AI'),
+          const _ClusterLabel('Care & AI'),
+          _ElevatedToolTile(
+            icon: Icons.auto_awesome_rounded,
+            title: 'Care AI chat',
+            description: 'Ask about your plan',
+            color: EcTokens.accentGold,
+            onTap: () => context.push('/chat'),
+          ),
+          const SizedBox(height: 10),
+          _ElevatedToolTile(
+            icon: Icons.mic_rounded,
+            title: 'Voice assistant',
+            description: 'Hands-free commands',
+            color: EcTokens.accentJade,
+            onTap: () => context.push('/voice'),
+          ),
+          const SizedBox(height: 10),
           EcGlassListGroup(
             tiles: [
-              EcGlassListTile(
-                icon: Icons.auto_awesome_rounded,
-                title: 'Care AI chat',
-                subtitle: 'Ask questions about your health plan',
-                iconColor: EcTokens.categorySleep,
-                onTap: () => context.push('/chat'),
-              ),
-              EcGlassListTile(
-                icon: Icons.mic_rounded,
-                title: 'Voice assistant',
-                subtitle: 'Hands-free care commands',
-                iconColor: EcTokens.categoryRecovery,
-                onTap: () => context.push('/voice'),
-              ),
               EcGlassListTile(
                 icon: Icons.newspaper_rounded,
                 title: 'Weekly digest',
                 subtitle: 'Your health rhythm summary',
-                iconColor: EcTokens.categoryActivity,
+                iconColor: EcTokens.accentJade,
                 onTap: () => context.push('/digest'),
               ),
               EcGlassListTile(
                 icon: Icons.description_rounded,
                 title: 'Health report',
                 subtitle: 'Share a provider-ready summary',
-                iconColor: EcTokens.categoryHeart,
+                iconColor: EcTokens.accentGold,
                 onTap: () => context.push('/report'),
+              ),
+              EcGlassListTile(
+                icon: Icons.accessibility_new_rounded,
+                title: 'Body map',
+                subtitle: 'Tap where it hurts to log symptoms',
+                iconColor: EcTokens.accentJade,
+                onTap: () => context.push('/body-map'),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          const EcSectionTitle(title: 'Nutrition & shopping'),
+          const SizedBox(height: 22),
+          const _ClusterLabel('Nutrition & shopping'),
           EcGlassListGroup(
             tiles: [
               EcGlassListTile(
                 icon: Icons.restaurant_rounded,
                 title: 'Meals',
                 subtitle: 'Condition-aware meal guidance',
-                iconColor: EcTokens.categoryNutrition,
+                iconColor: EcTokens.accentJade,
                 onTap: () => context.push('/meals'),
               ),
               EcGlassListTile(
                 icon: Icons.shopping_basket_rounded,
                 title: 'Grocery list',
                 subtitle: 'Aisle-grouped shopping',
-                iconColor: EcTokens.categoryNutrition,
+                iconColor: EcTokens.accentJade,
                 onTap: () => context.push('/grocery'),
               ),
               EcGlassListTile(
                 icon: Icons.shopping_cart_rounded,
                 title: 'Shopping list',
                 subtitle: 'Pharmacy refills and staples',
-                iconColor: EcTokens.categoryWeight,
+                iconColor: EcTokens.accentGold,
                 onTap: () => context.push('/shopping-list'),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          const EcSectionTitle(title: 'Medications'),
+          const SizedBox(height: 22),
+          const _ClusterLabel('Medications'),
           EcGlassListGroup(
             tiles: [
               EcGlassListTile(
                 icon: Icons.qr_code_scanner_rounded,
                 title: 'Barcode scanner',
                 subtitle: 'Check product safety labels',
-                iconColor: EcTokens.categoryBreathing,
+                iconColor: EcTokens.accentJade,
                 onTap: () => context.push('/scanner'),
               ),
               EcGlassListTile(
                 icon: Icons.document_scanner_rounded,
                 title: 'Medication OCR',
                 subtitle: 'Scan and capture medication labels',
-                iconColor: EcTokens.categorySleep,
+                iconColor: EcTokens.accentGold,
                 onTap: () => context.push('/ocr'),
               ),
               EcGlassListTile(
                 icon: Icons.calendar_today_rounded,
                 title: 'Refill calendar',
                 subtitle: 'Upcoming medication refills',
-                iconColor: EcTokens.categoryActivity,
+                iconColor: EcTokens.accentJade,
                 onTap: () => context.push('/refill'),
+              ),
+              EcGlassListTile(
+                icon: Icons.grid_on_rounded,
+                title: 'Adherence timeline',
+                subtitle: '90-day dose history',
+                iconColor: EcTokens.accentGold,
+                onTap: () => context.push('/med-timeline'),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          const EcSectionTitle(title: 'Safety & travel'),
+          const SizedBox(height: 22),
+          const _ClusterLabel('Safety & travel'),
           EcGlassListGroup(
             tiles: [
               EcGlassListTile(
@@ -475,46 +493,141 @@ class MoreMenuScreen extends StatelessWidget {
                 icon: Icons.flight_takeoff_rounded,
                 title: 'Travel mode',
                 subtitle: 'Trip prep and dose schedule shifts',
-                iconColor: EcTokens.categoryWeight,
+                iconColor: EcTokens.accentJade,
                 onTap: () => context.push('/travel-mode'),
               ),
               EcGlassListTile(
                 icon: Icons.video_call_rounded,
                 title: 'Telehealth handoff',
                 subtitle: 'Prepare for virtual visits',
-                iconColor: EcTokens.categoryHeart,
+                iconColor: EcTokens.accentGold,
                 onTap: () => context.push('/telehealth'),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          const EcSectionTitle(title: 'Connect'),
+          const SizedBox(height: 22),
+          const _ClusterLabel('Connect'),
           EcGlassListGroup(
             tiles: [
               EcGlassListTile(
                 icon: Icons.family_restroom_rounded,
                 title: 'Family circle',
                 subtitle: 'Members, roles, and privacy',
-                iconColor: EcTokens.categoryRecovery,
+                iconColor: EcTokens.accentJade,
                 onTap: () => context.push('/family-circle'),
               ),
               EcGlassListTile(
                 icon: Icons.auto_stories_rounded,
                 title: 'Moments',
                 subtitle: 'Shared milestones and notes',
-                iconColor: EcTokens.categorySleep,
+                iconColor: EcTokens.accentGold,
                 onTap: () => context.push('/moments'),
               ),
               EcGlassListTile(
                 icon: Icons.people_rounded,
                 title: 'Connections',
                 subtitle: 'Manage caregiver access',
-                iconColor: EcTokens.categoryActivity,
+                iconColor: EcTokens.accentJade,
                 onTap: () => context.push('/connections'),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Floating gold uppercase cluster label (12sp), positioned above a group.
+class _ClusterLabel extends StatelessWidget {
+  const _ClusterLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6, 4, 6, 10),
+      child: Text(
+        label.toUpperCase(),
+        style: EcType.sectionLabel(color: EcTokens.accentGold),
+      ),
+    );
+  }
+}
+
+/// Elevated 80dp tool tile with a right-aligned description and a live
+/// pulsing "active" dot — for Care AI chat & Voice assistant.
+class _ElevatedToolTile extends StatelessWidget {
+  const _ElevatedToolTile({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    return EcGlassSurface(
+      onTap: onTap,
+      variant: EcGlassVariant.elevated,
+      borderRadius: EcTokens.radiusCard,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: SizedBox(
+        height: 48,
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withValues(alpha: 0.16),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ),
+            Text(
+              description,
+              style: TextStyle(fontSize: 12, color: ec.textSecondary),
+            ),
+            const SizedBox(width: 10),
+            EcGoldPulse(
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: EcTokens.accentJade,
+                  boxShadow: [
+                    BoxShadow(
+                      color: EcTokens.accentJade.withValues(alpha: 0.6),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

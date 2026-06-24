@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth/auth_providers.dart';
 import '../../core/data/local_prefs.dart';
+import '../../core/health/dose_log.dart';
+import '../../core/health/vitals_store.dart';
 import '../../shared/widgets/ec_engagement.dart';
 import '../../core/design_system/ec_copy.dart';
 import '../../shared/widgets/ec_outcome_hero.dart';
 import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_widgets.dart';
+import 'report_pdf.dart';
 
 const _reportSections = [
   ('vitals', 'Vitals & trends'),
@@ -88,6 +91,30 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       buffer.writeln('\nNote:\n$note');
     }
     return buffer.toString();
+  }
+
+  Future<void> _sharePdf() async {
+    final overview = ref.read(healthOverviewProvider).valueOrNull;
+    if (overview == null) return;
+    final log = ref.read(doseLogProvider).valueOrNull ?? const {};
+    final vitals = ref.read(vitalsProvider).valueOrNull ?? const {};
+    final adherence = computeAdherence(log, overview.medications);
+    try {
+      await shareHealthReportPdf(
+        recipient: _recipientController.text.trim(),
+        coverNote: _coverController.text,
+        rangeLabel: _ranges[_range] ?? _range,
+        overview: overview,
+        adherence: adherence,
+        vitals: vitals,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not generate PDF: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -203,6 +230,12 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
             ),
           ),
           const SizedBox(height: 20),
+          EcGlassButton(
+            label: 'Share PDF with doctor',
+            icon: Icons.picture_as_pdf_rounded,
+            onPressed: _sharePdf,
+          ),
+          const SizedBox(height: 12),
           EcShareActions(text: _buildSummary()),
           const SizedBox(height: 24),
         ],

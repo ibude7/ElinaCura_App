@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -19,6 +20,7 @@ import '../../core/theme/ec_tokens.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_widgets.dart';
 import '../../shared/widgets/ec_med_parallax.dart';
+import '../../core/health/fda_interactions.dart';
 import 'medication_proof.dart';
 
 // ═══════════════════════════════════════════════ OCR CAPTURE SCREEN ══
@@ -35,6 +37,7 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
   OcrDraft? _draft;
   bool _loading = false;
   String? _error;
+  List<String> _interactionWarnings = const [];
 
   final _nameController = TextEditingController();
   final _doseController = TextEditingController();
@@ -110,6 +113,19 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
       _frequencyController.text =
           draft.draft['frequency']?.toString() ?? '';
     });
+    unawaited(_checkInteractions());
+  }
+
+  /// Best-effort openFDA interaction check against the user's existing meds.
+  Future<void> _checkInteractions() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+    final overview = ref.read(healthOverviewProvider).valueOrNull;
+    final existing = overview?.medications.map((m) => m.name).toList() ?? const [];
+    final warnings = await ref
+        .read(fdaInteractionServiceProvider)
+        .checkAgainstExisting(newMed: name, existingMeds: existing);
+    if (mounted) setState(() => _interactionWarnings = warnings);
   }
 
   Future<void> _confirm() async {
@@ -381,6 +397,44 @@ class _OcrCaptureScreenState extends ConsumerState<OcrCaptureScreen> {
             style: const TextStyle(
               color: EcTokens.statusCritical,
               fontSize: 12,
+            ),
+          ),
+        ],
+        if (_interactionWarnings.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          EcGlassSurface(
+            variant: EcGlassVariant.tinted,
+            tint: EcTokens.statusCaution,
+            borderRadius: EcTokens.radiusGlass,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Icon(Icons.warning_amber_rounded,
+                        color: EcTokens.statusCaution, size: 18),
+                    SizedBox(width: 8),
+                    Text('Possible interactions',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w800, fontSize: 14)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ..._interactionWarnings.map(
+                  (w) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text('• $w',
+                        style: const TextStyle(fontSize: 13, height: 1.35)),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Source: openFDA · not a substitute for clinical advice.',
+                  style: TextStyle(
+                      fontSize: 11, color: EcColors.of(context).textMuted),
+                ),
+              ],
             ),
           ),
         ],

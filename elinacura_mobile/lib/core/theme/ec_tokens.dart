@@ -11,22 +11,33 @@ import 'package:flutter/material.dart';
 class EcTokens {
   EcTokens._();
 
-  static const String fontFamily = 'Geist';
+  /// UI / body — DM Sans (humanist, legible at 13–15sp).
+  static const String fontFamily = 'DM Sans';
+
+  /// Display / data numbers — Bricolage Grotesque (wide letterforms for metrics).
+  static const String fontFamilyDisplay = 'Bricolage Grotesque';
+
+  /// Time / IDs / code — JetBrains Mono (precise, clinical).
+  static const String fontFamilyMono = 'JetBrains Mono';
 
   // ─────────────────────────────────────────────────── Canvas backgrounds ──
   /// Light: airy blue-white canvas (Google Health–inspired).
   static const Color bgVoidLight = Color(0xFFEEF3FB);
-  /// Dark: deep obsidian void.
-  static const Color bgVoid = Color(0xFF0A0B0F);
+  /// Dark: Chromatic Obsidian — near-black with a faint cool tint.
+  static const Color bgVoid = Color(0xFF080A0F);
 
   static const Color bgAppLight = bgVoidLight;
   static const Color bgAppDark = bgVoid;
 
-  /// Card surfaces — solid white in light, frosted in dark.
+  /// Card surfaces — solid white in light, frosted obsidian in dark.
+  /// Dark surface ladder (Chromatic Obsidian):
+  ///   L1 #0F1219 base cards · L2 #161C26 modals/sheets · L3 #1D2333 innermost.
   static const Color bgCardLight = Color(0xFFFFFFFF);
-  static const Color bgCardDark = Color(0xFF14141A);
+  static const Color bgCardDark = Color(0xFF0F1219); // Surface L1
+  static const Color surfaceL2Dark = Color(0xFF161C26); // modals, sheets, popovers
+  static const Color surfaceL3Dark = Color(0xFF1D2333); // toasts, tooltips, innermost
   static const Color bgRecessedLight = Color(0xFFE4EDF8);
-  static const Color bgRecessedDark = Color(0xFF0E0E14);
+  static const Color bgRecessedDark = Color(0xFF0B0D13);
 
   /// Soft category washes for card backgrounds (light mode).
   static const Color washActivity = Color(0xFFE8F0FE);
@@ -40,11 +51,11 @@ class EcTokens {
 
   // ─────────────────────────────────────────────────────────────── Text ──
   static const Color textPrimaryLight = Color(0xFF1A1C2E);
-  static const Color textPrimaryDark = Color(0xFFF0F2FF);
+  static const Color textPrimaryDark = Color(0xFFEDF0F7);
   static const Color textSecondaryLight = Color(0xFF4A5068);
-  static const Color textSecondaryDark = Color(0xFFAAAEC4);
+  static const Color textSecondaryDark = Color(0xFF8A93A8);
   static const Color textMutedLight = Color(0xFF7C829E);
-  static const Color textMutedDark = Color(0xFF6A6E88);
+  static const Color textMutedDark = Color(0xFF4A5568);
   static const Color textCriticalLight = Color(0xFFB42318);
   static const Color textCriticalDark = Color(0xFFFCA5A5);
 
@@ -53,9 +64,17 @@ class EcTokens {
   static const Color brandForest = Color(0xFF1A3C34);
   /// Terracotta — warmth accents (logo dot, critical warmth).
   static const Color brandTerracotta = Color(0xFFC03F0C);
+
+  /// Chromatic Obsidian signature accents.
+  /// Primary — warm antique gold (aged brass; premium health, not gamification).
+  static const Color accentGold = Color(0xFFC8A96E);
+  /// Secondary — desaturated jade. Success states + active health metrics only.
+  static const Color accentJade = Color(0xFF4FC3A1);
+
   /// Ink / paper brand accents for UI chrome.
+  /// Dark: antique gold is the primary identity accent.
   static const Color accentBrand = Color(0xFF1A1C2E);
-  static const Color accentBrandDark = Color(0xFFF0F2FF);
+  static const Color accentBrandDark = accentGold;
   static const Color accentBrandDeep = Color(0xFF000000);
   static const Color onAccentLight = Color(0xFFFFFFFF);
   static const Color onAccentDark = Color(0xFF0A0A0F);
@@ -89,11 +108,12 @@ class EcTokens {
   static const Color categoryRecovery = Color(0xFF9333EA);
   static const Color categoryRecoveryLight = Color(0xFFF3E8FF);
 
-  /// Tab accent hues — each primary destination owns a color.
-  static const Color tabToday = categoryActivity;
-  static const Color tabHealth = categoryHeart;
-  static const Color tabCare = categorySleep;
-  static const Color tabYou = categoryRecovery;
+  /// Tab accents — Chromatic Obsidian uses a single gold identity accent for
+  /// the active destination (gold dot + icon shift), not per-tab hues.
+  static const Color tabToday = accentGold;
+  static const Color tabHealth = accentGold;
+  static const Color tabCare = accentGold;
+  static const Color tabYou = accentGold;
 
   // ─────────────────────────────────── Semantic status (state only) ──
   static const Color statusPositive = Color(0xFF2E9E73);
@@ -101,12 +121,13 @@ class EcTokens {
   static const Color statusCaution = Color(0xFFB8861F);
   static const Color statusCautionLight = Color(0xFFFEF9C3);
   static const Color statusWarning = Color(0xFFC2691F);
-  static const Color statusCritical = Color(0xFFC0392B);
+  /// Controlled crimson — Emergency / SOS and error states only.
+  static const Color statusCritical = Color(0xFFE05757);
   static const Color statusCriticalLight = Color(0xFFFFEBEB);
 
   // ─────────── Legacy accent aliases (kept for backward compat) ──
   static const Color accentMint = Color(0xFF16A34A);
-  static const Color accentMintDark = Color(0xFF6FD4AE);
+  static const Color accentMintDark = accentJade;
   static const Color accentMintFill = Color(0xFFD1FAE5);
   static const Color accentMintText = Color(0xFF166534);
   static const Color accentSky = Color(0xFF0EA5E9);
@@ -130,15 +151,16 @@ class EcTokens {
   static const Color auroraDeep = Color(0xFF101012);
 
   // ────────────────────────────────────────────────────────── Radii ──
+  // Chromatic Obsidian: cards 20 · inner elements 12 · chips/badges full pill.
   static const double radiusXs = 10;
-  static const double radiusSm = 14;
+  static const double radiusSm = 12; // inner elements inside cards
   static const double radiusMd = 18;
   static const double radiusLg = 24;
   static const double radiusXl = 32;
-  static const double radiusCard = 22;
+  static const double radiusCard = 20; // cards
   static const double radiusHero = 28;
   static const double radiusGlass = 28;
-  static const double radiusFull = 999;
+  static const double radiusFull = 999; // full pill (chips, badges, nav)
 
   // ─────────────────────────────────────────────────── Spacing (8pt) ──
   static const double space2 = 2;
@@ -155,21 +177,27 @@ class EcTokens {
   static const double space48 = 48;
   static const double space64 = 64;
 
-  // ─────────────────────────────── Glass blur Z-layers (liquid glass L2) ──
-  static const double glassBlurZ2 = 12;
-  static const double glassBlurZ3 = 20;
-  static const double glassBlurZ4 = 28;
-  static const double glassBlur = glassBlurZ2;
+  // ─────────────────────────────── Glass blur Z-layers (liquid glass) ──
+  // Chromatic Obsidian 3-tier system:
+  //   Micro Frost   — blur 12, fill 3% (chips, badges, nav pills)
+  //   Frosted Sheet — blur 24, fill 4% (cards, timeline items)
+  //   Deep Frost    — blur 40, fill 6% (bottom sheets, modals, nav)
+  static const double glassBlurZ2 = 12; // Micro Frost
+  static const double glassBlurZ3 = 24; // Frosted Sheet
+  static const double glassBlurZ4 = 40; // Deep Frost
+  static const double glassBlur = glassBlurZ3; // default card = Frosted Sheet
   static const double glassBlurHeavy = glassBlurZ4;
-  static const double glassBlurLight = 16;
+  static const double glassBlurLight = glassBlurZ2;
   static const double glassBlurUltra = glassBlurZ4;
 
-  static const double glassZ2Opacity = 0.07;
-  static const double glassZ3Opacity = 0.10;
-  static const double glassZ4Opacity = 0.13;
-  static const double glassSpecularTopOpacity = 0.22;
-  static const double glassSpecularSideOpacity = 0.09;
-  static const double glassBorderOpacity = 0.10;
+  static const double glassZ2Opacity = 0.03; // Micro Frost
+  static const double glassZ3Opacity = 0.04; // Frosted Sheet
+  static const double glassZ4Opacity = 0.06; // Deep Frost
+  static const double glassSpecularTopOpacity = 0.10; // top-left refraction highlight
+  static const double glassSpecularSideOpacity = 0.06;
+  static const double glassBorderOpacity = 0.08;
+  /// Faint antique-gold glow on elevated/floating glass (premium depth).
+  static const double glassGoldGlowOpacity = 0.05;
 
   // ──────────────────────────────────────────── Typography (display) ──
   static const double fontSizeDisplayXL = 80.0;

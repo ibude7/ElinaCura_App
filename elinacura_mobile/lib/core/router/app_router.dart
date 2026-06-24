@@ -10,12 +10,14 @@ import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../features/auth/auth_screens.dart';
 import '../../features/auth/onboarding_view.dart';
+import '../../features/body_map/body_map_screen.dart';
 import '../../features/care/care_inbox_screen.dart';
 import '../../features/chat/chat_screen.dart';
 import '../../features/circle/circle_screens.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/digest/digest_screen.dart';
 import '../../features/medications/medication_screens.dart';
+import '../../features/medications/medication_timeline_screen.dart';
 import '../../features/nutrition/nutrition_screens.dart';
 import '../../features/emergency/emergency_screen.dart';
 import '../../features/profile/profile_create_screen.dart';
@@ -327,6 +329,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/telehealth',
         builder: (context, state) => const TelehealthScreen(),
+      ),
+      GoRoute(
+        path: '/body-map',
+        builder: (context, state) => const BodyMapScreen(),
+      ),
+      GoRoute(
+        path: '/med-timeline',
+        builder: (context, state) => const MedicationTimelineScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) {

@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/design_system/ec_copy.dart';
 import '../../core/i18n/app_localizations.dart';
 import '../../core/theme/ec_theme.dart';
 import '../../core/theme/ec_tokens.dart';
+import '../../core/theme/ec_type.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_screen_header.dart';
@@ -60,10 +62,7 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 return Center(
-                  child: EcErrorState(
-                    message: 'Could not load messages',
-                    onRetry: () => setState(() {}),
-                  ),
+                  child: _CareCircleError(onRetry: () => setState(() {})),
                 );
               }
               if (!snapshot.hasData) {
@@ -130,6 +129,46 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    const radius = 18.0;
+
+    Widget bubble = EcGlassSurface(
+      // Sent = L1 (Frosted) · Received = L2 (Deep Frost) + gold hairline.
+      variant: isMine ? EcGlassVariant.regular : EcGlassVariant.elevated,
+      borderRadius: radius,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            message.text,
+            style: const TextStyle(fontSize: 14.5, height: 1.4),
+          ),
+          if (message.timestamp.isNotEmpty) ...[
+            const SizedBox(height: 5),
+            Text(
+              message.timestamp,
+              style: EcType.mono(
+                color: isMine ? ec.textMuted : EcTokens.accentGold,
+                size: 10,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    if (!isMine) {
+      bubble = Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(radius),
+          border: Border.all(
+            color: EcTokens.accentGold.withValues(alpha: 0.5),
+            width: 0.6,
+          ),
+        ),
+        child: bubble,
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -139,38 +178,7 @@ class _MessageBubble extends StatelessWidget {
           constraints: BoxConstraints(
             maxWidth: MediaQuery.sizeOf(context).width * 0.72,
           ),
-          child: EcGlassSurface(
-            variant: isMine ? EcGlassVariant.tinted : EcGlassVariant.regular,
-            tint: isMine ? ec.accentBrand : null,
-            borderRadius: 20,
-            blur: EcTokens.glassBlurZ3,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  message.text,
-                  style: TextStyle(
-                    fontSize: 14.5,
-                    height: 1.4,
-                    color: isMine ? Colors.white : null,
-                  ),
-                ),
-                if (message.timestamp.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    message.timestamp,
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      color: isMine
-                          ? Colors.white.withValues(alpha: 0.65)
-                          : ec.textMuted,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
+          child: bubble,
         ),
       ),
     );
@@ -232,6 +240,88 @@ class _MessageComposer extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Beautiful connection-error state: two hands passing a note, with a warm
+/// reassuring line and a gold retry — never a cold cloud icon.
+class _CareCircleError extends StatelessWidget {
+  const _CareCircleError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: 120,
+            width: 220,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        EcTokens.accentGold.withValues(alpha: 0.16),
+                        EcTokens.accentGold.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 6,
+                  child: Transform.rotate(
+                    angle: 0.32,
+                    child: Icon(Icons.front_hand_rounded,
+                        size: 48, color: EcTokens.accentJade.withValues(alpha: 0.85)),
+                  ),
+                ),
+                Positioned(
+                  right: 6,
+                  child: Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(3.14159)..rotateZ(0.32),
+                    child: Icon(Icons.front_hand_rounded,
+                        size: 48, color: EcTokens.accentJade.withValues(alpha: 0.85)),
+                  ),
+                ),
+                Icon(Icons.sticky_note_2_rounded,
+                        size: 40, color: EcTokens.accentGold)
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .moveY(begin: -5, end: 5, duration: 1800.ms, curve: Curves.easeInOut),
+              ],
+            ),
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Your care circle is waiting',
+            style: Theme.of(context).textTheme.headlineSmall,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Check your connection and try again.',
+            style: TextStyle(color: ec.textSecondary, height: 1.4),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 22),
+          EcGlassButton(
+            label: 'Retry',
+            icon: Icons.refresh_rounded,
+            onPressed: onRetry,
+          ),
+        ],
       ),
     );
   }

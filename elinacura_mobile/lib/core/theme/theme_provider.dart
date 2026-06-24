@@ -25,7 +25,7 @@ extension EcThemePreferenceX on EcThemePreference {
 }
 
 class ThemePreferenceNotifier extends StateNotifier<EcThemePreference> {
-  ThemePreferenceNotifier() : super(EcThemePreference.light) {
+  ThemePreferenceNotifier() : super(EcThemePreference.dark) {
     _load();
   }
 

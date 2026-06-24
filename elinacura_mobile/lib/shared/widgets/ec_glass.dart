@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/design_system/ec_a11y.dart';
+import '../../core/design_system/ec_haptics.dart';
 import '../../core/theme/ec_perf.dart';
 import '../../core/theme/ec_tokens.dart';
 import '../../core/theme/ec_theme.dart';
@@ -306,14 +307,14 @@ class _EcGlassSurfaceState extends State<EcGlassSurface> {
     final scale = _pressed && widget.onTap != null ? 0.985 : 1.0;
 
     final (fill, effectiveBlur) = switch (widget.variant) {
-      EcGlassVariant.elevated => (glass.fillElevated, EcTokens.glassBlurZ3),
+      EcGlassVariant.elevated => (glass.fillElevated, EcTokens.glassBlurZ4),
       EcGlassVariant.float => (glass.fillFloat, EcTokens.glassBlurZ4),
-      EcGlassVariant.subtle => (glass.fillSubtle, EcTokens.glassBlurZ2 * 0.6),
+      EcGlassVariant.subtle => (glass.fillSubtle, EcTokens.glassBlurZ2),
       EcGlassVariant.tinted => (
         (widget.tint ?? glass.tintBrand).withValues(
           alpha: isDark ? 0.16 : 0.12,
         ),
-        EcTokens.glassBlurZ2,
+        EcTokens.glassBlurZ3,
       ),
       EcGlassVariant.regular => (glass.fill, widget.blur),
     };
@@ -397,6 +398,14 @@ class _EcGlassSurfaceState extends State<EcGlassSurface> {
                 spreadRadius: isElevated ? -14 : -6,
                 offset: Offset(0, isElevated ? 24 : 10),
               ),
+              // Faint antique-gold glow seats elevated glass — premium depth.
+              if (isElevated && isDark)
+                BoxShadow(
+                  color: EcTokens.accentGold
+                      .withValues(alpha: EcTokens.glassGoldGlowOpacity),
+                  blurRadius: 60,
+                  spreadRadius: -10,
+                ),
             ],
           ),
           child: ClipRRect(
@@ -630,27 +639,16 @@ class _FloatingPill extends StatelessWidget {
                     height: double.infinity,
                     child: Stack(
                       children: [
-                        // Animated indicator capsule (solid white, no gradient)
+                        // Sliding, pulsing gold dot beneath the active icon.
+                        // No filled background — just the dot + icon color shift.
                         AnimatedPositioned(
                           duration: EcTokens.motionBase,
                           curve: Curves.easeOutBack,
-                          left: itemWidth * selectedIndex + 8,
-                          width: itemWidth - 16,
-                          top: 8,
-                          bottom: 8,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.circular(EcTokens.radiusXl),
-                              color: destinations[selectedIndex].accent
-                                  .withValues(alpha: isDark ? 0.22 : 0.16),
-                              border: Border.all(
-                                color: destinations[selectedIndex].accent
-                                    .withValues(alpha: 0.28),
-                                width: 0.6,
-                              ),
-                            ),
-                          ),
+                          left: itemWidth * selectedIndex + itemWidth / 2 - 3,
+                          width: 6,
+                          height: 6,
+                          bottom: 7,
+                          child: const _PulsingDot(),
                         ),
                         // Tab items
                         Row(
@@ -661,7 +659,10 @@ class _FloatingPill extends StatelessWidget {
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: () => onSelected(i),
+                                  onTap: () {
+                                    EcHaptics.navSelected();
+                                    onSelected(i);
+                                  },
                                   borderRadius: BorderRadius.circular(
                                     EcTokens.radiusXl,
                                   ),
@@ -723,7 +724,54 @@ class _FloatingPill extends StatelessWidget {
   }
 }
 
-class _AddOrb extends StatelessWidget {
+class _PulsingDot extends StatefulWidget {
+  const _PulsingDot();
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final reduced = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final dot = Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: EcTokens.accentGold,
+        boxShadow: [
+          BoxShadow(
+            color: EcTokens.accentGold.withValues(alpha: 0.6),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+    );
+    if (reduced) return dot;
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (context, child) {
+        final t = 0.5 + 0.5 * math.sin(_c.value * 2 * math.pi);
+        return Opacity(opacity: 0.6 + 0.4 * t, child: child);
+      },
+      child: dot,
+    );
+  }
+}
+
+class _AddOrb extends StatefulWidget {
   const _AddOrb({required this.onTap, this.onLongPress});
 
   final VoidCallback onTap;
@@ -732,52 +780,70 @@ class _AddOrb extends StatelessWidget {
   static const double _size = EcFloatingNav._orbDiameter;
 
   @override
+  State<_AddOrb> createState() => _AddOrbState();
+}
+
+class _AddOrbState extends State<_AddOrb> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final onAccent = isDark ? EcTokens.onAccentDark : EcTokens.onAccentLight;
 
-    return Container(
-      width: _size,
-      height: _size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: EcTokens.categoryActivity.withValues(alpha: isDark ? 0.50 : 0.35),
-            blurRadius: 28,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ClipOval(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: EcTokens.glassBlurZ4,
-            sigmaY: EcTokens.glassBlurZ4,
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              onLongPress: onLongPress,
-              splashColor: Colors.white.withValues(alpha: 0.18),
-              highlightColor: Colors.transparent,
-              child: Ink(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: EcTokens.categoryActivity,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.30),
-                    width: 1.2,
+    return AnimatedScale(
+      scale: _pressed ? 0.92 : 1.0,
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+      child: Container(
+        width: _AddOrb._size,
+        height: _AddOrb._size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: EcTokens.accentGold.withValues(alpha: isDark ? 0.50 : 0.35),
+              blurRadius: 28,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipOval(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: EcTokens.glassBlurZ4,
+              sigmaY: EcTokens.glassBlurZ4,
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  EcHaptics.doseConfirmed(); // medium impact on FAB
+                  widget.onTap();
+                },
+                onLongPress: widget.onLongPress,
+                onTapDown: (_) => setState(() => _pressed = true),
+                onTapUp: (_) => setState(() => _pressed = false),
+                onTapCancel: () => setState(() => _pressed = false),
+                splashColor: Colors.white.withValues(alpha: 0.18),
+                highlightColor: Colors.transparent,
+                child: Ink(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: EcTokens.accentGold,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.30),
+                      width: 1.2,
+                    ),
                   ),
-                ),
-                child: Semantics(
-                  button: true,
-                  label: 'Quick add',
-                  child: Icon(
-                    Icons.add_rounded,
-                    color: onAccent,
-                    size: 26,
+                  child: Semantics(
+                    button: true,
+                    label: 'Quick add',
+                    child: Icon(
+                      Icons.add_rounded,
+                      color: onAccent,
+                      size: 26,
+                    ),
                   ),
                 ),
               ),
