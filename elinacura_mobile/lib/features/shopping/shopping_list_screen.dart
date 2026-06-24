@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/data/engagement_repository.dart';
 import '../../core/data/local_prefs.dart';
+import '../../core/data/shopping_notifier.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_engagement.dart';
 import '../../shared/widgets/ec_glass.dart';
+import '../../shared/widgets/ec_outcome_hero.dart';
+import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
 class ShoppingListScreen extends ConsumerStatefulWidget {
@@ -16,15 +19,14 @@ class ShoppingListScreen extends ConsumerStatefulWidget {
 }
 
 class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
-  List<ShoppingListItem> _items = [];
-  bool _loading = true;
-  bool _live = false;
   final _addController = TextEditingController();
+  List<ShoppingListItem> _localItems = [];
+  bool _localLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _loadLocal();
   }
 
   @override
@@ -33,27 +35,28 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
     super.dispose();
   }
 
-  Future<void> _load() async {
-    final profileId = activeProfileId(ref);
-    setState(() => _loading = true);
-    if (profileId != null) {
-      try {
-        final live = await ref.read(engagementRepositoryProvider).getShoppingList(profileId);
-        if (live.isNotEmpty && mounted) {
-          setState(() {
-            _items = live;
-            _live = true;
-            _loading = false;
-          });
-          return;
-        }
-      } catch (_) {}
-    }
+  Future<void> _loadLocal() async {
     final saved = await LocalPrefs.readList('ec.shopping.items');
     if (!mounted) return;
     setState(() {
-      _items = saved.isEmpty
-          ? _seedItems()
+      _localItems = saved.isEmpty
+          ? const [
+              ShoppingListItem(
+                id: 's1',
+                name: 'Blood pressure monitor batteries',
+                kind: 'pharmacy',
+              ),
+              ShoppingListItem(
+                id: 's2',
+                name: 'Low-sodium crackers',
+                kind: 'grocery',
+              ),
+              ShoppingListItem(
+                id: 's3',
+                name: 'Vitamin D refill',
+                kind: 'pharmacy',
+              ),
+            ]
           : saved
               .map(
                 (e) => ShoppingListItem(
@@ -64,22 +67,14 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
                 ),
               )
               .toList();
-      _live = false;
-      _loading = false;
+      _localLoading = false;
     });
   }
 
-  List<ShoppingListItem> _seedItems() => const [
-        ShoppingListItem(id: 's1', name: 'Blood pressure monitor batteries', kind: 'pharmacy'),
-        ShoppingListItem(id: 's2', name: 'Low-sodium crackers', kind: 'grocery'),
-        ShoppingListItem(id: 's3', name: 'Vitamin D refill', kind: 'pharmacy'),
-      ];
-
-  Future<void> _persistLocal() async {
-    if (_live) return;
+  Future<void> _persistLocal(List<ShoppingListItem> items) async {
     await LocalPrefs.writeList(
       'ec.shopping.items',
-      _items
+      items
           .map(
             (i) => {
               'id': i.id,
@@ -92,73 +87,34 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
     );
   }
 
-  Future<void> _toggle(ShoppingListItem item) async {
-    final next = !item.purchased;
-    setState(() {
-      _items = _items
-          .map((i) => i.id == item.id ? i.copyWith(purchased: next) : i)
-          .toList();
-    });
-    if (_live) {
-      try {
-        await ref.read(engagementRepositoryProvider).setShoppingItemPurchased(item.id, next);
-      } catch (_) {}
-    } else {
-      await _persistLocal();
-    }
-  }
-
-  Future<void> _add() async {
-    final name = _addController.text.trim();
-    if (name.isEmpty) return;
-    _addController.clear();
-    final profileId = activeProfileId(ref);
-    if (_live && profileId != null) {
-      try {
-        final created =
-            await ref.read(engagementRepositoryProvider).addShoppingItem(profileId, name);
-        if (created != null && mounted) {
-          setState(() => _items = [..._items, created]);
-        }
-        return;
-      } catch (_) {}
-    }
-    setState(() {
-      _items = [
-        ..._items,
-        ShoppingListItem(id: 'local-${DateTime.now().millisecondsSinceEpoch}', name: name),
-      ];
-    });
-    await _persistLocal();
-  }
-
-  Future<void> _remove(ShoppingListItem item) async {
-    setState(() => _items = _items.where((i) => i.id != item.id).toList());
-    if (_live) {
-      try {
-        await ref.read(engagementRepositoryProvider).deleteShoppingItem(item.id);
-      } catch (_) {}
-    } else {
-      await _persistLocal();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final done = _items.where((i) => i.purchased).length;
-    final remaining = _items.length - done;
+    final profileId = activeProfileId(ref);
+    final remote = profileId != null
+        ? ref.watch(shoppingNotifierProvider(profileId))
+        : null;
+    final loading = profileId != null ? (remote?.loading ?? true) : _localLoading;
+    final items = profileId != null ? (remote?.items ?? []) : _localItems;
+    final notifier = profileId != null
+        ? ref.read(shoppingNotifierProvider(profileId).notifier)
+        : null;
+
+    final done = items.where((i) => i.purchased).length;
+    final remaining = items.length - done;
 
     return EcGlassScaffold(
       appBar: const EcAppBar(title: 'Shopping list'),
-      body: _loading
+      body: loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: kEcGlassListPadding,
               children: [
-                EcEngagementHero(
+                EcOutcomeHero(
+                  eyebrow: 'Outcome',
                   title: 'Smart shopping',
                   subtitle: 'Pharmacy refills and staples in one run.',
                   icon: Icons.shopping_cart_rounded,
+                  accent: EcAccent.mint,
                   trailing: EcPill(
                     label: '$remaining left',
                     tone: remaining == 0 ? EcPillTone.positive : EcPillTone.info,
@@ -174,38 +130,41 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
                           hintText: 'Add item',
                           prefixIcon: Icon(Icons.add_rounded),
                         ),
-                        onSubmitted: (_) => _add(),
+                        onSubmitted: (_) => _add(profileId, notifier),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    IconButton.filled(onPressed: _add, icon: const Icon(Icons.check_rounded)),
+                    IconButton.filled(
+                      onPressed: () => _add(profileId, notifier),
+                      icon: const Icon(Icons.check_rounded),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                if (_items.isEmpty)
+                if (items.isEmpty)
                   const EcEmptyState(
                     icon: Icons.shopping_bag_outlined,
                     title: 'List is empty',
                     message: 'Add pharmacy refills or grocery staples.',
                   )
                 else
-                  ..._items.map(
+                  ...items.map(
                     (item) => EcGlassListTile(
                       icon: item.purchased
                           ? Icons.check_circle_rounded
                           : Icons.circle_outlined,
                       title: item.name,
                       subtitle: item.kind,
-                      onTap: () => _toggle(item),
+                      onTap: () => _toggle(profileId, notifier, item),
                       trailing: IconButton(
                         icon: const Icon(Icons.close_rounded, size: 18),
-                        onPressed: () => _remove(item),
+                        onPressed: () => _remove(profileId, notifier, item),
                       ),
                     ),
                   ),
                 const SizedBox(height: 16),
                 EcShareActions(
-                  text: _items
+                  text: items
                       .where((i) => !i.purchased)
                       .map((i) => '• ${i.name}')
                       .join('\n'),
@@ -213,5 +172,55 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
               ],
             ),
     );
+  }
+
+  Future<void> _add(String? profileId, ShoppingNotifier? notifier) async {
+    final name = _addController.text.trim();
+    if (name.isEmpty) return;
+    _addController.clear();
+    if (notifier != null && profileId != null) {
+      await notifier.addItem(profileId, name);
+    } else {
+      setState(() {
+        _localItems = [
+          ..._localItems,
+          ShoppingListItem(
+            id: 'local-${DateTime.now().millisecondsSinceEpoch}',
+            name: name,
+          ),
+        ];
+      });
+      await _persistLocal(_localItems);
+    }
+  }
+
+  Future<void> _toggle(
+    String? profileId,
+    ShoppingNotifier? notifier,
+    ShoppingListItem item,
+  ) async {
+    if (notifier != null && profileId != null) {
+      await notifier.togglePurchased(profileId, item);
+    } else {
+      setState(() {
+        _localItems = _localItems
+            .map((i) => i.id == item.id ? i.copyWith(purchased: !i.purchased) : i)
+            .toList();
+      });
+      await _persistLocal(_localItems);
+    }
+  }
+
+  Future<void> _remove(
+    String? profileId,
+    ShoppingNotifier? notifier,
+    ShoppingListItem item,
+  ) async {
+    if (notifier != null) {
+      await notifier.removeItem(item);
+    } else {
+      setState(() => _localItems = _localItems.where((i) => i.id != item.id).toList());
+      await _persistLocal(_localItems);
+    }
   }
 }

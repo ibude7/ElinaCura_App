@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/auth/auth_providers.dart';
 import '../../core/data/local_prefs.dart';
 import '../../core/theme/ec_theme.dart';
-import '../../core/theme/ec_tokens.dart';
 import '../../shared/widgets/ec_engagement.dart';
+import '../../shared/widgets/ec_outcome_hero.dart';
+import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
@@ -96,11 +97,12 @@ class _GroceryScreenState extends ConsumerState<GroceryScreen> {
       body: ListView(
         padding: kEcGlassListPadding,
         children: [
-          EcEngagementHero(
+          EcOutcomeHero(
+            eyebrow: 'Nutrition',
             title: 'Condition-aware groceries',
             subtitle: 'Grouped by aisle with foods aligned to your care profile.',
             icon: Icons.shopping_basket_rounded,
-            accent: EcTokens.categoryNutrition,
+            accent: EcAccent.mint,
             trailing: EcPill(
               label: '$done/${items.length}',
               tone: done == items.length ? EcPillTone.positive : EcPillTone.info,
@@ -219,11 +221,12 @@ class _MealsScreenState extends ConsumerState<MealsScreen> {
       body: ListView(
         padding: kEcGlassListPadding,
         children: [
-          EcEngagementHero(
+          EcOutcomeHero(
+            eyebrow: 'Daily plan',
             title: 'Today\'s meal plan',
             subtitle: 'Nutrition guidance tuned to your conditions and medications.',
             icon: Icons.restaurant_rounded,
-            accent: EcTokens.categoryNutrition,
+            accent: EcAccent.mint,
             trailing: EcPill(label: '$plannedKcal kcal', tone: EcPillTone.info),
           ),
           const SizedBox(height: 16),

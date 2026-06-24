@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// ElinaCura design tokens — Google-Health-inspired premium health OS.
+/// ElinaCura design tokens — premium health OS.
 ///
-/// Light mode: soft blue-white canvas, solid white cards, semantic category
-/// colors per health domain. Dark mode: deep navy canvas, frosted glass.
+/// Light mode: airy blue-white canvas, pastel category cards (Google Health–inspired).
+/// Dark mode: obsidian void, frosted liquid glass with category accents.
+/// Category hues are data-only — never used as page backgrounds.
 /// Color is purposeful: each category owns one hue, used consistently across
 /// icons, charts, chips, and arcs. Status colors (positive/caution/critical)
 /// are strictly for state, never decoration.
@@ -13,19 +14,29 @@ class EcTokens {
   static const String fontFamily = 'Geist';
 
   // ─────────────────────────────────────────────────── Canvas backgrounds ──
-  /// Light: soft blue-white (Google Health inspired).
-  static const Color bgVoidLight = Color(0xFFEEF2FF);
-  /// Dark: deep obsidian navy.
-  static const Color bgVoid = Color(0xFF0A0A0F);
+  /// Light: airy blue-white canvas (Google Health–inspired).
+  static const Color bgVoidLight = Color(0xFFEEF3FB);
+  /// Dark: deep obsidian void.
+  static const Color bgVoid = Color(0xFF0A0B0F);
 
   static const Color bgAppLight = bgVoidLight;
   static const Color bgAppDark = bgVoid;
 
-  /// Card surfaces (solid in light, frosted in dark).
+  /// Card surfaces — solid white in light, frosted in dark.
   static const Color bgCardLight = Color(0xFFFFFFFF);
   static const Color bgCardDark = Color(0xFF14141A);
-  static const Color bgRecessedLight = Color(0xFFE4E9FF);
+  static const Color bgRecessedLight = Color(0xFFE4EDF8);
   static const Color bgRecessedDark = Color(0xFF0E0E14);
+
+  /// Soft category washes for card backgrounds (light mode).
+  static const Color washActivity = Color(0xFFE8F0FE);
+  static const Color washSleep = Color(0xFFEDE9FE);
+  static const Color washHeart = Color(0xFFFFEBEB);
+  static const Color washNutrition = Color(0xFFDCFCE7);
+  static const Color washRecovery = Color(0xFFF3E8FF);
+  static const Color washWeight = Color(0xFFE0F2FE);
+  static const Color washBreathing = Color(0xFFCCFBF1);
+  static const Color washCaution = Color(0xFFFFF7ED);
 
   // ─────────────────────────────────────────────────────────────── Text ──
   static const Color textPrimaryLight = Color(0xFF1A1C2E);
@@ -37,8 +48,12 @@ class EcTokens {
   static const Color textCriticalLight = Color(0xFFB42318);
   static const Color textCriticalDark = Color(0xFFFCA5A5);
 
-  // ──────────────────────────────────────────── Brand (ink / paper) ──
-  /// Single brand accent: near-black in light, near-white in dark.
+  // ──────────────────────────────────────────── Brand ──
+  /// Forest green — logo, primary CTA accents (dot usage, not backgrounds).
+  static const Color brandForest = Color(0xFF1A3C34);
+  /// Terracotta — warmth accents (logo dot, critical warmth).
+  static const Color brandTerracotta = Color(0xFFC03F0C);
+  /// Ink / paper brand accents for UI chrome.
   static const Color accentBrand = Color(0xFF1A1C2E);
   static const Color accentBrandDark = Color(0xFFF0F2FF);
   static const Color accentBrandDeep = Color(0xFF000000);
@@ -46,9 +61,6 @@ class EcTokens {
   static const Color onAccentDark = Color(0xFF0A0A0F);
 
   // ─────────────────────────────── Health category colors (GH-inspired) ──
-  // Each health domain owns exactly one hue. Used for icons, chart lines,
-  // arc strokes, and chip fills. Never used as page backgrounds.
-
   /// Activity / steps / workouts — Google blue.
   static const Color categoryActivity = Color(0xFF4285F4);
   static const Color categoryActivityLight = Color(0xFFE8F0FE);
@@ -76,6 +88,12 @@ class EcTokens {
   /// HRV / recovery — purple.
   static const Color categoryRecovery = Color(0xFF9333EA);
   static const Color categoryRecoveryLight = Color(0xFFF3E8FF);
+
+  /// Tab accent hues — each primary destination owns a color.
+  static const Color tabToday = categoryActivity;
+  static const Color tabHealth = categoryHeart;
+  static const Color tabCare = categorySleep;
+  static const Color tabYou = categoryRecovery;
 
   // ─────────────────────────────────── Semantic status (state only) ──
   static const Color statusPositive = Color(0xFF2E9E73);
@@ -117,9 +135,9 @@ class EcTokens {
   static const double radiusMd = 18;
   static const double radiusLg = 24;
   static const double radiusXl = 32;
-  static const double radiusCard = 20;
+  static const double radiusCard = 22;
   static const double radiusHero = 28;
-  static const double radiusGlass = 24;
+  static const double radiusGlass = 28;
   static const double radiusFull = 999;
 
   // ─────────────────────────────────────────────────── Spacing (8pt) ──
@@ -137,10 +155,10 @@ class EcTokens {
   static const double space48 = 48;
   static const double space64 = 64;
 
-  // ─────────────────────────────── Glass blur Z-layers (dark mode) ──
-  static const double glassBlurZ2 = 24;
-  static const double glassBlurZ3 = 40;
-  static const double glassBlurZ4 = 56;
+  // ─────────────────────────────── Glass blur Z-layers (liquid glass L2) ──
+  static const double glassBlurZ2 = 12;
+  static const double glassBlurZ3 = 20;
+  static const double glassBlurZ4 = 28;
   static const double glassBlur = glassBlurZ2;
   static const double glassBlurHeavy = glassBlurZ4;
   static const double glassBlurLight = 16;
@@ -161,9 +179,9 @@ class EcTokens {
 
   // ──────────────────────────────────────────────────────── Motion ──
   static const Duration motionInstant = Duration(milliseconds: 90);
-  static const Duration motionFast = Duration(milliseconds: 180);
-  static const Duration motionBase = Duration(milliseconds: 300);
-  static const Duration motionSlow = Duration(milliseconds: 500);
+  static const Duration motionFast = Duration(milliseconds: 160);
+  static const Duration motionBase = Duration(milliseconds: 320);
+  static const Duration motionSlow = Duration(milliseconds: 520);
   static const Duration motionExpressive = Duration(milliseconds: 700);
   static const Duration staggerItem = Duration(milliseconds: 55);
   static const Curve curveEmphasized = Curves.easeOutCubic;

@@ -18,6 +18,8 @@ import '../../shared/models/models.dart';
 import '../../core/theme/ec_tokens.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_widgets.dart';
+import '../../shared/widgets/ec_med_parallax.dart';
+import 'medication_proof.dart';
 
 // ═══════════════════════════════════════════════ OCR CAPTURE SCREEN ══
 
@@ -756,9 +758,11 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
         for (var i = 0; i < scheduled.length; i++)
           EcGlassEntrance(
             index: i,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _ReminderMedCard(med: scheduled[i]),
+            child: EcMedCardParallax(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _ReminderMedCard(med: scheduled[i]),
+              ),
             ),
           ),
         if (asNeeded.isNotEmpty) ...[
@@ -845,9 +849,13 @@ class _ReminderMedCard extends ConsumerWidget {
                 _DoseChip(
                   label: _formatSlot(time),
                   taken: takenToday.contains(doseSlotKey(med.id, time)),
-                  onTap: () => ref
-                      .read(doseLogProvider.notifier)
-                      .toggle(doseSlotKey(med.id, time)),
+                  onTap: () => markDoseWithOptionalProof(
+                    context: context,
+                    ref: ref,
+                    slotKey: doseSlotKey(med.id, time),
+                    medName: med.name,
+                    timeLabel: _formatSlot(time),
+                  ),
                 ),
             ],
           ),

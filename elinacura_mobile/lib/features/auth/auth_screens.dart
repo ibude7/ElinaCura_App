@@ -523,7 +523,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
   }
 
-  void _routeAfterAuth() {
+  Future<void> _routeAfterAuth() async {
+    await showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.92),
+      transitionDuration: const Duration(milliseconds: 500),
+      pageBuilder: (context, _, _) => const _AuthBridgeOverlay(),
+    );
+    if (!mounted) return;
     final role = _selectedRole ?? UserRole.patient;
     ref.read(userRoleProvider.notifier).state = role;
     if (role == UserRole.caregiver) {
@@ -1412,6 +1420,53 @@ class CaregiverProfilePickerScreen extends ConsumerWidget {
             },
           );
         },
+      ),
+    );
+  }
+}
+
+/// Brief transition from auth canvas into app chrome (Rec #21).
+class _AuthBridgeOverlay extends StatefulWidget {
+  const _AuthBridgeOverlay();
+
+  @override
+  State<_AuthBridgeOverlay> createState() => _AuthBridgeOverlayState();
+}
+
+class _AuthBridgeOverlayState extends State<_AuthBridgeOverlay> {
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.delayed(const Duration(milliseconds: 900), () {
+      if (mounted) Navigator.of(context).pop();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return EcVoidBackground(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const EcLogo(size: 56),
+            const SizedBox(height: 20),
+            Text(
+              'Welcome to ElinaCura',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.onSurface,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Your calm care command center',
+              style: TextStyle(color: EcColors.of(context).textSecondary),
+            ),
+          ],
+        ),
       ),
     );
   }

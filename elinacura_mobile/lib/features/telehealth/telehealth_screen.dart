@@ -6,6 +6,8 @@ import '../../core/data/engagement_repository.dart';
 import '../../core/data/local_prefs.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_engagement.dart';
+import '../../shared/widgets/ec_outcome_hero.dart';
+import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
@@ -93,10 +95,13 @@ class _TelehealthScreenState extends ConsumerState<TelehealthScreen> {
           : ListView(
               padding: kEcGlassListPadding,
               children: [
-                EcEngagementHero(
+                EcOutcomeHero(
+                  eyebrow: 'Telehealth',
                   title: 'Visit handoff',
-                  subtitle: 'Prepare for your virtual appointment and share the right context.',
+                  subtitle:
+                      'Prepare for your virtual appointment and share the right context.',
                   icon: Icons.video_call_rounded,
+                  accent: EcAccent.lavender,
                   trailing: EcPill(
                     label: '$_readiness% ready',
                     tone: _readiness >= 100 ? EcPillTone.positive : EcPillTone.caution,

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/design_system/ec_a11y.dart';
+import '../../core/theme/ec_perf.dart';
 import '../../core/theme/ec_tokens.dart';
 import '../../core/theme/ec_theme.dart';
 
@@ -56,6 +58,25 @@ class EcDepthScenePainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
+    // Soft color washes — Google Health airy canvas (light mode only).
+    if (!isDark) {
+      final washes = [
+        (Offset(w * 0.12, h * 0.08), EcTokens.categoryActivityLight, 0.55),
+        (Offset(w * 0.88, h * 0.18), EcTokens.categorySleepLight, 0.45),
+        (Offset(w * 0.72, h * 0.92), EcTokens.categoryNutritionLight, 0.35),
+      ];
+      for (final wsh in washes) {
+        final paint = Paint()
+          ..shader = RadialGradient(
+            colors: [
+              wsh.$2.withValues(alpha: wsh.$3),
+              wsh.$2.withValues(alpha: 0),
+            ],
+          ).createShader(Rect.fromCircle(center: wsh.$1, radius: w * 0.55));
+        canvas.drawRect(Offset.zero & size, paint);
+      }
+    }
+
     // A single, colorless top-center highlight gives floating glass something
     // neutral to refract. No hues anywhere.
     final highlight = Paint()
@@ -99,7 +120,8 @@ class EcLiquidBackground extends StatelessWidget {
   Widget build(BuildContext context) => EcVoidBackground(child: child);
 }
 
-/// Animated liquid-aurora background for hero surfaces (onboarding / auth).
+/// @deprecated Use [EcVoidBackground] for post-auth screens. Onboarding only.
+@Deprecated('Use EcVoidBackground — aurora violates solid void canvas rule')
 class EcAuroraBackground extends StatefulWidget {
   const EcAuroraBackground({
     super.key,
@@ -241,7 +263,10 @@ enum EcGlassVariant { regular, elevated, tinted, subtle, float }
 /// Glass is intentionally colorless — its appearance is determined by the
 /// ambient depth blobs painted behind it via [EcVoidBackground]. The [tint]
 /// param adds a very subtle semantic color overlay (e.g. sent messages).
-class EcGlassSurface extends StatelessWidget {
+///
+/// Rec #2: specular rim + press states via [onTap].
+/// Rec #47: solid fallback when reduced transparency is preferred.
+class EcGlassSurface extends StatefulWidget {
   const EcGlassSurface({
     super.key,
     required this.child,
@@ -252,6 +277,7 @@ class EcGlassSurface extends StatelessWidget {
     this.onTap,
     this.variant = EcGlassVariant.regular,
     this.tint,
+    this.categoryFill,
   });
 
   final Widget child;
@@ -262,131 +288,193 @@ class EcGlassSurface extends StatelessWidget {
   final VoidCallback? onTap;
   final EcGlassVariant variant;
   final Color? tint;
+  /// Pastel card wash (Google Health metric tiles). Light mode only.
+  final Color? categoryFill;
+
+  @override
+  State<EcGlassSurface> createState() => _EcGlassSurfaceState();
+}
+
+class _EcGlassSurfaceState extends State<EcGlassSurface> {
+  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
     final glass = EcGlass.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final reducedGlass = EcA11y.prefersReducedTransparency(context);
+    final scale = _pressed && widget.onTap != null ? 0.985 : 1.0;
 
-    final (fill, effectiveBlur) = switch (variant) {
+    final (fill, effectiveBlur) = switch (widget.variant) {
       EcGlassVariant.elevated => (glass.fillElevated, EcTokens.glassBlurZ3),
       EcGlassVariant.float => (glass.fillFloat, EcTokens.glassBlurZ4),
       EcGlassVariant.subtle => (glass.fillSubtle, EcTokens.glassBlurZ2 * 0.6),
       EcGlassVariant.tinted => (
-        (tint ?? glass.tintBrand).withValues(
+        (widget.tint ?? glass.tintBrand).withValues(
           alpha: isDark ? 0.16 : 0.12,
         ),
         EcTokens.glassBlurZ2,
       ),
-      EcGlassVariant.regular => (glass.fill, blur),
+      EcGlassVariant.regular => (glass.fill, widget.blur),
     };
 
-    final isElevated = variant == EcGlassVariant.elevated || variant == EcGlassVariant.float;
+    final isElevated = widget.variant == EcGlassVariant.elevated ||
+        widget.variant == EcGlassVariant.float;
+    final borderRadius = widget.borderRadius;
+    final padding = widget.padding ?? const EdgeInsets.all(16);
+    final margin = widget.margin;
 
-    // Light mode: solid white card with a soft Material shadow — matches GH.
-    // Dark mode: frosted glass with BackdropFilter blur as before.
+    final shadowSoft = isDark ? 0.28 : 0.10;
+    final shadowStrong = isDark ? 0.46 : 0.14;
+    final cardColor = widget.categoryFill ??
+        (isDark ? fill : EcTokens.bgCardLight);
+    final shadowHue = widget.tint ??
+        widget.categoryFill ??
+        glass.shadowColor;
+
     Widget surface;
-    if (!isDark) {
+    if (reducedGlass || !isDark) {
       surface = Container(
         margin: margin,
         decoration: BoxDecoration(
-          color: fill,
+          color: cardColor,
           borderRadius: BorderRadius.circular(borderRadius),
-          border: Border.all(color: glass.border, width: 0.8),
+          border: Border.all(
+            color: isDark ? glass.border : glass.border.withValues(alpha: 0.9),
+            width: 0.6,
+          ),
           boxShadow: [
             BoxShadow(
-              color: glass.shadowColor.withValues(alpha: isElevated ? 0.07 : 0.04),
-              blurRadius: isElevated ? 20 : 10,
+              color: shadowHue.withValues(
+                alpha: isElevated ? shadowStrong : shadowSoft,
+              ),
+              blurRadius: isElevated ? 28 : 16,
               spreadRadius: 0,
-              offset: Offset(0, isElevated ? 6 : 3),
+              offset: Offset(0, isElevated ? 10 : 5),
             ),
           ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(borderRadius),
-          child: Padding(
-            padding: padding ?? const EdgeInsets.all(16),
-            child: child,
-          ),
+          child: Padding(padding: padding, child: widget.child),
         ),
       );
     } else {
-      // Dark mode: frosted glass with BackdropFilter.
-      surface = Container(
-        margin: margin,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
-          boxShadow: [
-            BoxShadow(
-              color: glass.shadowColor.withValues(alpha: isElevated ? 0.46 : 0.28),
-              blurRadius: isElevated ? 44 : 22,
-              spreadRadius: isElevated ? -14 : -6,
-              offset: Offset(0, isElevated ? 24 : 10),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: effectiveBlur, sigmaY: effectiveBlur),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(borderRadius),
-                border: Border.all(color: glass.border, width: 0.8),
-                color: fill,
+      final blurSigma = EcPerf.blurSigma(context, effectiveBlur);
+      if (blurSigma <= 0) {
+        surface = Container(
+          margin: margin,
+          decoration: BoxDecoration(
+            color: fill,
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(color: glass.border, width: 0.8),
+            boxShadow: [
+              BoxShadow(
+                color: glass.shadowColor.withValues(
+                  alpha: isElevated ? shadowSoft : shadowSoft * 0.65,
+                ),
+                blurRadius: isElevated ? 20 : 12,
+                offset: Offset(0, isElevated ? 8 : 4),
               ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: 0, right: 0, top: 0, height: 1,
-                    child: IgnorePointer(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(borderRadius),
-                          topRight: Radius.circular(borderRadius),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(borderRadius),
+            child: Padding(padding: padding, child: widget.child),
+          ),
+        );
+      } else {
+        surface = Container(
+          margin: margin,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: [
+              BoxShadow(
+                color: glass.shadowColor.withValues(
+                  alpha: isElevated ? shadowStrong : shadowSoft,
+                ),
+                blurRadius: isElevated ? 44 : 22,
+                spreadRadius: isElevated ? -14 : -6,
+                offset: Offset(0, isElevated ? 24 : 10),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(borderRadius),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(borderRadius),
+                  border: EcA11y.glassHairline(context),
+                  color: fill,
+                ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      height: 1,
+                      child: IgnorePointer(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(borderRadius),
+                            topRight: Radius.circular(borderRadius),
+                          ),
+                          child: ColoredBox(color: glass.specularTop),
                         ),
-                        child: ColoredBox(color: glass.specularTop),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    left: 0, top: 0, bottom: 0, width: 0.5,
-                    child: IgnorePointer(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(borderRadius),
-                          bottomLeft: Radius.circular(borderRadius),
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 0.5,
+                      child: IgnorePointer(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(borderRadius),
+                            bottomLeft: Radius.circular(borderRadius),
+                          ),
+                          child: ColoredBox(color: glass.specularSide),
                         ),
-                        child: ColoredBox(color: glass.specularSide),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: padding ?? const EdgeInsets.all(16),
-                    child: child,
-                  ),
-                ],
+                    Padding(padding: padding, child: widget.child),
+                  ],
+                ),
               ),
             ),
+          ),
+        );
+      }
+    }
+
+    if (widget.onTap != null) {
+      surface = GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(borderRadius),
+            splashColor: Colors.white.withValues(alpha: 0.08),
+            highlightColor: Colors.white.withValues(alpha: 0.04),
+            child: surface,
           ),
         ),
       );
     }
 
-    if (onTap != null) {
-      surface = Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(borderRadius),
-          splashColor: Colors.white.withValues(alpha: 0.08),
-          highlightColor: Colors.white.withValues(alpha: 0.04),
-          child: surface,
-        ),
-      );
-    }
-
-    return surface;
+    return AnimatedScale(
+      scale: scale,
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+      child: surface,
+    );
   }
 }
 
@@ -398,11 +486,13 @@ class EcGlassNavDestination {
     required this.icon,
     required this.selectedIcon,
     required this.label,
+    this.accent = EcTokens.categoryActivity,
   });
 
   final IconData icon;
   final IconData selectedIcon;
   final String label;
+  final Color accent;
 }
 
 /// Floating glass pill navigation bar — detached from screen edges.
@@ -420,12 +510,16 @@ class EcFloatingNav extends StatelessWidget {
     required this.onSelected,
     required this.destinations,
     this.onAdd,
+    this.onAddLongPress,
+    this.compressLabels = false,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final List<EcGlassNavDestination> destinations;
   final VoidCallback? onAdd;
+  final VoidCallback? onAddLongPress;
+  final bool compressLabels;
 
   static const double _pillHeight = 64.0;
   static const double _orbDiameter = 52.0;
@@ -452,6 +546,7 @@ class EcFloatingNav extends StatelessWidget {
               selectedIndex: selectedIndex,
               onSelected: onSelected,
               destinations: destinations,
+              compressLabels: compressLabels,
             ),
           ),
           // + orb
@@ -461,7 +556,7 @@ class EcFloatingNav extends StatelessWidget {
               left: 0,
               right: 0,
               child: Center(
-                child: _AddOrb(onTap: onAdd!),
+                child: _AddOrb(onTap: onAdd!, onLongPress: onAddLongPress),
               ),
             ),
         ],
@@ -475,11 +570,13 @@ class _FloatingPill extends StatelessWidget {
     required this.selectedIndex,
     required this.onSelected,
     required this.destinations,
+    this.compressLabels = false,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final List<EcGlassNavDestination> destinations;
+  final bool compressLabels;
 
   @override
   Widget build(BuildContext context) {
@@ -545,12 +642,12 @@ class _FloatingPill extends StatelessWidget {
                             decoration: BoxDecoration(
                               borderRadius:
                                   BorderRadius.circular(EcTokens.radiusXl),
-                              color: Colors.white.withValues(
-                                alpha: isDark ? 0.12 : 0.60,
-                              ),
+                              color: destinations[selectedIndex].accent
+                                  .withValues(alpha: isDark ? 0.22 : 0.16),
                               border: Border.all(
-                                color: glass.borderStrong,
-                                width: 0.5,
+                                color: destinations[selectedIndex].accent
+                                    .withValues(alpha: 0.28),
+                                width: 0.6,
                               ),
                             ),
                           ),
@@ -584,30 +681,28 @@ class _FloatingPill extends StatelessWidget {
                                           key: ValueKey(selected),
                                           size: selected ? 24 : 22,
                                           color: selected
-                                              ? (isDark
-                                                  ? Colors.white
-                                                  : ec.accentBrand)
+                                              ? destinations[i].accent
                                               : ec.textMuted,
                                         ),
                                       ),
-                                      const SizedBox(height: 3),
-                                      AnimatedDefaultTextStyle(
-                                        duration: EcTokens.motionFast,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: selected
-                                              ? FontWeight.w700
-                                              : FontWeight.w500,
-                                          color: selected
-                                              ? (isDark
-                                                  ? Colors.white
-                                                  : ec.accentBrand)
-                                              : ec.textMuted,
-                                          letterSpacing: -0.1,
-                                          fontFamily: EcTokens.fontFamily,
+                                      if (!compressLabels) ...[
+                                        const SizedBox(height: 3),
+                                        AnimatedDefaultTextStyle(
+                                          duration: EcTokens.motionFast,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: selected
+                                                ? FontWeight.w700
+                                                : FontWeight.w500,
+                                            color: selected
+                                                ? destinations[i].accent
+                                                : ec.textMuted,
+                                            letterSpacing: -0.1,
+                                            fontFamily: EcTokens.fontFamily,
+                                          ),
+                                          child: Text(d.label),
                                         ),
-                                        child: Text(d.label),
-                                      ),
+                                      ],
                                     ],
                                   ),
                                 ),
@@ -629,15 +724,15 @@ class _FloatingPill extends StatelessWidget {
 }
 
 class _AddOrb extends StatelessWidget {
-  const _AddOrb({required this.onTap});
+  const _AddOrb({required this.onTap, this.onLongPress});
 
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   static const double _size = EcFloatingNav._orbDiameter;
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final onAccent = isDark ? EcTokens.onAccentDark : EcTokens.onAccentLight;
 
@@ -648,7 +743,7 @@ class _AddOrb extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: ec.accentBrand.withValues(alpha: isDark ? 0.50 : 0.30),
+            color: EcTokens.categoryActivity.withValues(alpha: isDark ? 0.50 : 0.35),
             blurRadius: 28,
             offset: const Offset(0, 8),
           ),
@@ -664,12 +759,13 @@ class _AddOrb extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: onTap,
+              onLongPress: onLongPress,
               splashColor: Colors.white.withValues(alpha: 0.18),
               highlightColor: Colors.transparent,
               child: Ink(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: ec.accentBrand,
+                  color: EcTokens.categoryActivity,
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.30),
                     width: 1.2,
@@ -891,10 +987,10 @@ class EcGlassButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final onAccent = isDark ? EcTokens.onAccentDark : EcTokens.onAccentLight;
     final radius = BorderRadius.circular(EcTokens.radiusMd);
+    final fill = isDark ? EcColors.of(context).accentBrand : EcTokens.categoryActivity;
 
     if (outlined) {
       return EcGlassSurface(
@@ -938,13 +1034,13 @@ class EcGlassButton extends StatelessWidget {
           height: 52,
           decoration: BoxDecoration(
             borderRadius: radius,
-            color: ec.accentBrand,
+            color: fill,
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.22),
             ),
             boxShadow: [
               BoxShadow(
-                color: ec.accentBrand.withValues(alpha: 0.32),
+                color: fill.withValues(alpha: 0.32),
                 blurRadius: 22,
                 offset: const Offset(0, 6),
               ),
@@ -1312,6 +1408,102 @@ class EcGlassListTile extends StatelessWidget {
     this.trailing,
     this.iconColor,
     this.onTap,
+    this.grouped = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final Color? iconColor;
+  final VoidCallback? onTap;
+  /// When true, renders only the row — parent [EcGlassListGroup] supplies the shell.
+  final bool grouped;
+
+  @override
+  Widget build(BuildContext context) {
+    if (grouped) {
+      return _EcGlassListRow(
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
+        trailing: trailing,
+        iconColor: iconColor,
+        onTap: onTap,
+      );
+    }
+    return EcGlassSurface(
+      variant: EcGlassVariant.subtle,
+      borderRadius: EcTokens.radiusCard,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      child: _EcGlassListRow(
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
+        trailing: trailing,
+        iconColor: iconColor,
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
+/// Multiple list rows inside one frosted shell — cleaner than stacked cards.
+class EcGlassListGroup extends StatelessWidget {
+  const EcGlassListGroup({
+    super.key,
+    required this.tiles,
+    this.variant = EcGlassVariant.elevated,
+  });
+
+  final List<EcGlassListTile> tiles;
+  final EcGlassVariant variant;
+
+  @override
+  Widget build(BuildContext context) {
+    final glass = EcGlass.of(context);
+    return EcGlassSurface(
+      variant: variant,
+      borderRadius: EcTokens.radiusGlass,
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          for (var i = 0; i < tiles.length; i++) ...[
+            if (i > 0)
+              Divider(
+                height: 1,
+                thickness: 0.5,
+                indent: 68,
+                color: glass.border,
+              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              child: EcGlassListTile(
+                icon: tiles[i].icon,
+                title: tiles[i].title,
+                subtitle: tiles[i].subtitle,
+                trailing: tiles[i].trailing,
+                iconColor: tiles[i].iconColor,
+                onTap: tiles[i].onTap,
+                grouped: true,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _EcGlassListRow extends StatelessWidget {
+  const _EcGlassListRow({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.iconColor,
+    this.onTap,
   });
 
   final IconData icon;
@@ -1324,52 +1516,58 @@ class EcGlassListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
-    final color = iconColor ?? ec.accentBrand;
-    return EcGlassSurface(
-      onTap: onTap,
-      variant: EcGlassVariant.regular,
-      borderRadius: EcTokens.radiusHero,
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(13),
-              color: color.withValues(alpha: 0.14),
-            ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14.5,
-                    letterSpacing: -0.2,
-                  ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final color = iconColor ??
+        (isDark ? ec.accentBrand : EcTokens.categoryActivity);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(EcTokens.radiusSm),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: color.withValues(alpha: isDark ? 0.18 : 0.20),
                 ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle!,
-                    style: TextStyle(
-                      color: ec.textSecondary,
-                      fontSize: 12,
+                child: Icon(icon, color: color, size: 19),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14.5,
+                        letterSpacing: -0.2,
+                      ),
                     ),
-                  ),
-                ],
-              ],
-            ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          color: ec.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              trailing ??
+                  Icon(Icons.chevron_right_rounded, color: ec.textMuted, size: 18),
+            ],
           ),
-          trailing ?? Icon(Icons.chevron_right_rounded, color: ec.textMuted, size: 18),
-        ],
+        ),
       ),
     );
   }

@@ -6,6 +6,8 @@ import '../../core/data/engagement_repository.dart';
 import '../../core/data/local_prefs.dart';
 import '../../core/theme/ec_theme.dart';
 import '../../shared/widgets/ec_engagement.dart';
+import '../../shared/widgets/ec_outcome_hero.dart';
+import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
@@ -89,10 +91,12 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
       body: ListView(
         padding: kEcGlassListPadding,
         children: [
-          EcEngagementHero(
+          EcOutcomeHero(
+            eyebrow: 'Travel prep',
             title: 'Trip preparation',
             subtitle: 'Medication supply, timezone shifts, and travel checklist.',
             icon: Icons.flight_takeoff_rounded,
+            accent: EcAccent.amber,
             trailing: EcPill(
               label: '$readiness% ready',
               tone: readiness >= 100 ? EcPillTone.positive : EcPillTone.caution,

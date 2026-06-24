@@ -112,6 +112,8 @@ class EcSparklineCard extends StatelessWidget {
       onTap: onTap,
       variant: EcGlassVariant.elevated,
       borderRadius: EcTokens.radiusCard,
+      categoryFill: isDark ? null : fillColor,
+      tint: color,
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -132,6 +135,78 @@ class ApiClient {
       );
       return response.data as T;
     });
+  }
+
+  /// POST with a newline-delimited JSON response stream (e.g. Care AI).
+  Stream<Map<String, dynamic>> postNdjsonStream(
+    String path, {
+    Object? data,
+    CancelToken? cancelToken,
+  }) async* {
+    final headers = await authHeaders();
+    final response = await _dio.post<ResponseBody>(
+      path,
+      data: data,
+      options: Options(
+        responseType: ResponseType.stream,
+        headers: headers,
+      ),
+      cancelToken: cancelToken,
+    );
+
+    final status = response.statusCode ?? 0;
+    if (status < 200 || status >= 300) {
+      String body = '';
+      try {
+        body = await response.data?.stream
+                .map(utf8.decode)
+                .join() ??
+            '';
+        final parsed = jsonDecode(body) as Map<String, dynamic>;
+        throw DioException(
+          requestOptions: response.requestOptions,
+          response: Response(
+            requestOptions: response.requestOptions,
+            statusCode: status,
+            data: parsed,
+          ),
+          type: DioExceptionType.badResponse,
+        );
+      } catch (e) {
+        if (e is DioException) rethrow;
+        throw DioException(
+          requestOptions: response.requestOptions,
+          response: Response(
+            requestOptions: response.requestOptions,
+            statusCode: status,
+            data: body,
+          ),
+          type: DioExceptionType.badResponse,
+        );
+      }
+    }
+
+    var buffer = '';
+    await for (final chunk in response.data!.stream) {
+      buffer += utf8.decode(chunk);
+      var idx = buffer.indexOf('\n');
+      while (idx >= 0) {
+        final line = buffer.substring(0, idx).trim();
+        buffer = buffer.substring(idx + 1);
+        if (line.isNotEmpty) {
+          try {
+            yield jsonDecode(line) as Map<String, dynamic>;
+          } catch (_) {}
+        }
+        idx = buffer.indexOf('\n');
+      }
+    }
+    final tail = buffer.trim();
+    if (tail.isNotEmpty) {
+      try {
+        yield jsonDecode(tail) as Map<String, dynamic>;
+      } catch (_) {}
+    }
   }
 
   Future<T> _withRetry<T>(Future<T> Function() fn, {int attempts = 3}) async {

@@ -5,7 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/data/engagement_repository.dart';
 import '../../core/data/local_prefs.dart';
 import '../../shared/models/models.dart';
-import '../../shared/widgets/ec_engagement.dart';
+import '../../shared/widgets/ec_outcome_hero.dart';
+import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
@@ -77,10 +78,12 @@ class _FamilyCircleScreenState extends ConsumerState<FamilyCircleScreen> {
           : ListView(
               padding: kEcGlassListPadding,
               children: [
-                EcEngagementHero(
+                EcOutcomeHero(
+                  eyebrow: 'Care network',
                   title: 'Your care circle',
                   subtitle: 'Members, guardians, roles, and privacy controls.',
                   icon: Icons.family_restroom_rounded,
+                  accent: EcAccent.sky,
                   trailing: EcPill(label: '$memberCount people', tone: EcPillTone.info),
                 ),
                 const SizedBox(height: 16),
@@ -324,10 +327,12 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen> {
           : ListView(
               padding: kEcGlassListPadding,
               children: [
-                EcEngagementHero(
+                EcOutcomeHero(
+                  eyebrow: 'Moments',
                   title: 'Shared wellness feed',
                   subtitle: 'Milestones, notes, and encouragement from your care circle.',
                   icon: Icons.auto_stories_rounded,
+                  accent: EcAccent.lavender,
                 ),
                 const SizedBox(height: 16),
                 TextField(

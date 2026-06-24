@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import 'ec_screen_header.dart';
 import '../../core/theme/ec_theme.dart';
 import '../../core/theme/ec_tokens.dart';
 import 'ec_glass.dart';
@@ -128,12 +129,16 @@ class EcClockHero extends StatefulWidget {
     super.key,
     required this.greeting,
     required this.date,
+    this.subline,
     this.onEmergency,
+    this.scale = 1.0,
   });
 
   final String greeting;
   final String date;
+  final String? subline;
   final VoidCallback? onEmergency;
+  final double scale;
 
   @override
   State<EcClockHero> createState() => _EcClockHeroState();
@@ -172,59 +177,61 @@ class _EcClockHeroState extends State<EcClockHero> {
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final top = MediaQuery.paddingOf(context).top;
     final textColor = isDark ? Colors.white : EcTokens.textPrimaryLight;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20, top + 12, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Date row + emergency
-          Row(
-            children: [
-              Text(
-                widget.date.toUpperCase(),
-                style: TextStyle(
-                  color: ec.textMuted,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.0,
-                  fontFamily: EcTokens.fontFamily,
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.greeting,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.9,
+                      height: 1.05,
+                      color: textColor,
+                      fontFamily: EcTokens.fontFamily,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${widget.date} · $_time',
+                    style: TextStyle(
+                      color: ec.textMuted,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                      fontFamily: EcTokens.fontFamily,
+                    ),
+                  ),
+                ],
               ),
-              const Spacer(),
-              if (widget.onEmergency != null)
-                _EmergencyBadge(onTap: widget.onEmergency!),
-            ],
-          ),
-          const SizedBox(height: 6),
-          // Clock
-          Text(
-            _time,
-            style: TextStyle(
-              fontSize: EcTokens.fontSizeDisplayXL,
-              fontWeight: FontWeight.w800,
-              letterSpacing: EcTokens.letterSpacingDisplayXL,
-              color: textColor,
-              height: 0.92,
-              fontFamily: EcTokens.fontFamily,
             ),
-          ),
-          const SizedBox(height: 6),
-          // Greeting
+            if (widget.onEmergency != null)
+              _EmergencyBadge(onTap: widget.onEmergency!),
+          ],
+        ),
+        if (widget.subline != null) ...[
+          const SizedBox(height: 10),
           Text(
-            widget.greeting,
+            widget.subline!,
             style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.6,
-              color: textColor.withValues(alpha: 0.80),
+              fontSize: 13.5,
+              fontWeight: FontWeight.w500,
+              height: 1.35,
+              color: ec.textSecondary,
               fontFamily: EcTokens.fontFamily,
             ),
           ),
         ],
-      ),
+      ],
     );
   }
 }
@@ -1114,35 +1121,52 @@ class EcEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    final showMessage =
+        message.trim().isNotEmpty && message.trim() != title.trim();
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: EcCard(
-          elevated: true,
-          padding: const EdgeInsets.all(22),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: EcGlassSurface(
+          variant: EcGlassVariant.float,
+          borderRadius: EcTokens.radiusHero,
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 60,
-                height: 60,
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: ec.accentMintFill.withValues(alpha: 0.22),
+                  color: ec.accentBrand.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: ec.accentBrand.withValues(alpha: 0.18),
+                  ),
                 ),
-                child: Icon(icon, color: ec.accentMintText, size: 26),
+                child: Icon(icon, color: ec.accentBrand, size: 26),
               ),
-              const SizedBox(height: 16),
-              Text(title,
-                  style: Theme.of(context).textTheme.titleLarge,
-                  textAlign: TextAlign.center),
-              const SizedBox(height: 8),
+              const SizedBox(height: 18),
               Text(
-                message,
-                style: TextStyle(color: ec.textSecondary, height: 1.45),
+                title,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.4,
+                    ),
                 textAlign: TextAlign.center,
               ),
-              if (action != null) ...[const SizedBox(height: 20), action!],
+              if (showMessage) ...[
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: ec.textSecondary,
+                    height: 1.45,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              if (action != null) ...[const SizedBox(height: 22), action!],
             ],
           ),
         ),
@@ -1178,7 +1202,7 @@ class EcOfflineBanner extends StatelessWidget {
   }
 }
 
-/// Glass app bar for pushed (full-screen) routes.
+/// Glass app bar for pushed (full-screen) routes — delegates to [EcScreenHeader].
 class EcAppBar extends StatelessWidget implements PreferredSizeWidget {
   const EcAppBar({
     super.key,
@@ -1198,33 +1222,24 @@ class EcAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      automaticallyImplyLeading: showBack,
-      title: Text(title),
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      flexibleSpace: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: EcTokens.glassBlurZ3,
-            sigmaY: EcTokens.glassBlurZ3,
+    final mergedActions = <Widget>[
+      ...?actions,
+      if (showEmergency)
+        IconButton(
+          icon: const Icon(
+            Icons.emergency_rounded,
+            color: EcTokens.statusCritical,
           ),
-          child: DecoratedBox(decoration: _headerDecoration(context)),
+          tooltip: 'Emergency',
+          onPressed: () => context.push('/emergency'),
         ),
-      ),
-      actions: [
-        ...?actions,
-        if (showEmergency)
-          IconButton(
-            icon: const Icon(
-              Icons.emergency_rounded,
-              color: EcTokens.statusCritical,
-            ),
-            tooltip: 'Emergency',
-            onPressed: () => context.push('/emergency'),
-          ),
-      ],
+    ];
+
+    return EcScreenHeader(
+      variant: EcHeaderVariant.push,
+      title: title,
+      showBack: showBack,
+      actions: mergedActions,
     );
   }
 }

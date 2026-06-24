@@ -3,169 +3,44 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/i18n/app_localizations.dart';
 import '../../core/auth/auth_providers.dart';
-import '../../core/theme/ec_theme.dart';
 import '../../core/theme/ec_tokens.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../features/auth/auth_screens.dart';
 import '../../features/auth/onboarding_view.dart';
+import '../../features/care/care_inbox_screen.dart';
 import '../../features/chat/chat_screen.dart';
 import '../../features/circle/circle_screens.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/digest/digest_screen.dart';
 import '../../features/medications/medication_screens.dart';
 import '../../features/nutrition/nutrition_screens.dart';
+import '../../features/emergency/emergency_screen.dart';
+import '../../features/profile/profile_create_screen.dart';
 import '../../features/profile/profile_screens.dart';
+import '../../features/settings/settings_screen.dart';
 import '../../features/report/report_screen.dart';
 import '../../features/shopping/shopping_list_screen.dart';
 import '../../features/social/social_screens.dart';
 import '../../features/telehealth/telehealth_screen.dart';
 import '../../features/travel/travel_mode_screen.dart';
 import '../../features/voice/voice_screen.dart';
+import '../../core/config/feature_flags.dart';
+import '../../features/caregiver/caregiver_command_center.dart';
+import '../../features/moments/health_story_screen.dart';
+import '../../features/settings/trust_center_screen.dart';
+import '../../shared/widgets/ec_context_quick_add.dart';
+import '../../shared/widgets/ec_grouped_more.dart';
 
-/// Show the quick-add glass sheet from anywhere in the patient shell.
-void showQuickAddSheet(BuildContext context) {
-  showEcGlassSheet(
-    context,
-    children: [
-      Padding(
-        padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Quick add',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Capture something from your care flow.',
-              style: TextStyle(
-                color: EcColors.of(context).textSecondary,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 8),
-      _SheetTile(
-        icon: Icons.auto_awesome_rounded,
-        title: 'Ask Care AI',
-        subtitle: 'Chat about your health plan',
-        onTap: () {
-          Navigator.pop(context);
-          context.push('/chat');
-        },
-      ),
-      _SheetTile(
-        icon: Icons.document_scanner_rounded,
-        title: 'Scan medication label',
-        subtitle: 'OCR → review → save',
-        onTap: () {
-          Navigator.pop(context);
-          context.push('/ocr');
-        },
-      ),
-      _SheetTile(
-        icon: Icons.monitor_heart_rounded,
-        title: 'Log vitals',
-        subtitle: 'Blood pressure, heart rate…',
-        onTap: () {
-          Navigator.pop(context);
-          context.push('/health');
-        },
-      ),
-      _SheetTile(
-        icon: Icons.alarm_rounded,
-        title: 'Set reminder',
-        subtitle: 'Schedule a medication alert',
-        onTap: () {
-          Navigator.pop(context);
-          context.push('/reminders');
-        },
-      ),
-      _SheetTile(
-        icon: Icons.emergency_rounded,
-        title: 'Emergency',
-        subtitle: 'SOS and Medical ID',
-        iconColor: EcTokens.statusCritical,
-        onTap: () {
-          Navigator.pop(context);
-          context.push('/emergency');
-        },
-      ),
-    ],
-  );
+/// Context-aware quick-add (Rec #13). Long-press nav + for full sheet.
+void showQuickAddSheet(BuildContext context, WidgetRef ref) {
+  EcContextQuickAdd.show(context, ref);
 }
 
-class _SheetTile extends StatelessWidget {
-  const _SheetTile({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-    this.subtitle,
-    this.iconColor,
-  });
-
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final VoidCallback onTap;
-  final Color? iconColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    final color = iconColor ?? ec.accentBrand;
-
-    return EcGlassSurface(
-      onTap: onTap,
-      variant: EcGlassVariant.regular,
-      borderRadius: EcTokens.radiusCard,
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color.withValues(alpha: 0.14),
-            ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14.5,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                if (subtitle != null)
-                  Text(
-                    subtitle!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: ec.textMuted,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded, color: ec.textMuted, size: 18),
-        ],
-      ),
-    );
-  }
+void showQuickAddSheetLegacy(BuildContext context) {
+  EcGroupedMoreSheet.show(context);
 }
 
 // ─────────────────────────────────────────────────── Patient shell ──
@@ -180,11 +55,15 @@ class PatientShell extends ConsumerStatefulWidget {
 }
 
 class _PatientShellState extends ConsumerState<PatientShell> {
-  /// Maps location → index in the 4-tab nav (0=Today, 1=Health, 2=Messages, 3=Profile).
+  /// 0=Today, 1=Health, 2=Care, 3=You
   int _indexFromLocation(String location) {
     if (location.startsWith('/health')) return 1;
-    if (location.startsWith('/messages')) return 2;
-    if (location.startsWith('/profile')) return 3;
+    if (location.startsWith('/care') || location.startsWith('/messages')) {
+      return 2;
+    }
+    if (location.startsWith('/profile') || location.startsWith('/you')) {
+      return 3;
+    }
     return 0;
   }
 
@@ -205,38 +84,50 @@ class _PatientShellState extends ConsumerState<PatientShell> {
             case 1:
               context.go('/health');
             case 2:
-              context.go('/messages');
+              context.go('/care');
             case 3:
-              context.go('/profile');
+              context.go('/you');
           }
         },
-        onAdd: () => showQuickAddSheet(context),
-        destinations: const [
+        onAdd: () => showQuickAddSheet(context, ref),
+        onAddLongPress: () {
+          final flags = ref.read(featureFlagsProvider).valueOrNull;
+          EcGroupedMoreSheet.show(context, flags: flags);
+        },
+        compressLabels: ref.watch(dashboardScrollOffsetProvider) > 80,
+        destinations: [
           EcGlassNavDestination(
             icon: Icons.home_outlined,
             selectedIcon: Icons.home_rounded,
-            label: 'Today',
+            label: context.l10n.tabToday,
+            accent: EcTokens.tabToday,
           ),
           EcGlassNavDestination(
             icon: Icons.favorite_outline,
             selectedIcon: Icons.favorite_rounded,
-            label: 'Health',
+            label: context.l10n.tabHealth,
+            accent: EcTokens.tabHealth,
           ),
           EcGlassNavDestination(
-            icon: Icons.chat_bubble_outline,
-            selectedIcon: Icons.chat_bubble_rounded,
-            label: 'Messages',
+            icon: Icons.shield_moon_outlined,
+            selectedIcon: Icons.shield_moon_rounded,
+            label: context.l10n.tabCare,
+            accent: EcTokens.tabCare,
           ),
           EcGlassNavDestination(
             icon: Icons.person_outline,
             selectedIcon: Icons.person_rounded,
-            label: 'Profile',
+            label: context.l10n.tabYou,
+            accent: EcTokens.tabYou,
           ),
         ],
       ),
     );
   }
 }
+
+/// Scroll offset for Today tab nav compression (Rec #25).
+final dashboardScrollOffsetProvider = StateProvider<double>((ref) => 0);
 
 // ─────────────────────────────────────────────── Caregiver shell ──
 
@@ -337,6 +228,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const EmergencyScreen(),
       ),
       GoRoute(
+        path: '/profile/create',
+        builder: (context, state) => const ProfileCreateScreen(),
+      ),
+      GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
       ),
@@ -409,6 +304,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const MomentsScreen(),
       ),
       GoRoute(
+        path: '/trust-center',
+        builder: (context, state) => const TrustCenterScreen(),
+      ),
+      GoRoute(
+        path: '/health-story',
+        builder: (context, state) => const HealthStoryScreen(),
+      ),
+      // Domain nested navigation aliases (Rec #14)
+      GoRoute(path: '/meds/reminders', redirect: (_, _) => '/reminders'),
+      GoRoute(path: '/meds/ocr', redirect: (_, _) => '/ocr'),
+      GoRoute(path: '/meds/scanner', redirect: (_, _) => '/scanner'),
+      GoRoute(path: '/meds/refill', redirect: (_, _) => '/refill'),
+      GoRoute(path: '/nutrition/meals', redirect: (_, _) => '/meals'),
+      GoRoute(path: '/nutrition/grocery', redirect: (_, _) => '/grocery'),
+      GoRoute(path: '/nutrition/shopping', redirect: (_, _) => '/shopping-list'),
+      GoRoute(path: '/care/chat', redirect: (_, _) => '/chat'),
+      GoRoute(path: '/care/voice', redirect: (_, _) => '/voice'),
+      GoRoute(path: '/care/moments', redirect: (_, _) => '/moments'),
+      GoRoute(path: '/safety/emergency', redirect: (_, _) => '/emergency'),
+      GoRoute(path: '/safety/travel', redirect: (_, _) => '/travel-mode'),
+      GoRoute(
         path: '/telehealth',
         builder: (context, state) => const TelehealthScreen(),
       ),
@@ -429,16 +345,24 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const HealthScreen(),
           ),
           GoRoute(
+            path: '/care',
+            builder: (context, state) => const CareInboxScreen(),
+          ),
+          GoRoute(
             path: '/messages',
             builder: (context, state) => const MessagesScreen(),
           ),
           GoRoute(
-            path: '/profile',
+            path: '/you',
             builder: (context, state) => const ProfileScreen(),
           ),
           GoRoute(
+            path: '/profile',
+            redirect: (context, state) => '/you',
+          ),
+          GoRoute(
             path: '/caregiver/:profileId',
-            builder: (context, state) => CaregiverDashboardScreen(
+            builder: (context, state) => CaregiverCommandCenter(
               profileId: state.pathParameters['profileId']!,
             ),
           ),

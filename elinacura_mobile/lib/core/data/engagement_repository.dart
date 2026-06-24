@@ -1,8 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/models/models.dart';
 import '../api/api_client.dart';
 import '../auth/auth_providers.dart';
+import '../config/app_config.dart';
+import '../domain/api_result.dart';
+import 'chat_stream.dart';
 
 /// API access for engagement features migrated from the PWA.
 class EngagementRepository {
@@ -10,12 +14,24 @@ class EngagementRepository {
 
   final ApiClient _api;
 
+  Future<ApiResult<List<ChatHistoryMessage>>> getChatHistoryResult(
+    String profileId,
+  ) async {
+    try {
+      final rows = await _api.get<List<dynamic>>('/chat/history/$profileId');
+      final messages = rows
+          .whereType<Map<String, dynamic>>()
+          .map(ChatHistoryMessage.fromJson)
+          .toList();
+      return ApiSuccess(messages);
+    } catch (e) {
+      return ApiFailure(formatApiError(e), e);
+    }
+  }
+
   Future<List<ChatHistoryMessage>> getChatHistory(String profileId) async {
-    final rows = await _api.get<List<dynamic>>('/chat/history/$profileId');
-    return rows
-        .whereType<Map<String, dynamic>>()
-        .map(ChatHistoryMessage.fromJson)
-        .toList();
+    final result = await getChatHistoryResult(profileId);
+    return result.valueOrNull ?? [];
   }
 
   Future<ChatReply> sendChat({
@@ -35,33 +51,78 @@ class EngagementRepository {
     return ChatReply.fromJson(data);
   }
 
+  /// Stream a Care AI reply via POST /chat/stream (newline-delimited JSON).
+  Stream<ChatStreamEvent> streamChat({
+    required String profileId,
+    required String message,
+    List<String> acknowledgedWarnings = const [],
+    CancelToken? cancelToken,
+  }) async* {
+    try {
+      await for (final obj in _api.postNdjsonStream(
+        '/chat/stream',
+        data: {
+          'profile_id': profileId,
+          'message': message,
+          if (acknowledgedWarnings.isNotEmpty)
+            'acknowledged_warnings': acknowledgedWarnings,
+        },
+        cancelToken: cancelToken,
+      )) {
+        final type = obj['type'] as String?;
+        if (type == 'delta') {
+          final text = obj['text'] as String? ?? '';
+          if (text.isNotEmpty) yield ChatStreamDelta(text);
+        } else if (type == 'done') {
+          final risk = obj['risk'] as Map<String, dynamic>?;
+          yield ChatStreamDone(
+            escalated: obj['escalated'] as bool? ?? false,
+            riskLevel: risk?['level'] as String?,
+            mode: obj['mode'] as String?,
+          );
+        }
+      }
+    } on DioException catch (e) {
+      throw Exception(formatApiError(e));
+    }
+  }
+
   Future<void> clearChatHistory(String profileId) async {
     await _api.delete<Map<String, dynamic>>('/chat/history/$profileId');
   }
 
-  Future<WeeklyDigest?> getCurrentDigest(String profileId) async {
+  Future<ApiResult<WeeklyDigest?>> getCurrentDigestResult(String profileId) async {
     try {
       final data = await _api.get<Map<String, dynamic>>(
         '/digest/$profileId/current',
       );
-      return WeeklyDigest.fromJson(data);
-    } catch (_) {
-      return null;
+      return ApiSuccess(WeeklyDigest.fromJson(data));
+    } catch (e) {
+      return ApiFailure(formatApiError(e), e);
     }
   }
 
-  Future<List<ShoppingListItem>> getShoppingList(String profileId) async {
+  Future<WeeklyDigest?> getCurrentDigest(String profileId) async {
+    final result = await getCurrentDigestResult(profileId);
+    return result.valueOrNull;
+  }
+
+  Future<ApiResult<List<ShoppingListItem>>> getShoppingListResult(
+    String profileId,
+  ) async {
     try {
       final data = await _api.get<Map<String, dynamic>>(
         '/shopping-list/$profileId',
       );
       final rows = data['items'] as List? ?? [];
-      return rows
-          .whereType<Map<String, dynamic>>()
-          .map(ShoppingListItem.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
+      return ApiSuccess(
+        rows
+            .whereType<Map<String, dynamic>>()
+            .map(ShoppingListItem.fromJson)
+            .toList(),
+      );
+    } catch (e) {
+      return ApiFailure(formatApiError(e), e);
     }
   }
 
@@ -87,19 +148,28 @@ class EngagementRepository {
     await _api.delete<Map<String, dynamic>>('/shopping-list/items/$itemId');
   }
 
-  Future<List<MomentFeedItem>> getMomentsFeed({String? cursor}) async {
+  Future<List<ShoppingListItem>> getShoppingList(String profileId) async {
+    final result = await getShoppingListResult(profileId);
+    return result.valueOrNull ?? [];
+  }
+
+  Future<ApiResult<List<MomentFeedItem>>> getMomentsFeedResult({
+    String? cursor,
+  }) async {
     try {
       final data = await _api.get<Map<String, dynamic>>(
         '/moments/feed',
         queryParameters: cursor == null ? null : {'cursor': cursor},
       );
       final rows = data['moments'] as List? ?? [];
-      return rows
-          .whereType<Map<String, dynamic>>()
-          .map(MomentFeedItem.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
+      return ApiSuccess(
+        rows
+            .whereType<Map<String, dynamic>>()
+            .map(MomentFeedItem.fromJson)
+            .toList(),
+      );
+    } catch (e) {
+      return ApiFailure(formatApiError(e), e);
     }
   }
 
@@ -114,12 +184,17 @@ class EngagementRepository {
     }
   }
 
-  Future<FamilyCirclesData> listCircles() async {
+  Future<List<MomentFeedItem>> getMomentsFeed({String? cursor}) async {
+    final result = await getMomentsFeedResult(cursor: cursor);
+    return result.valueOrNull ?? [];
+  }
+
+  Future<ApiResult<FamilyCirclesData>> listCirclesResult() async {
     try {
       final data = await _api.get<Map<String, dynamic>>('/circles');
-      return FamilyCirclesData.fromJson(data);
-    } catch (_) {
-      return const FamilyCirclesData();
+      return ApiSuccess(FamilyCirclesData.fromJson(data));
+    } catch (e) {
+      return ApiFailure(formatApiError(e), e);
     }
   }
 
@@ -157,17 +232,29 @@ class EngagementRepository {
     );
   }
 
-  Future<List<TelehealthPartner>> getTelehealthPartners() async {
+  Future<FamilyCirclesData> listCircles() async {
+    final result = await listCirclesResult();
+    return result.valueOrNull ?? const FamilyCirclesData();
+  }
+
+  Future<ApiResult<List<TelehealthPartner>>> getTelehealthPartnersResult() async {
     try {
       final data = await _api.get<Map<String, dynamic>>('/telehealth/partners');
       final rows = data['partners'] as List? ?? [];
-      return rows
-          .whereType<Map<String, dynamic>>()
-          .map(TelehealthPartner.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
+      return ApiSuccess(
+        rows
+            .whereType<Map<String, dynamic>>()
+            .map(TelehealthPartner.fromJson)
+            .toList(),
+      );
+    } catch (e) {
+      return ApiFailure(formatApiError(e), e);
     }
+  }
+
+  Future<List<TelehealthPartner>> getTelehealthPartners() async {
+    final result = await getTelehealthPartnersResult();
+    return result.valueOrNull ?? [];
   }
 }
 

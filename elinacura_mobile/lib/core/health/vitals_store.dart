@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../auth/auth_providers.dart';
+import '../data/health_repository.dart';
+
 // ──────────────────────────────────────────────── Domain model ──
 
 /// Every health metric the app can track locally.
@@ -104,8 +107,6 @@ extension VitalTypeX on VitalType {
   }
 }
 
-// ─────────────────────────────────────────── Single reading ──
-
 class VitalEntry {
   const VitalEntry({required this.timestamp, required this.value});
 
@@ -124,6 +125,12 @@ class VitalEntry {
 }
 
 typedef VitalsLog = Map<VitalType, List<VitalEntry>>;
+
+class VitalAnomaly {
+  const VitalAnomaly({required this.title, required this.detail});
+  final String title;
+  final String detail;
+}
 
 // ─────────────────────────────────────────── Riverpod store ──
 
@@ -166,6 +173,78 @@ class VitalsNotifier extends AsyncNotifier<VitalsLog> {
     current[type] = entries;
     state = AsyncData(current);
     await _persist(current);
+
+    final profileId =
+        ref.read(healthOverviewProvider).valueOrNull?.profile?.id;
+    if (profileId != null) {
+      final payload = _observationPayload(type, value, recordedAt: DateTime.now());
+      if (payload != null) {
+        await ref.read(healthRepositoryProvider).syncVitalObservation(
+              profileId,
+              payload,
+            );
+      }
+    }
+  }
+
+  Map<String, dynamic>? _observationPayload(
+    VitalType type,
+    double value, {
+    DateTime? recordedAt,
+  }) {
+    final ts = recordedAt?.toUtc().toIso8601String();
+    double? secondary;
+    if (type == VitalType.bloodPressureSystolic) {
+      secondary = latest(VitalType.bloodPressureDiastolic)?.value;
+    }
+    return switch (type) {
+      VitalType.heartRate || VitalType.restingHR => {
+          'kind': 'vital',
+          'metric': 'heart_rate',
+          'value_numeric': value,
+          'unit': 'bpm',
+          'recorded_at': ?ts,
+        },
+      VitalType.bloodPressureSystolic => {
+          'kind': 'vital',
+          'metric': 'blood_pressure',
+          'value_numeric': value,
+          'value_secondary': ?secondary,
+          'unit': 'mmHg',
+          'recorded_at': ?ts,
+        },
+      VitalType.bloodPressureDiastolic => null,
+      VitalType.bloodOxygen => {
+          'kind': 'vital',
+          'metric': 'oxygen_saturation',
+          'value_numeric': value,
+          'unit': '%',
+          'recorded_at': ?ts,
+        },
+      VitalType.weight => {
+          'kind': 'vital',
+          'metric': 'weight',
+          'value_numeric': value,
+          'unit': 'kg',
+          'recorded_at': ?ts,
+        },
+      VitalType.hrv => {
+          'kind': 'vital',
+          'metric': 'custom',
+          'value_numeric': value,
+          'unit': 'ms',
+          'label': 'HRV',
+          'recorded_at': ?ts,
+        },
+      VitalType.steps => {
+          'kind': 'vital',
+          'metric': 'custom',
+          'value_numeric': value,
+          'unit': 'steps',
+          'label': 'Steps',
+          'recorded_at': ?ts,
+        },
+    };
   }
 
   /// Most-recent reading for [type], or null.
@@ -183,6 +262,27 @@ class VitalsNotifier extends AsyncNotifier<VitalsLog> {
   /// Number of distinct types that have at least one reading.
   int get trackedCount =>
       (state.valueOrNull ?? {}).entries.where((e) => e.value.isNotEmpty).length;
+
+  /// Out-of-range vitals for clinical clarity (Rec #16).
+  List<VitalAnomaly> get anomalies {
+    final out = <VitalAnomaly>[];
+    for (final type in VitalType.values) {
+      final entry = latest(type);
+      if (entry == null) continue;
+      final inRange = type.isInRange(entry.value);
+      if (inRange == false) {
+        final label = type.statusLabel(entry.value) ?? 'Out of range';
+        out.add(
+          VitalAnomaly(
+            title: '${type.label} — $label',
+            detail:
+                '${entry.value.toStringAsFixed(type == VitalType.weight ? 1 : 0)} ${type.unit}',
+          ),
+        );
+      }
+    }
+    return out;
+  }
 
   Future<void> _persist(VitalsLog log) async {
     final prefs = await SharedPreferences.getInstance();

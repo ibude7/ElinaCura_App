@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/data/engagement_repository.dart';
+import '../../core/design_system/ec_copy.dart';
 import '../../core/theme/ec_theme.dart';
 import '../../shared/models/models.dart';
-import '../../shared/widgets/ec_engagement.dart';
 import '../../shared/widgets/ec_glass.dart';
+import '../../shared/widgets/ec_outcome_hero.dart';
+import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
 class DigestScreen extends ConsumerStatefulWidget {
@@ -57,8 +60,7 @@ class _DigestScreenState extends ConsumerState<DigestScreen> {
               ? EcEmptyState(
                   icon: Icons.newspaper_rounded,
                   title: 'No weekly digest yet',
-                  message:
-                      'Your summary builds from logged medications, meals, and activity. Start tracking to see it here.',
+                  message: EcCopy.emptyDigest,
                   action: FilledButton(
                     onPressed: () => context.push('/reminders'),
                     child: const Text('Start tracking'),
@@ -67,12 +69,14 @@ class _DigestScreenState extends ConsumerState<DigestScreen> {
               : ListView(
                   padding: kEcGlassListPadding,
                   children: [
-                    EcEngagementHero(
+                    EcOutcomeHero(
+                      eyebrow: 'Weekly outcome',
                       title: _digest!.periodLabel,
                       subtitle: _digest!.summary.isEmpty
                           ? 'Your weekly health rhythm at a glance.'
                           : _digest!.summary,
                       icon: Icons.insights_rounded,
+                      accent: EcAccent.sky,
                       trailing: EcPill(
                         label: 'Score ${_digest!.score}',
                         tone: _digest!.score >= 70
@@ -104,7 +108,11 @@ class _DigestScreenState extends ConsumerState<DigestScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    EcShareActions(text: _digest!.summary),
+                    FilledButton.icon(
+                      onPressed: () => Share.share(_digest!.summary),
+                      icon: const Icon(Icons.ios_share_rounded),
+                      label: const Text('Share digest'),
+                    ),
                   ],
                 ),
     );

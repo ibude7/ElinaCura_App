@@ -10,9 +10,9 @@ class EcTheme {
 
   static ThemeData light() {
     const scheme = ColorScheme.light(
-      primary: EcTokens.accentBrand,
-      onPrimary: EcTokens.onAccentLight,
-      secondary: EcTokens.categoryActivity,
+      primary: EcTokens.categoryActivity,
+      onPrimary: Colors.white,
+      secondary: EcTokens.categoryNutrition,
       onSecondary: Colors.white,
       tertiary: EcTokens.categorySleep,
       surface: EcTokens.bgVoidLight,
@@ -446,19 +446,19 @@ class EcGlass extends ThemeExtension<EcGlass> {
   static EcGlass of(BuildContext context) =>
       Theme.of(context).extension<EcGlass>()!;
 
-  /// Light mode: solid white cards with very subtle border — matches GH.
+  /// Light mode: crisp white cards + soft tinted shadows (Google Health style).
   static final EcGlass light = EcGlass(
     fill: const Color(0xFFFFFFFF),
     fillElevated: const Color(0xFFFFFFFF),
-    fillSubtle: const Color(0xFFF8FAFF),
+    fillSubtle: EcTokens.washActivity,
     fillFloat: const Color(0xFFFFFFFF),
-    border: Colors.black.withValues(alpha: 0.06),
-    borderStrong: Colors.black.withValues(alpha: 0.10),
+    border: Colors.black.withValues(alpha: 0.05),
+    borderStrong: Colors.black.withValues(alpha: 0.08),
     specularTop: Colors.white,
-    specularSide: Colors.white.withValues(alpha: 0.60),
-    navFill: Colors.white.withValues(alpha: 0.95),
+    specularSide: Colors.white.withValues(alpha: 0.70),
+    navFill: Colors.white.withValues(alpha: 0.94),
     tintBrand: EcTokens.accentBrand,
-    shadowColor: const Color(0xFF1A1C2E),
+    shadowColor: const Color(0xFF4285F4),
   );
 
   /// Dark mode: frosted glass on deep navy.

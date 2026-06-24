@@ -230,7 +230,11 @@ class HealthOverviewNotifier extends AsyncNotifier<HealthOverview> {
   Future<HealthOverview> build() async => _load();
 
   Future<HealthOverview> _load() async {
-    await ref.read(authServiceProvider).ensureBackendSession();
+    try {
+      await ref.read(authServiceProvider).ensureBackendSession();
+    } catch (_) {
+      // Session refresh is best-effort — local profiles still load.
+    }
     final profiles = await ref.read(healthRepositoryProvider).getProfiles();
     final cachedId = await ProfileCache.readActiveProfileId();
     HealthProfile? profile;
@@ -241,9 +245,39 @@ class HealthOverviewNotifier extends AsyncNotifier<HealthOverview> {
           );
       if (profile != null) {
         await ProfileCache.cacheProfile(profile);
+        ref.read(activeProfileIdProvider.notifier).state = profile.id;
       }
     }
     return HealthOverviewBuilder.build(profile);
+  }
+
+  Future<HealthProfile?> createProfile({
+    required String name,
+    String? primaryGoal,
+    String? bloodType,
+    List<String> conditions = const [],
+    List<String> medications = const [],
+    List<String> allergies = const [],
+    EmergencyContact? emergencyContact,
+    String? email,
+  }) async {
+    final result = await ref.read(healthRepositoryProvider).createProfile(
+          name: name,
+          primaryGoal: primaryGoal,
+          bloodType: bloodType,
+          conditions: conditions,
+          medications: medications,
+          allergies: allergies,
+          emergencyContact: emergencyContact,
+          email: email,
+        );
+    if (result.isFailure) return null;
+    final profile = result.valueOrNull!;
+    await ProfileCache.cacheProfile(profile);
+    ref.read(activeProfileIdProvider.notifier).state = profile.id;
+    ref.read(pipedaConsentProvider.notifier).state = true;
+    state = AsyncData(HealthOverviewBuilder.build(profile));
+    return profile;
   }
 
   Future<void> retry() async {

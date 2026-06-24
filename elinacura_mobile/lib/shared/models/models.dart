@@ -29,6 +29,46 @@ class HealthProfile extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+        if (id.isNotEmpty) 'id': id,
+        if (name != null) 'name': name,
+        if (email != null) 'email': email,
+        if (location != null) 'location': location,
+        if (bloodType != null) 'blood_type': bloodType,
+        if (primaryGoal != null) 'primary_goal': primaryGoal,
+        'conditions': conditions,
+        'medications': medications,
+        'allergies': allergies,
+        'emergency_contacts':
+            emergencyContacts.map((c) => c.toJson()).toList(),
+      };
+
+  HealthProfile copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? location,
+    String? bloodType,
+    String? primaryGoal,
+    List<String>? conditions,
+    List<String>? medications,
+    List<String>? allergies,
+    List<EmergencyContact>? emergencyContacts,
+  }) {
+    return HealthProfile(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      location: location ?? this.location,
+      bloodType: bloodType ?? this.bloodType,
+      primaryGoal: primaryGoal ?? this.primaryGoal,
+      conditions: conditions ?? this.conditions,
+      medications: medications ?? this.medications,
+      allergies: allergies ?? this.allergies,
+      emergencyContacts: emergencyContacts ?? this.emergencyContacts,
+    );
+  }
+
   final String id;
   final String? name;
   final String? email;
@@ -67,6 +107,12 @@ class EmergencyContact extends Equatable {
       relationship: json['relationship'] as String?,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        if (phone != null) 'phone': phone,
+        if (relationship != null) 'relationship': relationship,
+      };
 
   final String name;
   final String? phone;

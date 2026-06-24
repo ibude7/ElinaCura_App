@@ -316,6 +316,19 @@
       "title": "Key vitals",
       "sub": "Tap a vital to open its detail"
     },
+    "vitalsHub": {
+      "title": "Your vitals",
+      "statusTitle": "Health status",
+      "noVitals": "No vitals logged yet",
+      "tracked": "{count} of {total} vitals tracked",
+      "keyMetrics": "Key metrics",
+      "logButton": "+ Log",
+      "logVitals": "Log vitals",
+      "connectHealth": "Connect Apple Health",
+      "healthConnected": "Health data connection enabled",
+      "healthConnectFailed": "Could not connect — check permissions",
+      "clinicianReport": "Clinician report"
+    },
     "openIssues": {
       "title": "Open issues",
       "sub": "Things worth attention"
@@ -966,7 +979,56 @@
       "reminders": "Reminders",
       "remindersDesc": "Medication schedule"
     },
-    "version": "ElinaCura v{version}"
+    "version": "ElinaCura v{version}",
+    "security": {
+      "title": "Security",
+      "biometricTitle": "Biometric unlock",
+      "biometricSub": "Use Face ID or fingerprint to open the app"
+    },
+    "accountActions": {
+      "displayName": "Display name",
+      "nameHint": "Your name",
+      "updateName": "Update name",
+      "nameUpdated": "Name updated",
+      "newPassword": "New password",
+      "changePassword": "Change password",
+      "passwordUpdated": "Password updated",
+      "resendVerification": "Resend verification email",
+      "upgradeAccount": "Create permanent account",
+      "upgradeTitle": "Upgrade account",
+      "upgradeAction": "Upgrade",
+      "cancel": "Cancel",
+      "consentCta": "I consent"
+    }
+  },
+  "careInbox": {
+    "eyebrow": "Care network",
+    "title": "Care",
+    "subtitle": "Messages, AI, alerts, and updates",
+    "voice": "Voice",
+    "emptyTitle": "Your care inbox is clear",
+    "emptyCta": "Ask Care AI",
+    "new": "New",
+    "tabs": {
+      "inbox": "Inbox",
+      "ai": "AI",
+      "people": "People",
+      "alerts": "Alerts"
+    },
+    "people": {
+      "eyebrow": "Connect",
+      "title": "Your care circle",
+      "subtitle": "Family, caregivers, and clinical connections.",
+      "messagesSub": "Chat with your care circle"
+    },
+    "alerts": {
+      "eyebrow": "Safety",
+      "title": "Alerts & monitoring",
+      "subtitle": "Safety events, emergency tools, and travel prep.",
+      "safety": "Safety monitoring",
+      "travel": "Travel mode",
+      "telehealth": "Telehealth handoff"
+    }
   },
   "chatPage": {
     "title": "Care AI",
@@ -990,6 +1052,7 @@
     "suggestionsTitle": "Suggested prompts",
     "suggestionsSub": "Based on your profile",
     "disclaimer": "Care AI offers general guidance and isn't a substitute for professional medical advice.",
+    "offlineQueued": "Your message is queued and will send when you're back online.",
     "glance": {
       "questions": "Questions",
       "topics": "Topics",
@@ -3018,7 +3081,13 @@
     "ocrCapture": "Scan Med Label",
     "messages": "Messages",
     "moments": "Moments",
-    "connections": "Connections"
+    "connections": "Connections",
+    "tabs": {
+      "today": "Today",
+      "health": "Health",
+      "care": "Care",
+      "you": "You"
+    }
   },
   "auth": {
     "signIn": "Sign in securely",
@@ -3298,6 +3367,7 @@
     "share": "Share",
     "localResources": "Local Emergency Resources",
     "callEmergency": "Call Emergency Services",
+    "textServices": "Text emergency services",
     "conditions": "Active Conditions",
     "medications": "Current Medications",
     "allergies": "Known Allergies",

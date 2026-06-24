@@ -46,6 +46,9 @@ dependencies:
   shared_preferences: ^2.5.3
   equatable: ^2.0.7
   collection: ^1.19.1
+  speech_to_text: ^7.0.0
+  qr_flutter: ^4.1.0
+  share_plus: ^10.1.4
 
 dev_dependencies:
   flutter_test:
@@ -76,6 +79,7 @@ flutter_native_splash:
 flutter:
   uses-material-design: true
   assets:
+    - assets/design/
     - assets/i18n/
     - assets/images/
   fonts:

@@ -157,6 +157,35 @@ class NotificationService {
 
   Future<void> cancelAll() => _local.cancelAll();
 
+  Future<void> cancel(int id) => _local.cancel(id);
+
+  Future<void> scheduleOneShot({
+    required int id,
+    required String title,
+    required String body,
+    required Duration after,
+  }) async {
+    if (kIsWeb) return;
+    await _local.zonedSchedule(
+      id,
+      title,
+      body,
+      tz.TZDateTime.now(tz.local).add(after),
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          'medications',
+          _channels['medications']!.$1,
+          channelDescription: _channels['medications']!.$2,
+          importance: Importance.high,
+        ),
+        iOS: const DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  }
+
   void _onNotificationTap(NotificationResponse response) {
     debugPrint('Notification tapped: ${response.payload}');
   }

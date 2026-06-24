@@ -1,7 +1,3 @@
-import 'dart:ui';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -12,307 +8,10 @@ import '../../core/theme/ec_theme.dart';
 import '../../core/theme/ec_tokens.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_glass.dart';
+import '../../shared/widgets/ec_screen_header.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
-// ═══════════════════════════════════════════════════════ MESSAGES SCREEN ══
-
-class MessagesScreen extends ConsumerStatefulWidget {
-  const MessagesScreen({super.key});
-
-  @override
-  ConsumerState<MessagesScreen> createState() => _MessagesScreenState();
-}
-
-class _MessagesScreenState extends ConsumerState<MessagesScreen> {
-  final _controller = TextEditingController();
-  String? _threadId;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  String _resolveThreadId() {
-    final user = FirebaseAuth.instance.currentUser;
-    return _threadId ?? user?.uid ?? 'default';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final threadId = _resolveThreadId();
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-
-    return Column(
-      children: [
-        // ── Header
-        _MessagesHeader(),
-
-        // ── Message list
-        Expanded(
-          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance
-                .collection('messages')
-                .doc(threadId)
-                .collection('messages')
-                .orderBy('timestamp', descending: true)
-                .limit(60)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return Center(
-                  child: EcErrorState(
-                    message: 'Could not load messages',
-                    onRetry: () => setState(() {}),
-                  ),
-                );
-              }
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final docs = snapshot.data!.docs;
-              if (docs.isEmpty) {
-                return const EcEmptyState(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  title: 'No messages yet',
-                  message:
-                      'Start a conversation with your care circle. Keep each other in the loop.',
-                );
-              }
-              return ListView.builder(
-                reverse: true,
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                itemCount: docs.length,
-                itemBuilder: (context, i) {
-                  final msg = ChatMessage.fromFirestore(
-                    docs[i].id,
-                    docs[i].data(),
-                  );
-                  final isMine = msg.senderId == userId;
-                  return EcGlassEntrance(
-                    index: i.clamp(0, 8),
-                    child: _ChatBubble(message: msg, isMine: isMine),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-
-        // ── Composer
-        _MessageComposer(
-          controller: _controller,
-          onSend: () => _send(threadId, userId),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _send(String threadId, String userId) async {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
-    _controller.clear();
-    await FirebaseFirestore.instance
-        .collection('messages')
-        .doc(threadId)
-        .collection('messages')
-        .add({
-      'text': text,
-      'senderId': userId,
-      'timestamp': FieldValue.serverTimestamp(),
-      'read': false,
-    });
-  }
-}
-
-class _MessagesHeader extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final top = MediaQuery.paddingOf(context).top;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : EcTokens.textPrimaryLight;
-    final ec = EcColors.of(context);
-
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: EcTokens.glassBlurZ3,
-          sigmaY: EcTokens.glassBlurZ3,
-        ),
-        child: Container(
-          padding: EdgeInsets.fromLTRB(20, top + 14, 20, 14),
-          decoration: BoxDecoration(
-            color: EcGlass.of(context).fillFloat,
-            border: Border(
-              bottom: BorderSide(
-                color: EcGlass.of(context).border,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'MESSAGES',
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
-                      color: ec.textMuted,
-                      fontFamily: EcTokens.fontFamily,
-                    ),
-                  ),
-                  Text(
-                    'Care circle',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.8,
-                      color: textColor,
-                      fontFamily: EcTokens.fontFamily,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ChatBubble extends StatelessWidget {
-  const _ChatBubble({required this.message, required this.isMine});
-
-  final ChatMessage message;
-  final bool isMine;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Align(
-        alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.sizeOf(context).width * 0.72,
-          ),
-          child: EcGlassSurface(
-            variant: isMine ? EcGlassVariant.tinted : EcGlassVariant.regular,
-            tint: isMine ? ec.accentBrand : null,
-            borderRadius: isMine ? 20 : 20,
-            blur: EcTokens.glassBlurZ3,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  message.text,
-                  style: TextStyle(
-                    fontSize: 14.5,
-                    height: 1.4,
-                    color: isMine ? Colors.white : null,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (message.timestamp.isNotEmpty)
-                      Text(
-                        message.timestamp,
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          color: isMine
-                              ? Colors.white.withValues(alpha: 0.65)
-                              : ec.textMuted,
-                        ),
-                      ),
-                    if (isMine && message.read) ...[
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.done_all_rounded,
-                        size: 12,
-                        color: Colors.white.withValues(alpha: 0.65),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-}
-
-class _MessageComposer extends StatelessWidget {
-  const _MessageComposer({required this.controller, required this.onSend});
-
-  final TextEditingController controller;
-  final VoidCallback onSend;
-
-  @override
-  Widget build(BuildContext context) {
-    final bottom = MediaQuery.paddingOf(context).bottom;
-    final ec = EcColors.of(context);
-    final onAccent = Theme.of(context).brightness == Brightness.dark
-        ? EcTokens.onAccentDark
-        : EcTokens.onAccentLight;
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(12, 6, 12, bottom + 10 + kEcNavBottomPadding - 60),
-      child: EcGlassSurface(
-        variant: EcGlassVariant.float,
-        borderRadius: EcTokens.radiusHero,
-        padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
-                decoration: const InputDecoration(
-                  hintText: 'Send a message…',
-                  border: InputBorder.none,
-                  filled: false,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 11,
-                  ),
-                ),
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => onSend(),
-              ),
-            ),
-            Container(
-              width: 40,
-              height: 40,
-              margin: const EdgeInsets.only(right: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: ec.accentBrand,
-              ),
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                tooltip: 'Send message',
-                icon: Icon(Icons.arrow_upward_rounded,
-                    color: onAccent, size: 20),
-                onPressed: onSend,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+export '../messages/messages_screen.dart';
 
 // ═══════════════════════════════════════════════ CONNECTIONS SCREEN ══
 
@@ -500,7 +199,13 @@ class CaregiverDashboardScreen extends ConsumerWidget {
         padding: EdgeInsets.fromLTRB(20, top + 16, 20, kEcNavBottomPadding),
         children: [
           // ── Header
-          _CaregiverHeader(),
+          EcScreenHeader(
+            variant: EcHeaderVariant.tab,
+            eyebrow: 'Caregiver',
+            title: 'Command view',
+            subtitle: 'Adherence, safety, and proof at a glance',
+            showBack: false,
+          ),
           const SizedBox(height: 24),
 
           // ── Adherence ring
@@ -590,55 +295,6 @@ class CaregiverDashboardScreen extends ConsumerWidget {
   }
 }
 
-class _CaregiverHeader extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : EcTokens.textPrimaryLight;
-    final ec = EcColors.of(context);
-
-    return Row(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'CAREGIVER VIEW',
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-                color: ec.textMuted,
-                fontFamily: EcTokens.fontFamily,
-              ),
-            ),
-            Text(
-              'Dashboard',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -1.2,
-                color: textColor,
-                fontFamily: EcTokens.fontFamily,
-              ),
-            ),
-          ],
-        ),
-        const Spacer(),
-        IconButton.filledTonal(
-          icon: const Icon(Icons.emergency_rounded,
-              color: EcTokens.statusCritical, size: 20),
-          onPressed: () => context.push('/emergency'),
-          style: IconButton.styleFrom(
-            backgroundColor:
-                EcTokens.statusCritical.withValues(alpha: 0.10),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _SafetyEventTile extends StatelessWidget {
   const _SafetyEventTile({required this.event});
 
@@ -718,113 +374,145 @@ class MoreMenuScreen extends StatelessWidget {
         padding: kEcGlassListPadding,
         children: [
           const EcSectionTitle(title: 'Care & AI'),
-          EcGlassListTile(
-            icon: Icons.auto_awesome_rounded,
-            title: 'Care AI chat',
-            subtitle: 'Ask questions about your health plan',
-            onTap: () => context.push('/chat'),
+          EcGlassListGroup(
+            tiles: [
+              EcGlassListTile(
+                icon: Icons.auto_awesome_rounded,
+                title: 'Care AI chat',
+                subtitle: 'Ask questions about your health plan',
+                iconColor: EcTokens.categorySleep,
+                onTap: () => context.push('/chat'),
+              ),
+              EcGlassListTile(
+                icon: Icons.mic_rounded,
+                title: 'Voice assistant',
+                subtitle: 'Hands-free care commands',
+                iconColor: EcTokens.categoryRecovery,
+                onTap: () => context.push('/voice'),
+              ),
+              EcGlassListTile(
+                icon: Icons.newspaper_rounded,
+                title: 'Weekly digest',
+                subtitle: 'Your health rhythm summary',
+                iconColor: EcTokens.categoryActivity,
+                onTap: () => context.push('/digest'),
+              ),
+              EcGlassListTile(
+                icon: Icons.description_rounded,
+                title: 'Health report',
+                subtitle: 'Share a provider-ready summary',
+                iconColor: EcTokens.categoryHeart,
+                onTap: () => context.push('/report'),
+              ),
+            ],
           ),
-          EcGlassListTile(
-            icon: Icons.mic_rounded,
-            title: 'Voice assistant',
-            subtitle: 'Hands-free care commands',
-            onTap: () => context.push('/voice'),
-          ),
-          EcGlassListTile(
-            icon: Icons.newspaper_rounded,
-            title: 'Weekly digest',
-            subtitle: 'Your health rhythm summary',
-            onTap: () => context.push('/digest'),
-          ),
-          EcGlassListTile(
-            icon: Icons.description_rounded,
-            title: 'Health report',
-            subtitle: 'Share a provider-ready summary',
-            onTap: () => context.push('/report'),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           const EcSectionTitle(title: 'Nutrition & shopping'),
-          EcGlassListTile(
-            icon: Icons.restaurant_rounded,
-            title: 'Meals',
-            subtitle: 'Condition-aware meal guidance',
-            iconColor: EcTokens.categoryNutrition,
-            onTap: () => context.push('/meals'),
+          EcGlassListGroup(
+            tiles: [
+              EcGlassListTile(
+                icon: Icons.restaurant_rounded,
+                title: 'Meals',
+                subtitle: 'Condition-aware meal guidance',
+                iconColor: EcTokens.categoryNutrition,
+                onTap: () => context.push('/meals'),
+              ),
+              EcGlassListTile(
+                icon: Icons.shopping_basket_rounded,
+                title: 'Grocery list',
+                subtitle: 'Aisle-grouped shopping',
+                iconColor: EcTokens.categoryNutrition,
+                onTap: () => context.push('/grocery'),
+              ),
+              EcGlassListTile(
+                icon: Icons.shopping_cart_rounded,
+                title: 'Shopping list',
+                subtitle: 'Pharmacy refills and staples',
+                iconColor: EcTokens.categoryWeight,
+                onTap: () => context.push('/shopping-list'),
+              ),
+            ],
           ),
-          EcGlassListTile(
-            icon: Icons.shopping_basket_rounded,
-            title: 'Grocery list',
-            subtitle: 'Aisle-grouped shopping',
-            iconColor: EcTokens.categoryNutrition,
-            onTap: () => context.push('/grocery'),
-          ),
-          EcGlassListTile(
-            icon: Icons.shopping_cart_rounded,
-            title: 'Shopping list',
-            subtitle: 'Pharmacy refills and staples',
-            onTap: () => context.push('/shopping-list'),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           const EcSectionTitle(title: 'Medications'),
-          EcGlassListTile(
-            icon: Icons.qr_code_scanner_rounded,
-            title: 'Barcode scanner',
-            subtitle: 'Check product safety labels',
-            onTap: () => context.push('/scanner'),
+          EcGlassListGroup(
+            tiles: [
+              EcGlassListTile(
+                icon: Icons.qr_code_scanner_rounded,
+                title: 'Barcode scanner',
+                subtitle: 'Check product safety labels',
+                iconColor: EcTokens.categoryBreathing,
+                onTap: () => context.push('/scanner'),
+              ),
+              EcGlassListTile(
+                icon: Icons.document_scanner_rounded,
+                title: 'Medication OCR',
+                subtitle: 'Scan and capture medication labels',
+                iconColor: EcTokens.categorySleep,
+                onTap: () => context.push('/ocr'),
+              ),
+              EcGlassListTile(
+                icon: Icons.calendar_today_rounded,
+                title: 'Refill calendar',
+                subtitle: 'Upcoming medication refills',
+                iconColor: EcTokens.categoryActivity,
+                onTap: () => context.push('/refill'),
+              ),
+            ],
           ),
-          EcGlassListTile(
-            icon: Icons.document_scanner_rounded,
-            title: 'Medication OCR',
-            subtitle: 'Scan and capture medication labels',
-            iconColor: EcTokens.categorySleep,
-            onTap: () => context.push('/ocr'),
-          ),
-          EcGlassListTile(
-            icon: Icons.calendar_today_rounded,
-            title: 'Refill calendar',
-            subtitle: 'Upcoming medication refills',
-            onTap: () => context.push('/refill'),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           const EcSectionTitle(title: 'Safety & travel'),
-          EcGlassListTile(
-            icon: Icons.shield_moon_rounded,
-            title: 'Safety monitoring',
-            subtitle: 'Review safety events and alerts',
-            iconColor: EcColors.of(context).accentAmberText,
-            onTap: () => context.push('/safety'),
+          EcGlassListGroup(
+            tiles: [
+              EcGlassListTile(
+                icon: Icons.shield_moon_rounded,
+                title: 'Safety monitoring',
+                subtitle: 'Review safety events and alerts',
+                iconColor: EcTokens.statusCaution,
+                onTap: () => context.push('/safety'),
+              ),
+              EcGlassListTile(
+                icon: Icons.flight_takeoff_rounded,
+                title: 'Travel mode',
+                subtitle: 'Trip prep and dose schedule shifts',
+                iconColor: EcTokens.categoryWeight,
+                onTap: () => context.push('/travel-mode'),
+              ),
+              EcGlassListTile(
+                icon: Icons.video_call_rounded,
+                title: 'Telehealth handoff',
+                subtitle: 'Prepare for virtual visits',
+                iconColor: EcTokens.categoryHeart,
+                onTap: () => context.push('/telehealth'),
+              ),
+            ],
           ),
-          EcGlassListTile(
-            icon: Icons.flight_takeoff_rounded,
-            title: 'Travel mode',
-            subtitle: 'Trip prep and dose schedule shifts',
-            onTap: () => context.push('/travel-mode'),
-          ),
-          EcGlassListTile(
-            icon: Icons.video_call_rounded,
-            title: 'Telehealth handoff',
-            subtitle: 'Prepare for virtual visits',
-            onTap: () => context.push('/telehealth'),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           const EcSectionTitle(title: 'Connect'),
-          EcGlassListTile(
-            icon: Icons.family_restroom_rounded,
-            title: 'Family circle',
-            subtitle: 'Members, roles, and privacy',
-            onTap: () => context.push('/family-circle'),
-          ),
-          EcGlassListTile(
-            icon: Icons.auto_stories_rounded,
-            title: 'Moments',
-            subtitle: 'Shared milestones and notes',
-            onTap: () => context.push('/moments'),
-          ),
-          EcGlassListTile(
-            icon: Icons.people_rounded,
-            title: 'Connections',
-            subtitle: 'Manage caregiver access',
-            onTap: () => context.push('/connections'),
+          EcGlassListGroup(
+            tiles: [
+              EcGlassListTile(
+                icon: Icons.family_restroom_rounded,
+                title: 'Family circle',
+                subtitle: 'Members, roles, and privacy',
+                iconColor: EcTokens.categoryRecovery,
+                onTap: () => context.push('/family-circle'),
+              ),
+              EcGlassListTile(
+                icon: Icons.auto_stories_rounded,
+                title: 'Moments',
+                subtitle: 'Shared milestones and notes',
+                iconColor: EcTokens.categorySleep,
+                onTap: () => context.push('/moments'),
+              ),
+              EcGlassListTile(
+                icon: Icons.people_rounded,
+                title: 'Connections',
+                subtitle: 'Manage caregiver access',
+                iconColor: EcTokens.categoryActivity,
+                onTap: () => context.push('/connections'),
+              ),
+            ],
           ),
         ],
       ),

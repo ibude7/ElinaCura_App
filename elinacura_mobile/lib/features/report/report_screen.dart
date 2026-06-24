@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/auth/auth_providers.dart';
 import '../../core/data/local_prefs.dart';
 import '../../shared/widgets/ec_engagement.dart';
+import '../../core/design_system/ec_copy.dart';
+import '../../shared/widgets/ec_outcome_hero.dart';
+import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
@@ -102,11 +105,12 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
         children: [
           EcGlassEntrance(
             index: 0,
-            child: EcEngagementHero(
+            child: EcOutcomeHero(
+              eyebrow: 'Clinician share',
               title: 'Share with your provider',
-              subtitle:
-                  'Assemble a concise report from your tracked vitals, medications, and adherence.',
+              subtitle: EcCopy.clinicianShare,
               icon: Icons.description_rounded,
+              accent: EcAccent.sky,
               trailing: EcPill(
                 label: '$readiness% ready',
                 tone: readiness >= 80 ? EcPillTone.positive : EcPillTone.info,

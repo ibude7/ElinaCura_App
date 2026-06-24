@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../core/data/engagement_repository.dart';
 import '../../core/data/local_prefs.dart';
+import '../../core/design_system/ec_copy.dart';
+import '../../core/design_system/ec_haptics.dart';
 import '../../core/theme/ec_theme.dart';
-import '../../shared/widgets/ec_engagement.dart';
 import '../../shared/widgets/ec_glass.dart';
+import '../../shared/widgets/ec_outcome_hero.dart';
+import '../../shared/widgets/ec_page_kit.dart';
+import '../../shared/widgets/ec_voice_waveform.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
 class _VoiceTurn {
@@ -25,9 +31,12 @@ class VoiceScreen extends ConsumerStatefulWidget {
 
 class _VoiceScreenState extends ConsumerState<VoiceScreen> {
   final _controller = TextEditingController();
+  final _speech = stt.SpeechToText();
   bool _listening = false;
   bool _processing = false;
   bool _persistConsent = false;
+  bool _sttReady = false;
+  double _soundLevel = 0.5;
   List<_VoiceTurn> _turns = [];
 
   static const _commands = [
@@ -41,11 +50,27 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen> {
   void initState() {
     super.initState();
     _load();
+    _initSpeech();
+  }
+
+  Future<void> _initSpeech() async {
+    final ok = await _speech.initialize(
+      onStatus: (s) {
+        if (s == 'done' || s == 'notListening') {
+          if (mounted) setState(() => _listening = false);
+        }
+      },
+      onError: (_) {
+        if (mounted) setState(() => _listening = false);
+      },
+    );
+    if (mounted) setState(() => _sttReady = ok);
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _speech.stop();
     super.dispose();
   }
 
@@ -82,6 +107,34 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen> {
     );
   }
 
+  Future<void> _toggleListen() async {
+    if (_processing) return;
+    if (_listening) {
+      await _speech.stop();
+      setState(() => _listening = false);
+      return;
+    }
+    if (!_sttReady) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Speech recognition unavailable on this device')),
+      );
+      return;
+    }
+    EcHaptics.lightTap();
+    setState(() => _listening = true);
+    await _speech.listen(
+      onResult: (r) {
+        _controller.text = r.recognizedWords;
+        if (r.finalResult) {
+          _resolve(r.recognizedWords);
+        }
+      },
+      onSoundLevelChange: (l) {
+        if (mounted) setState(() => _soundLevel = ((l + 50) / 50).clamp(0.1, 1.0));
+      },
+    );
+  }
+
   Future<void> _resolve(String prompt) async {
     final text = prompt.trim();
     if (text.isEmpty || _processing) return;
@@ -91,6 +144,7 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen> {
       _processing = true;
       _listening = false;
     });
+    await _speech.stop();
 
     String answer = _demoReply(text);
     String? intent;
@@ -104,14 +158,21 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen> {
             );
         answer = result.displayReply;
         intent = result.intent;
+        if (result.intent == 'log_medication') {
+          if (mounted) context.push('/reminders');
+        } else if (result.intent == 'weekly_digest') {
+          if (mounted) context.push('/digest');
+        }
       } catch (_) {}
     }
 
-    await Future<void>.delayed(const Duration(milliseconds: 400));
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
+    EcHaptics.doseConfirmed();
     setState(() {
       _turns = [..._turns, _VoiceTurn(question: text, answer: answer, intent: intent)];
       _processing = false;
+      _controller.clear();
     });
     await _persist();
   }
@@ -119,7 +180,7 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen> {
   String _demoReply(String text) {
     final lower = text.toLowerCase();
     if (lower.contains('med')) {
-      return 'I can help log medications. Open Reminders to confirm your schedule.';
+      return 'Opening reminders so you can confirm your dose.';
     }
     if (lower.contains('eat') || lower.contains('meal')) {
       return 'Based on your profile, aim for balanced protein and low sodium today.';
@@ -136,11 +197,12 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen> {
       body: ListView(
         padding: kEcGlassListPadding,
         children: [
-          EcEngagementHero(
-            title: 'Hands-free care',
+          EcOutcomeHero(
+            eyebrow: 'Hands-free',
+            title: 'Voice care OS',
             subtitle: 'Speak naturally to log doses, ask questions, or get guidance.',
             icon: Icons.mic_rounded,
-            accent: ec.accentBrand,
+            accent: EcAccent.brand,
           ),
           const SizedBox(height: 16),
           EcGlassSurface(
@@ -149,35 +211,21 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: (_listening ? ec.accentBrand : ec.textMuted)
-                        .withValues(alpha: 0.14),
-                  ),
-                  child: Icon(
-                    _listening ? Icons.mic_rounded : Icons.mic_none_rounded,
-                    size: 36,
-                    color: _listening ? ec.accentBrand : ec.textMuted,
-                  ),
-                ),
+                EcVoiceWaveform(active: _listening, level: _soundLevel),
                 const SizedBox(height: 12),
                 Text(
                   _processing
                       ? 'Processing…'
                       : _listening
                           ? 'Listening…'
-                          : 'Tap to simulate voice input',
+                          : _sttReady
+                              ? 'Tap the mic and speak'
+                              : 'Type a transcript below',
                   style: TextStyle(color: ec.textSecondary),
                 ),
                 const SizedBox(height: 16),
                 IconButton.filled(
-                  onPressed: _processing
-                      ? null
-                      : () => setState(() => _listening = !_listening),
+                  onPressed: _processing ? null : _toggleListen,
                   icon: Icon(_listening ? Icons.stop_rounded : Icons.mic_rounded),
                 ),
               ],
@@ -221,10 +269,10 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen> {
           EcSectionTitle(title: 'Transcript'),
           const SizedBox(height: 8),
           if (_turns.isEmpty)
-            const EcEmptyState(
+            EcEmptyState(
               icon: Icons.record_voice_over_outlined,
               title: 'No voice turns yet',
-              message: 'Try a quick command above.',
+              message: EcCopy.noMeds,
             )
           else
             ..._turns.map(

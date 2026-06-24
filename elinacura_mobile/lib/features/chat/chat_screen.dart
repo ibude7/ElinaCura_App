@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../core/config/app_config.dart';
+import '../../core/design_system/ec_copy.dart';
+import '../../core/i18n/app_localizations.dart';
+import '../../core/data/chat_notifier.dart';
 import '../../core/data/engagement_repository.dart';
 import '../../core/theme/ec_theme.dart';
 import '../../shared/models/models.dart';
-import '../../shared/widgets/ec_engagement.dart';
 import '../../shared/widgets/ec_glass.dart';
+import '../../shared/widgets/ec_outcome_hero.dart';
+import '../../shared/widgets/ec_page_kit.dart';
 import '../../shared/widgets/ec_widgets.dart';
+import '../safety/safety_escalation_sheet.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({super.key});
+  const ChatScreen({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -19,10 +27,6 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _controller = TextEditingController();
   final _scroll = ScrollController();
-  List<ChatHistoryMessage> _messages = [];
-  bool _loading = true;
-  bool _sending = false;
-  String? _error;
 
   static const _suggestions = [
     'What should I watch for with my medications?',
@@ -30,109 +34,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     'Summarize my care priorities',
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadHistory();
-  }
+  static const _topics = [
+    ('Medications', 'Review my medication schedule and interactions'),
+    ('Nutrition', 'What should I eat today given my conditions?'),
+    ('Symptoms', 'I have a new symptom — what should I track?'),
+    ('Care plan', 'Summarize my priorities for this week'),
+  ];
 
   @override
   void dispose() {
     _controller.dispose();
     _scroll.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadHistory() async {
-    final profileId = activeProfileId(ref);
-    if (profileId == null) {
-      setState(() {
-        _loading = false;
-        _messages = [];
-      });
-      return;
-    }
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      final rows =
-          await ref.read(engagementRepositoryProvider).getChatHistory(profileId);
-      if (mounted) {
-        setState(() {
-          _messages = rows;
-          _loading = false;
-        });
-        _scrollToEnd();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = formatApiError(e);
-          _loading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _send([String? preset]) async {
-    final profileId = activeProfileId(ref);
-    final text = (preset ?? _controller.text).trim();
-    if (profileId == null || text.isEmpty || _sending) return;
-
-    _controller.clear();
-    setState(() {
-      _sending = true;
-      _error = null;
-      _messages = [
-        ..._messages,
-        ChatHistoryMessage(id: 'local-u-${DateTime.now().millisecondsSinceEpoch}', role: 'user', content: text),
-      ];
-    });
-    _scrollToEnd();
-
-    try {
-      final reply = await ref.read(engagementRepositoryProvider).sendChat(
-            profileId: profileId,
-            message: text,
-          );
-      if (!mounted) return;
-      setState(() {
-        _messages = [
-          ..._messages,
-          ChatHistoryMessage(
-            id: 'local-a-${DateTime.now().millisecondsSinceEpoch}',
-            role: 'assistant',
-            content: reply.response,
-          ),
-        ];
-        _sending = false;
-      });
-      if (reply.escalated && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Safety guidance was triggered for this message.'),
-          ),
-        );
-      }
-      _scrollToEnd();
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = formatApiError(e);
-        _sending = false;
-      });
-    }
-  }
-
-  Future<void> _clearHistory() async {
-    final profileId = activeProfileId(ref);
-    if (profileId == null) return;
-    await ref.read(engagementRepositoryProvider).clearChatHistory(profileId);
-    if (mounted) {
-      setState(() => _messages = []);
-    }
   }
 
   void _scrollToEnd() {
@@ -146,97 +59,241 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
+  Future<void> _send(String profileId, [String? preset]) async {
+    final text = (preset ?? _controller.text).trim();
+    if (text.isEmpty) return;
+    _controller.clear();
+    final l10n = context.l10n;
+    final done = await ref.read(chatNotifierProvider(profileId).notifier).send(
+          profileId: profileId,
+          text: text,
+          offlineMessage: l10n.chatOfflineQueued,
+        );
+    _scrollToEnd();
+    if (!mounted || done == null) return;
+    if (done.escalated) {
+      final chat = ref.read(chatNotifierProvider(profileId));
+      final lastAssistant = chat.messages.lastWhere(
+        (m) => m.isAssistant,
+        orElse: () => const ChatHistoryMessage(
+          id: '',
+          role: 'assistant',
+          content: '',
+        ),
+      );
+      await showSafetyEscalationSheet(
+        context,
+        message: lastAssistant.content,
+        riskLevel: done.riskLevel,
+        onEmergency: () => context.push('/emergency'),
+      );
+    }
+  }
+
+  Future<void> _clearHistory(String profileId) async {
+    await ref.read(chatNotifierProvider(profileId).notifier).clear(profileId);
+  }
+
+  List<Widget> _messagesWithSeparators(
+    BuildContext context,
+    List<ChatHistoryMessage> messages,
+  ) {
+    final ec = EcColors.of(context);
+    final out = <Widget>[];
+    String? lastDay;
+    for (final msg in messages) {
+      final parsed =
+          msg.createdAt != null ? DateTime.tryParse(msg.createdAt!) : null;
+      final day = parsed != null
+          ? MaterialLocalizations.of(context).formatMediumDate(parsed)
+          : 'Today';
+      if (day != lastDay) {
+        lastDay = day;
+        out.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Center(
+              child: Text(
+                day,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: ec.textMuted,
+                  letterSpacing: 0.6,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+      out.add(_ChatBubble(msg));
+    }
+    return out;
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileId = activeProfileId(ref);
-    final ec = EcColors.of(context);
+
+    if (profileId != null) {
+      ref.listen(chatNotifierProvider(profileId), (prev, next) {
+        if (prev?.streamingAssistant != next.streamingAssistant ||
+            prev?.messages.length != next.messages.length) {
+          _scrollToEnd();
+        }
+      });
+    }
+
+    final body = profileId == null
+        ? EcEmptyState(
+            icon: Icons.chat_bubble_outline_rounded,
+            title: context.l10n.t('chatPage.noProfile', fallback: 'Complete your profile'),
+            message: EcCopy.noProfile,
+          )
+        : Builder(
+            builder: (context) {
+              final l10n = context.l10n;
+              final chat = ref.watch(chatNotifierProvider(profileId));
+              final sending = chat.sending;
+
+              return Column(
+                children: [
+                  Expanded(
+                    child: chat.loading
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView(
+                            controller: _scroll,
+                            padding: kEcGlassListPadding,
+                            children: [
+                              if (!widget.embedded) ...[
+                                EcGlassEntrance(
+                                  index: 0,
+                                  child: EcOutcomeHero(
+                                    eyebrow: l10n.chatEyebrow,
+                                    title: l10n.chatHeroHeadline,
+                                    subtitle: l10n.chatSubtitle,
+                                    icon: Icons.auto_awesome_rounded,
+                                    accent: EcAccent.brand,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: _topics
+                                        .map(
+                                          (t) => Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 8,
+                                            ),
+                                            child: ActionChip(
+                                              label: Text(t.$1),
+                                              onPressed: sending
+                                                  ? null
+                                                  : () => _send(
+                                                        profileId,
+                                                        t.$2,
+                                                      ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+                                ),
+                              ],
+                              if (chat.error != null) ...[
+                                const SizedBox(height: 12),
+                                EcErrorState(
+                                  message: chat.error!,
+                                  onRetry: () => ref
+                                      .read(
+                                        chatNotifierProvider(profileId)
+                                            .notifier,
+                                      )
+                                      .load(profileId),
+                                ),
+                              ],
+                              if (chat.messages.isEmpty && !chat.loading) ...[
+                                const SizedBox(height: 16),
+                                EcEmptyState(
+                                  icon: Icons.forum_outlined,
+                                  title: l10n.chatWelcomeTitle,
+                                  message: l10n.chatWelcomeSub,
+                                ),
+                                const SizedBox(height: 12),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: _suggestions
+                                      .map(
+                                        (s) => ActionChip(
+                                          label: Text(s),
+                                          onPressed: sending
+                                              ? null
+                                              : () => _send(profileId, s),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ],
+                              const SizedBox(height: 12),
+                              ..._messagesWithSeparators(
+                                context,
+                                chat.messages,
+                              ),
+                              if (chat.streamingAssistant.isNotEmpty)
+                                _ChatBubble(
+                                  ChatHistoryMessage(
+                                    id: 'stream',
+                                    role: 'assistant',
+                                    content: chat.streamingAssistant,
+                                  ),
+                                ),
+                              if (sending && chat.streamingAssistant.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                  ),
+                  _Composer(
+                    controller: _controller,
+                    enabled: !sending,
+                    onSend: () => _send(profileId),
+                  ),
+                ],
+              );
+            },
+          );
+
+    if (widget.embedded) return body;
+
+    final hasMessages = profileId != null &&
+        ref.watch(chatNotifierProvider(profileId)).messages.isNotEmpty;
 
     return EcGlassScaffold(
       appBar: EcAppBar(
-        title: 'Care AI',
+        title: context.l10n.chatTitle,
         actions: [
-          if (_messages.isNotEmpty)
+          if (hasMessages)
             IconButton(
               tooltip: 'Clear history',
-              onPressed: _clearHistory,
+              onPressed: () => _clearHistory(profileId),
               icon: const Icon(Icons.delete_outline_rounded),
             ),
         ],
       ),
-      body: profileId == null
-          ? const EcEmptyState(
-              icon: Icons.chat_bubble_outline_rounded,
-              title: 'Complete your profile',
-              message: 'Care AI uses your health profile for personalized guidance.',
-            )
-          : Column(
-              children: [
-                Expanded(
-                  child: _loading
-                      ? const Center(child: CircularProgressIndicator())
-                      : ListView(
-                          controller: _scroll,
-                          padding: kEcGlassListPadding,
-                          children: [
-                            EcGlassEntrance(
-                              index: 0,
-                              child: EcEngagementHero(
-                                title: 'Ask ElinaCura',
-                                subtitle:
-                                    'Profile-aware guidance for medications, nutrition, and daily care.',
-                                icon: Icons.auto_awesome_rounded,
-                                accent: ec.accentBrand,
-                              ),
-                            ),
-                            if (_error != null) ...[
-                              const SizedBox(height: 12),
-                              EcErrorState(message: _error!, onRetry: _loadHistory),
-                            ],
-                            if (_messages.isEmpty && !_loading) ...[
-                              const SizedBox(height: 16),
-                              const EcEmptyState(
-                                icon: Icons.forum_outlined,
-                                title: 'Start a conversation',
-                                message: 'Ask about medications, meals, or your care plan.',
-                              ),
-                              const SizedBox(height: 12),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: _suggestions
-                                    .map(
-                                      (s) => ActionChip(
-                                        label: Text(s),
-                                        onPressed: _sending ? null : () => _send(s),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                            ],
-                            const SizedBox(height: 12),
-                            ..._messages.map(_ChatBubble.new),
-                            if (_sending)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8),
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                ),
-                _Composer(
-                  controller: _controller,
-                  enabled: !_sending,
-                  onSend: () => _send(),
-                ),
-              ],
-            ),
+      body: body,
     );
   }
 }
@@ -259,16 +316,25 @@ class _ChatBubble extends StatelessWidget {
           constraints: BoxConstraints(
             maxWidth: MediaQuery.sizeOf(context).width * 0.82,
           ),
-          child: EcGlassSurface(
-            variant: isAssistant ? EcGlassVariant.regular : EcGlassVariant.elevated,
-            tint: isAssistant ? null : ec.accentBrand.withValues(alpha: 0.08),
-            borderRadius: 18,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Text(
-              message.content,
-              style: const TextStyle(
-                fontSize: 14.5,
-                height: 1.45,
+          child: GestureDetector(
+            onLongPress: () {
+              Clipboard.setData(ClipboardData(text: message.content));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Copied to clipboard')),
+              );
+            },
+            child: EcGlassSurface(
+              variant: isAssistant
+                  ? EcGlassVariant.regular
+                  : EcGlassVariant.elevated,
+              tint: isAssistant
+                  ? null
+                  : ec.accentBrand.withValues(alpha: 0.08),
+              borderRadius: 18,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Text(
+                message.content,
+                style: const TextStyle(fontSize: 14.5, height: 1.45),
               ),
             ),
           ),
@@ -306,7 +372,7 @@ class _Composer extends StatelessWidget {
                 textInputAction: TextInputAction.send,
                 onSubmitted: enabled ? (_) => onSend() : null,
                 decoration: InputDecoration(
-                  hintText: 'Ask about your care…',
+                  hintText: context.l10n.chatPlaceholder,
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
