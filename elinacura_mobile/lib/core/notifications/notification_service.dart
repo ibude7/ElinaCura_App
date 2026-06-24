@@ -4,9 +4,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../shared/models/models.dart';
 import '../api/api_client.dart';
 import '../auth/auth_providers.dart';
 
@@ -31,6 +33,14 @@ class NotificationService {
     if (kIsWeb) return;
 
     tz.initializeTimeZones();
+    // Bind tz.local to the device timezone — without this, tz.local is UTC and
+    // every scheduled reminder fires at the wrong wall-clock time.
+    try {
+      final localZone = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(localZone));
+    } catch (e) {
+      debugPrint('Timezone resolution failed, defaulting to UTC: $e');
+    }
 
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosInit = DarwinInitializationSettings();
@@ -108,6 +118,44 @@ class NotificationService {
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
+
+  /// Rebuilds the full set of daily medication reminders from the user's
+  /// parsed medication schedule. Cancels existing notifications first so
+  /// edits never leave stale alerts behind.
+  Future<void> syncMedicationReminders(List<MedicationItem> medications) async {
+    if (kIsWeb) return;
+    await _local.cancelAll();
+    for (final med in medications) {
+      if (!med.hasSchedule) continue;
+      for (final time in med.times) {
+        final parts = time.split(':');
+        if (parts.length != 2) continue;
+        final hour = int.tryParse(parts[0]);
+        final minute = int.tryParse(parts[1]);
+        if (hour == null || minute == null) continue;
+        final id = Object.hash(med.id, time) & 0x7fffffff;
+        await scheduleMedicationReminder(
+          id: id,
+          title: 'Time for ${med.name}',
+          body: med.dose.isNotEmpty ? 'Take ${med.dose}' : 'Your scheduled dose',
+          scheduledTime: _nextInstanceOfTime(hour, minute),
+        );
+      }
+    }
+  }
+
+  /// The next future occurrence of [hour]:[minute] in device-local time.
+  tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    if (!scheduled.isAfter(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+    return scheduled;
+  }
+
+  Future<void> cancelAll() => _local.cancelAll();
 
   void _onNotificationTap(NotificationResponse response) {
     debugPrint('Notification tapped: ${response.payload}');

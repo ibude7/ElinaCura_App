@@ -54,4 +54,45 @@ void main() {
       expect(greetingForHour(20), 'Good evening');
     });
   });
+
+  group('medication schedule parsing', () {
+    MedicationItem med(String entry) =>
+        HealthOverviewBuilder.build(
+          HealthProfile(id: 'p', medications: [entry]),
+        ).medications.first;
+
+    test('twice daily yields two dose times', () {
+      final m = med('Metformin 500mg twice daily');
+      expect(m.name, 'Metformin');
+      expect(m.dose, '500mg');
+      expect(m.times, ['09:00', '21:00']);
+      expect(m.schedule, 'Twice daily');
+      expect(m.hasSchedule, isTrue);
+    });
+
+    test('once daily yields a single time', () {
+      final m = med('Lisinopril 10mg once daily');
+      expect(m.times, ['09:00']);
+      expect(m.schedule, 'Once daily');
+    });
+
+    test('explicit clock time is parsed and not confused with the dose', () {
+      final m = med('Atorvastatin 20mg at 8pm');
+      expect(m.dose, '20mg');
+      expect(m.times, ['20:00']);
+      expect(m.schedule, contains('8 PM'));
+    });
+
+    test('three times daily yields three times', () {
+      final m = med('Amoxicillin 250mg three times daily');
+      expect(m.times.length, 3);
+      expect(m.schedule, 'Three times daily');
+    });
+
+    test('no cadence is treated as as-needed with no times', () {
+      final m = med('Ibuprofen');
+      expect(m.hasSchedule, isFalse);
+      expect(m.times, isEmpty);
+    });
+  });
 }

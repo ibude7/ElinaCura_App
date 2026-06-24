@@ -84,17 +84,26 @@ class MedicationItem extends Equatable {
     this.route = '',
     this.schedule = '',
     this.nextDue = '',
+    this.times = const [],
   });
 
   final String id;
   final String name;
   final String dose;
   final String route;
+
+  /// Human-readable cadence label, e.g. "Twice daily" or "Daily at 8 AM".
   final String schedule;
   final String nextDue;
 
+  /// Structured dose times in 24h "HH:mm" form, derived from the entry text.
+  /// Empty means no fixed schedule (e.g. "as needed").
+  final List<String> times;
+
+  bool get hasSchedule => times.isNotEmpty;
+
   @override
-  List<Object?> get props => [id, name];
+  List<Object?> get props => [id, name, dose, schedule, times];
 }
 
 class ConditionItem extends Equatable {
@@ -339,3 +348,328 @@ class ChatMessage extends Equatable {
 enum UserRole { patient, caregiver }
 
 enum AppShellMode { patient, caregiver }
+
+// ── Engagement models (PWA migration) ─────────────────────────────────────
+
+class ChatHistoryMessage extends Equatable {
+  const ChatHistoryMessage({
+    required this.id,
+    required this.role,
+    required this.content,
+    this.createdAt,
+  });
+
+  factory ChatHistoryMessage.fromJson(Map<String, dynamic> json) {
+    return ChatHistoryMessage(
+      id: json['id'] as String? ?? '',
+      role: json['role'] as String? ?? 'user',
+      content: json['content'] as String? ?? '',
+      createdAt: json['created_at'] as String?,
+    );
+  }
+
+  final String id;
+  final String role;
+  final String content;
+  final String? createdAt;
+
+  bool get isAssistant => role == 'assistant';
+
+  @override
+  List<Object?> get props => [id, role, content];
+}
+
+class ChatReply extends Equatable {
+  const ChatReply({
+    required this.response,
+    this.escalated = false,
+    this.riskLevel,
+  });
+
+  factory ChatReply.fromJson(Map<String, dynamic> json) {
+    final risk = json['risk'] as Map<String, dynamic>?;
+    return ChatReply(
+      response: json['response'] as String? ?? '',
+      escalated: json['escalated'] as bool? ?? false,
+      riskLevel: risk?['level'] as String?,
+    );
+  }
+
+  final String response;
+  final bool escalated;
+  final String? riskLevel;
+
+  @override
+  List<Object?> get props => [response, escalated];
+}
+
+class WeeklyDigest extends Equatable {
+  const WeeklyDigest({
+    required this.id,
+    required this.profileId,
+    this.periodLabel = '',
+    this.summary = '',
+    this.score = 0,
+    this.highlights = const [],
+    this.attention = const [],
+  });
+
+  factory WeeklyDigest.fromJson(Map<String, dynamic> json) {
+    return WeeklyDigest(
+      id: json['id'] as String? ?? '',
+      profileId: json['profile_id'] as String? ?? '',
+      periodLabel: json['period_label'] as String? ??
+          '${json['iso_year'] ?? ''} W${json['iso_week'] ?? ''}',
+      summary: json['summary'] as String? ?? json['narrative'] as String? ?? '',
+      score: (json['score'] as num?)?.toInt() ?? 0,
+      highlights: _stringList(json['highlights']),
+      attention: _stringList(json['attention']),
+    );
+  }
+
+  static List<String> _stringList(dynamic raw) {
+    if (raw is! List) return [];
+    return raw.map((e) => e.toString()).toList();
+  }
+
+  final String id;
+  final String profileId;
+  final String periodLabel;
+  final String summary;
+  final int score;
+  final List<String> highlights;
+  final List<String> attention;
+
+  @override
+  List<Object?> get props => [id, profileId, score];
+}
+
+class ShoppingListItem extends Equatable {
+  const ShoppingListItem({
+    required this.id,
+    required this.name,
+    this.purchased = false,
+    this.kind,
+  });
+
+  factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
+    return ShoppingListItem(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? json['text'] as String? ?? '',
+      purchased: json['purchased'] as bool? ?? json['done'] as bool? ?? false,
+      kind: json['kind'] as String?,
+    );
+  }
+
+  final String id;
+  final String name;
+  final bool purchased;
+  final String? kind;
+
+  ShoppingListItem copyWith({bool? purchased}) => ShoppingListItem(
+        id: id,
+        name: name,
+        purchased: purchased ?? this.purchased,
+        kind: kind,
+      );
+
+  @override
+  List<Object?> get props => [id, name, purchased];
+}
+
+class MomentFeedItem extends Equatable {
+  const MomentFeedItem({
+    required this.id,
+    required this.authorName,
+    required this.caption,
+    this.kind = 'note',
+    this.reactions = 0,
+    this.createdAt,
+    this.liked = false,
+  });
+
+  factory MomentFeedItem.fromJson(Map<String, dynamic> json) {
+    return MomentFeedItem(
+      id: json['id'] as String? ?? '',
+      authorName: json['author_name'] as String? ??
+          json['author_display_name'] as String? ??
+          'Care circle',
+      caption: json['caption'] as String? ?? json['body'] as String? ?? '',
+      kind: json['kind'] as String? ?? 'note',
+      reactions: json['reactions'] as int? ?? json['reaction_count'] as int? ?? 0,
+      createdAt: json['created_at'] as String?,
+      liked: json['viewer_reacted'] as bool? ?? false,
+    );
+  }
+
+  final String id;
+  final String authorName;
+  final String caption;
+  final String kind;
+  final int reactions;
+  final String? createdAt;
+  final bool liked;
+
+  MomentFeedItem copyWith({bool? liked, int? reactions}) => MomentFeedItem(
+        id: id,
+        authorName: authorName,
+        caption: caption,
+        kind: kind,
+        reactions: reactions ?? this.reactions,
+        createdAt: createdAt,
+        liked: liked ?? this.liked,
+      );
+
+  @override
+  List<Object?> get props => [id, caption, liked];
+}
+
+class FamilyCircleMember extends Equatable {
+  const FamilyCircleMember({
+    required this.id,
+    required this.name,
+    this.role = 'member',
+    this.email,
+  });
+
+  factory FamilyCircleMember.fromJson(Map<String, dynamic> json) {
+    return FamilyCircleMember(
+      id: json['id'] as String? ?? json['profile_id'] as String? ?? '',
+      name: json['name'] as String? ?? json['display_name'] as String? ?? 'Member',
+      role: json['role'] as String? ?? 'member',
+      email: json['email'] as String?,
+    );
+  }
+
+  final String id;
+  final String name;
+  final String role;
+  final String? email;
+
+  @override
+  List<Object?> get props => [id, name];
+}
+
+class FamilyCircle extends Equatable {
+  const FamilyCircle({
+    required this.id,
+    required this.name,
+    this.members = const [],
+    this.guardianIds = const [],
+  });
+
+  factory FamilyCircle.fromJson(Map<String, dynamic> json) {
+    final memberRows = json['members'] as List? ?? [];
+    return FamilyCircle(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? 'Family circle',
+      members: memberRows
+          .whereType<Map<String, dynamic>>()
+          .map(FamilyCircleMember.fromJson)
+          .toList(),
+      guardianIds: (json['guardian_user_ids'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+    );
+  }
+
+  final String id;
+  final String name;
+  final List<FamilyCircleMember> members;
+  final List<String> guardianIds;
+
+  @override
+  List<Object?> get props => [id, name];
+}
+
+class FamilyCirclesData extends Equatable {
+  const FamilyCirclesData({
+    this.asOwner = const [],
+    this.asGuardian = const [],
+  });
+
+  factory FamilyCirclesData.fromJson(Map<String, dynamic> json) {
+    List<FamilyCircle> parse(dynamic raw) {
+      if (raw is! List) return [];
+      return raw
+          .whereType<Map<String, dynamic>>()
+          .map(FamilyCircle.fromJson)
+          .toList();
+    }
+
+    return FamilyCirclesData(
+      asOwner: parse(json['as_owner']),
+      asGuardian: parse(json['as_guardian']),
+    );
+  }
+
+  final List<FamilyCircle> asOwner;
+  final List<FamilyCircle> asGuardian;
+
+  List<FamilyCircle> get all => [...asOwner, ...asGuardian];
+
+  @override
+  List<Object?> get props => [asOwner, asGuardian];
+}
+
+class VoiceIntentResult extends Equatable {
+  const VoiceIntentResult({
+    required this.intent,
+    required this.transcript,
+    this.confidence = 0,
+    this.actionTaken,
+    this.chatResponse,
+  });
+
+  factory VoiceIntentResult.fromJson(Map<String, dynamic> json) {
+    final chat = json['chat'] as Map<String, dynamic>?;
+    return VoiceIntentResult(
+      intent: json['intent'] as String? ?? 'unknown',
+      transcript: json['transcript'] as String? ?? '',
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
+      actionTaken: json['action_taken'] as String?,
+      chatResponse: chat?['response'] as String?,
+    );
+  }
+
+  final String intent;
+  final String transcript;
+  final double confidence;
+  final String? actionTaken;
+  final String? chatResponse;
+
+  String get displayReply =>
+      chatResponse ??
+      actionTaken ??
+      'I heard you. Try asking about medications, reminders, or your health plan.';
+
+  @override
+  List<Object?> get props => [intent, transcript];
+}
+
+class TelehealthPartner extends Equatable {
+  const TelehealthPartner({
+    required this.id,
+    required this.name,
+    this.description,
+    this.url,
+  });
+
+  factory TelehealthPartner.fromJson(Map<String, dynamic> json) {
+    return TelehealthPartner(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? 'Partner',
+      description: json['description'] as String?,
+      url: json['url'] as String? ?? json['handoff_url'] as String?,
+    );
+  }
+
+  final String id;
+  final String name;
+  final String? description;
+  final String? url;
+
+  @override
+  List<Object?> get props => [id, name];
+}

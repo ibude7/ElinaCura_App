@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,10 +10,19 @@ import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_glass.dart';
 import '../../features/auth/auth_screens.dart';
 import '../../features/auth/onboarding_view.dart';
+import '../../features/chat/chat_screen.dart';
+import '../../features/circle/circle_screens.dart';
 import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/digest/digest_screen.dart';
 import '../../features/medications/medication_screens.dart';
+import '../../features/nutrition/nutrition_screens.dart';
 import '../../features/profile/profile_screens.dart';
+import '../../features/report/report_screen.dart';
+import '../../features/shopping/shopping_list_screen.dart';
 import '../../features/social/social_screens.dart';
+import '../../features/telehealth/telehealth_screen.dart';
+import '../../features/travel/travel_mode_screen.dart';
+import '../../features/voice/voice_screen.dart';
 
 /// Show the quick-add glass sheet from anywhere in the patient shell.
 void showQuickAddSheet(BuildContext context) {
@@ -40,6 +50,15 @@ void showQuickAddSheet(BuildContext context) {
         ),
       ),
       const SizedBox(height: 8),
+      _SheetTile(
+        icon: Icons.auto_awesome_rounded,
+        title: 'Ask Care AI',
+        subtitle: 'Chat about your health plan',
+        onTap: () {
+          Navigator.pop(context);
+          context.push('/chat');
+        },
+      ),
       _SheetTile(
         icon: Icons.document_scanner_rounded,
         title: 'Scan medication label',
@@ -285,6 +304,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     initialLocation: '/onboarding',
+    observers: [
+      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
+    ],
     redirect: (context, state) {
       final isLoggedIn = authState.valueOrNull != null;
       final onAuth =
@@ -345,6 +367,50 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/safety',
         builder: (context, state) => const SafetyScreen(),
+      ),
+      GoRoute(
+        path: '/chat',
+        builder: (context, state) => const ChatScreen(),
+      ),
+      GoRoute(
+        path: '/report',
+        builder: (context, state) => const ReportScreen(),
+      ),
+      GoRoute(
+        path: '/grocery',
+        builder: (context, state) => const GroceryScreen(),
+      ),
+      GoRoute(
+        path: '/meals',
+        builder: (context, state) => const MealsScreen(),
+      ),
+      GoRoute(
+        path: '/travel-mode',
+        builder: (context, state) => const TravelModeScreen(),
+      ),
+      GoRoute(
+        path: '/shopping-list',
+        builder: (context, state) => const ShoppingListScreen(),
+      ),
+      GoRoute(
+        path: '/voice',
+        builder: (context, state) => const VoiceScreen(),
+      ),
+      GoRoute(
+        path: '/digest',
+        builder: (context, state) => const DigestScreen(),
+      ),
+      GoRoute(
+        path: '/family-circle',
+        builder: (context, state) => const FamilyCircleScreen(),
+      ),
+      GoRoute(
+        path: '/moments',
+        builder: (context, state) => const MomentsScreen(),
+      ),
+      GoRoute(
+        path: '/telehealth',
+        builder: (context, state) => const TelehealthScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) {

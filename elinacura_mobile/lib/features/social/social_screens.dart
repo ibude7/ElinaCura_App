@@ -263,6 +263,9 @@ class _MessageComposer extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottom = MediaQuery.paddingOf(context).bottom;
     final ec = EcColors.of(context);
+    final onAccent = Theme.of(context).brightness == Brightness.dark
+        ? EcTokens.onAccentDark
+        : EcTokens.onAccentLight;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(12, 6, 12, bottom + 10 + kEcNavBottomPadding - 60),
@@ -298,8 +301,9 @@ class _MessageComposer extends StatelessWidget {
               ),
               child: IconButton(
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.arrow_upward_rounded,
-                    color: Colors.white, size: 20),
+                tooltip: 'Send message',
+                icon: Icon(Icons.arrow_upward_rounded,
+                    color: onAccent, size: 20),
                 onPressed: onSend,
               ),
             ),
@@ -452,7 +456,7 @@ class _ConnectionsScreenState extends ConsumerState<ConnectionsScreen> {
                       title: e.value.profileId,
                       subtitle: e.value.status,
                       iconColor: e.value.status == 'active'
-                          ? EcColors.of(context).accentMint
+                          ? EcTokens.categoryNutrition
                           : EcColors.of(context).accentAmberText,
                       trailing: EcPill(
                         label: e.value.status,
@@ -713,53 +717,114 @@ class MoreMenuScreen extends StatelessWidget {
       body: ListView(
         padding: kEcGlassListPadding,
         children: [
-          EcGlassEntrance(
-            index: 0,
-            child: EcGlassListTile(
-              icon: Icons.qr_code_scanner_rounded,
-              title: 'Barcode scanner',
-              subtitle: 'Check product safety labels',
-              onTap: () => context.push('/scanner'),
-            ),
+          const EcSectionTitle(title: 'Care & AI'),
+          EcGlassListTile(
+            icon: Icons.auto_awesome_rounded,
+            title: 'Care AI chat',
+            subtitle: 'Ask questions about your health plan',
+            onTap: () => context.push('/chat'),
           ),
-          EcGlassEntrance(
-            index: 1,
-            child: EcGlassListTile(
-              icon: Icons.calendar_today_rounded,
-              title: 'Refill calendar',
-              subtitle: 'Upcoming medication refills',
-              iconColor: EcColors.of(context).accentMint,
-              onTap: () => context.push('/refill'),
-            ),
+          EcGlassListTile(
+            icon: Icons.mic_rounded,
+            title: 'Voice assistant',
+            subtitle: 'Hands-free care commands',
+            onTap: () => context.push('/voice'),
           ),
-          EcGlassEntrance(
-            index: 2,
-            child: EcGlassListTile(
-              icon: Icons.shield_moon_rounded,
-              title: 'Safety monitoring',
-              subtitle: 'Review safety events and alerts',
-              iconColor: EcColors.of(context).accentAmberText,
-              onTap: () => context.push('/safety'),
-            ),
+          EcGlassListTile(
+            icon: Icons.newspaper_rounded,
+            title: 'Weekly digest',
+            subtitle: 'Your health rhythm summary',
+            onTap: () => context.push('/digest'),
           ),
-          EcGlassEntrance(
-            index: 3,
-            child: EcGlassListTile(
-              icon: Icons.document_scanner_rounded,
-              title: 'Medication OCR',
-              subtitle: 'Scan and capture medication labels',
-              iconColor: EcColors.of(context).accentPlum,
-              onTap: () => context.push('/ocr'),
-            ),
+          EcGlassListTile(
+            icon: Icons.description_rounded,
+            title: 'Health report',
+            subtitle: 'Share a provider-ready summary',
+            onTap: () => context.push('/report'),
           ),
-          EcGlassEntrance(
-            index: 4,
-            child: EcGlassListTile(
-              icon: Icons.people_rounded,
-              title: 'Care circle',
-              subtitle: 'Manage caregiver connections',
-              onTap: () => context.push('/connections'),
-            ),
+          const SizedBox(height: 8),
+          const EcSectionTitle(title: 'Nutrition & shopping'),
+          EcGlassListTile(
+            icon: Icons.restaurant_rounded,
+            title: 'Meals',
+            subtitle: 'Condition-aware meal guidance',
+            iconColor: EcTokens.categoryNutrition,
+            onTap: () => context.push('/meals'),
+          ),
+          EcGlassListTile(
+            icon: Icons.shopping_basket_rounded,
+            title: 'Grocery list',
+            subtitle: 'Aisle-grouped shopping',
+            iconColor: EcTokens.categoryNutrition,
+            onTap: () => context.push('/grocery'),
+          ),
+          EcGlassListTile(
+            icon: Icons.shopping_cart_rounded,
+            title: 'Shopping list',
+            subtitle: 'Pharmacy refills and staples',
+            onTap: () => context.push('/shopping-list'),
+          ),
+          const SizedBox(height: 8),
+          const EcSectionTitle(title: 'Medications'),
+          EcGlassListTile(
+            icon: Icons.qr_code_scanner_rounded,
+            title: 'Barcode scanner',
+            subtitle: 'Check product safety labels',
+            onTap: () => context.push('/scanner'),
+          ),
+          EcGlassListTile(
+            icon: Icons.document_scanner_rounded,
+            title: 'Medication OCR',
+            subtitle: 'Scan and capture medication labels',
+            iconColor: EcTokens.categorySleep,
+            onTap: () => context.push('/ocr'),
+          ),
+          EcGlassListTile(
+            icon: Icons.calendar_today_rounded,
+            title: 'Refill calendar',
+            subtitle: 'Upcoming medication refills',
+            onTap: () => context.push('/refill'),
+          ),
+          const SizedBox(height: 8),
+          const EcSectionTitle(title: 'Safety & travel'),
+          EcGlassListTile(
+            icon: Icons.shield_moon_rounded,
+            title: 'Safety monitoring',
+            subtitle: 'Review safety events and alerts',
+            iconColor: EcColors.of(context).accentAmberText,
+            onTap: () => context.push('/safety'),
+          ),
+          EcGlassListTile(
+            icon: Icons.flight_takeoff_rounded,
+            title: 'Travel mode',
+            subtitle: 'Trip prep and dose schedule shifts',
+            onTap: () => context.push('/travel-mode'),
+          ),
+          EcGlassListTile(
+            icon: Icons.video_call_rounded,
+            title: 'Telehealth handoff',
+            subtitle: 'Prepare for virtual visits',
+            onTap: () => context.push('/telehealth'),
+          ),
+          const SizedBox(height: 8),
+          const EcSectionTitle(title: 'Connect'),
+          EcGlassListTile(
+            icon: Icons.family_restroom_rounded,
+            title: 'Family circle',
+            subtitle: 'Members, roles, and privacy',
+            onTap: () => context.push('/family-circle'),
+          ),
+          EcGlassListTile(
+            icon: Icons.auto_stories_rounded,
+            title: 'Moments',
+            subtitle: 'Shared milestones and notes',
+            onTap: () => context.push('/moments'),
+          ),
+          EcGlassListTile(
+            icon: Icons.people_rounded,
+            title: 'Connections',
+            subtitle: 'Manage caregiver access',
+            onTap: () => context.push('/connections'),
           ),
         ],
       ),
@@ -795,11 +860,11 @@ class SafetyScreen extends ConsumerWidget {
                     height: 52,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: ec.accentMint.withValues(alpha: 0.14),
+                      color: EcTokens.categoryNutrition.withValues(alpha: 0.12),
                     ),
                     child: Icon(
                       Icons.shield_rounded,
-                      color: ec.accentMint,
+                      color: EcTokens.categoryNutrition,
                       size: 26,
                     ),
                   ),
@@ -839,7 +904,7 @@ class SafetyScreen extends ConsumerWidget {
               icon: Icons.medication_rounded,
               title: 'Medication adherence',
               subtitle: 'Tracks daily dose completion',
-              iconColor: ec.accentMint,
+              iconColor: EcTokens.categoryNutrition,
               trailing: EcPill(label: 'Active', tone: EcPillTone.positive),
             ),
           ),

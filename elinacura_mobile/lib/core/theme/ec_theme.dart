@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'ec_tokens.dart';
 
-/// ElinaCura "Elina Glass" theme — true liquid-glass health OS.
-/// No gradient fills anywhere — glass surfaces are neutral white-frosted.
+/// ElinaCura theme — Google-Health-inspired health OS.
+/// Light: soft blue-white canvas, solid white cards, category semantic colors.
+/// Dark: deep navy canvas, frosted glass surfaces.
 class EcTheme {
   EcTheme._();
 
   static ThemeData light() {
     const scheme = ColorScheme.light(
       primary: EcTokens.accentBrand,
-      onPrimary: Colors.white,
-      secondary: EcTokens.accentMint,
+      onPrimary: EcTokens.onAccentLight,
+      secondary: EcTokens.categoryActivity,
       onSecondary: Colors.white,
-      tertiary: EcTokens.accentCoral,
+      tertiary: EcTokens.categorySleep,
       surface: EcTokens.bgVoidLight,
       onSurface: EcTokens.textPrimaryLight,
       surfaceContainerHighest: EcTokens.bgCardLight,
@@ -26,10 +27,10 @@ class EcTheme {
   static ThemeData dark() {
     const scheme = ColorScheme.dark(
       primary: EcTokens.accentBrandDark,
-      onPrimary: Color(0xFF130B33),
-      secondary: EcTokens.accentMintDark,
-      onSecondary: Color(0xFF06231B),
-      tertiary: EcTokens.accentCoral,
+      onPrimary: EcTokens.onAccentDark,
+      secondary: EcTokens.categoryActivity,
+      onSecondary: Colors.white,
+      tertiary: EcTokens.categorySleep,
       surface: EcTokens.bgVoid,
       onSurface: EcTokens.textPrimaryDark,
       surfaceContainerHighest: EcTokens.bgCardDark,
@@ -44,78 +45,47 @@ class EcTheme {
         ? EcTokens.textPrimaryDark
         : EcTokens.textPrimaryLight;
     return TextTheme(
-      // Display — large data heroes and screen headings.
       displayLarge: TextStyle(
-        fontSize: 46,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -1.8,
-        color: primary,
-        height: 1.0,
+        fontSize: 46, fontWeight: FontWeight.w800,
+        letterSpacing: -1.8, color: primary, height: 1.0,
       ),
       displayMedium: TextStyle(
-        fontSize: 37,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -1.3,
-        color: primary,
-        height: 1.04,
+        fontSize: 37, fontWeight: FontWeight.w800,
+        letterSpacing: -1.3, color: primary, height: 1.04,
       ),
       displaySmall: TextStyle(
-        fontSize: 30,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -1.0,
-        color: primary,
-        height: 1.08,
+        fontSize: 30, fontWeight: FontWeight.w800,
+        letterSpacing: -1.0, color: primary, height: 1.08,
       ),
       headlineLarge: TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -1.0,
-        color: primary,
-        height: 1.10,
+        fontSize: 28, fontWeight: FontWeight.w800,
+        letterSpacing: -1.0, color: primary, height: 1.10,
       ),
       headlineMedium: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -0.7,
-        color: primary,
-        height: 1.16,
+        fontSize: 22, fontWeight: FontWeight.w800,
+        letterSpacing: -0.7, color: primary, height: 1.16,
       ),
       headlineSmall: TextStyle(
-        fontSize: 19,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.4,
-        color: primary,
-        height: 1.20,
+        fontSize: 19, fontWeight: FontWeight.w700,
+        letterSpacing: -0.4, color: primary, height: 1.20,
       ),
       titleLarge: TextStyle(
-        fontSize: 17,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.3,
-        color: primary,
+        fontSize: 17, fontWeight: FontWeight.w700,
+        letterSpacing: -0.3, color: primary,
       ),
       titleMedium: TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.2,
-        color: primary,
+        fontSize: 15, fontWeight: FontWeight.w600,
+        letterSpacing: -0.2, color: primary,
       ),
       bodyLarge: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        color: primary,
-        height: 1.5,
+        fontSize: 16, fontWeight: FontWeight.w400, color: primary, height: 1.5,
       ),
       bodyMedium: TextStyle(
-        fontSize: 14.5,
-        fontWeight: FontWeight.w400,
-        color: primary,
-        height: 1.5,
+        fontSize: 14.5, fontWeight: FontWeight.w400, color: primary, height: 1.5,
       ),
       labelLarge: TextStyle(
-        fontSize: 13.5,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.1,
-        color: primary,
+        fontSize: 13.5, fontWeight: FontWeight.w600,
+        letterSpacing: -0.1, color: primary,
       ),
     ).apply(fontFamily: EcTokens.fontFamily);
   }
@@ -123,9 +93,9 @@ class EcTheme {
   static ThemeData _base(ColorScheme scheme, Brightness brightness) {
     final isDark = brightness == Brightness.dark;
     final accent = isDark ? EcTokens.accentBrandDark : EcTokens.accentBrand;
+    final onAccent = isDark ? EcTokens.onAccentDark : EcTokens.onAccentLight;
     final muted = isDark ? EcTokens.textMutedDark : EcTokens.textMutedLight;
-    final primaryText =
-        isDark ? EcTokens.textPrimaryDark : EcTokens.textPrimaryLight;
+    final primaryText = isDark ? EcTokens.textPrimaryDark : EcTokens.textPrimaryLight;
 
     return ThemeData(
       useMaterial3: true,
@@ -134,8 +104,8 @@ class EcTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: Colors.transparent,
       cardColor: Colors.transparent,
-      splashColor: accent.withValues(alpha: 0.10),
-      highlightColor: accent.withValues(alpha: 0.05),
+      splashColor: accent.withValues(alpha: 0.08),
+      highlightColor: accent.withValues(alpha: 0.04),
       textTheme: _textTheme(brightness),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -156,7 +126,7 @@ class EcTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.transparent,
-        indicatorColor: Colors.white.withValues(alpha: isDark ? 0.10 : 0.20),
+        indicatorColor: accent.withValues(alpha: isDark ? 0.14 : 0.10),
         elevation: 0,
         height: 72,
         iconTheme: WidgetStateProperty.resolveWith((states) {
@@ -177,14 +147,14 @@ class EcTheme {
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: accent,
-        foregroundColor: Colors.white,
+        foregroundColor: onAccent,
         elevation: 0,
         shape: const CircleBorder(),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: accent,
-          foregroundColor: Colors.white,
+          foregroundColor: onAccent,
           minimumSize: const Size(88, 54),
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -214,7 +184,7 @@ class EcTheme {
           minimumSize: const Size(88, 54),
           side: BorderSide(
             color: isDark
-                ? Colors.white.withValues(alpha: 0.18)
+                ? Colors.white.withValues(alpha: 0.16)
                 : Colors.black.withValues(alpha: 0.08),
           ),
           shape: RoundedRectangleBorder(
@@ -226,13 +196,13 @@ class EcTheme {
         filled: true,
         fillColor: isDark
             ? Colors.white.withValues(alpha: 0.06)
-            : Colors.white.withValues(alpha: 0.70),
+            : Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(EcTokens.radiusMd),
           borderSide: BorderSide(
             color: isDark
                 ? Colors.white.withValues(alpha: 0.12)
-                : Colors.white.withValues(alpha: 0.80),
+                : Colors.black.withValues(alpha: 0.08),
           ),
         ),
         enabledBorder: OutlineInputBorder(
@@ -240,29 +210,27 @@ class EcTheme {
           borderSide: BorderSide(
             color: isDark
                 ? Colors.white.withValues(alpha: 0.10)
-                : Colors.black.withValues(alpha: 0.05),
+                : Colors.black.withValues(alpha: 0.06),
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(EcTokens.radiusMd),
-          borderSide:
-              BorderSide(color: accent.withValues(alpha: 0.7), width: 1.6),
+          borderSide: BorderSide(
+            color: accent.withValues(alpha: 0.7),
+            width: 1.6,
+          ),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
         labelStyle: TextStyle(
           fontFamily: EcTokens.fontFamily,
-          color: isDark
-              ? EcTokens.textSecondaryDark
-              : EcTokens.textSecondaryLight,
+          color: isDark ? EcTokens.textSecondaryDark : EcTokens.textSecondaryLight,
           fontWeight: FontWeight.w500,
         ),
         hintStyle: TextStyle(fontFamily: EcTokens.fontFamily, color: muted),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor:
-            isDark ? const Color(0xF0141A2B) : const Color(0xF0FFFFFF),
+        backgroundColor: isDark ? const Color(0xF016181B) : const Color(0xF0FFFFFF),
         contentTextStyle: TextStyle(
           fontFamily: EcTokens.fontFamily,
           color: primaryText,
@@ -304,8 +272,8 @@ class EcTheme {
       ),
       dividerTheme: DividerThemeData(
         color: isDark
-            ? Colors.white.withValues(alpha: 0.08)
-            : Colors.black.withValues(alpha: 0.06),
+            ? Colors.white.withValues(alpha: 0.07)
+            : Colors.black.withValues(alpha: 0.05),
         thickness: 1,
         space: 1,
       ),
@@ -314,7 +282,8 @@ class EcTheme {
   }
 }
 
-/// Theme extension for EC semantic colors.
+// ─────────────────────────────────────────────── EcColors extension ──
+
 class EcColors extends ThemeExtension<EcColors> {
   const EcColors({
     required this.textSecondary,
@@ -364,17 +333,17 @@ class EcColors extends ThemeExtension<EcColors> {
     bgCard: EcTokens.bgCardLight,
     bgRecessed: EcTokens.bgRecessedLight,
     accentBrand: EcTokens.accentBrand,
-    accentMint: EcTokens.accentMint,
-    accentSky: EcTokens.accentSky,
+    accentMint: EcTokens.categoryNutrition,
+    accentSky: EcTokens.categoryActivity,
     accentCoral: EcTokens.accentCoral,
-    accentPlum: EcTokens.accentPlum,
-    accentMintFill: EcTokens.accentMintFill,
-    accentMintText: EcTokens.accentMintText,
-    accentBlushFill: EcTokens.accentBlushFill,
-    accentBlushText: EcTokens.accentBlushText,
+    accentPlum: EcTokens.categorySleep,
+    accentMintFill: EcTokens.categoryNutritionLight,
+    accentMintText: Color(0xFF166534),
+    accentBlushFill: EcTokens.statusCriticalLight,
+    accentBlushText: Color(0xFFA33A3A),
     accentAmberFill: EcTokens.accentAmberFill,
     accentAmberText: EcTokens.accentAmberText,
-    accentSkyFill: EcTokens.accentSkyFill,
+    accentSkyFill: EcTokens.categoryActivityLight,
   );
 
   static const EcColors dark = EcColors(
@@ -385,36 +354,25 @@ class EcColors extends ThemeExtension<EcColors> {
     bgRecessed: EcTokens.bgRecessedDark,
     accentBrand: EcTokens.accentBrandDark,
     accentMint: EcTokens.accentMintDark,
-    accentSky: Color(0xFF6FB0FF),
+    accentSky: Color(0xFF8AA6C8),
     accentCoral: EcTokens.accentCoral,
     accentPlum: EcTokens.accentPlum,
-    accentMintFill: Color(0x1A10D9A0),
-    accentMintText: Color(0xFF5FEAC2),
-    accentBlushFill: Color(0x1AFF6F91),
-    accentBlushText: Color(0xFFFF9DB5),
-    accentAmberFill: Color(0x1AFFB23E),
-    accentAmberText: Color(0xFFFFD27A),
-    accentSkyFill: Color(0x1A3A86FF),
+    accentMintFill: Color(0x223F9E7C),
+    accentMintText: Color(0xFF7FD0B0),
+    accentBlushFill: Color(0x22C56B6B),
+    accentBlushText: Color(0xFFE2A1A1),
+    accentAmberFill: Color(0x22C79A3E),
+    accentAmberText: Color(0xFFE0C07A),
+    accentSkyFill: Color(0x225A7DA8),
   );
 
   @override
   EcColors copyWith({
-    Color? textSecondary,
-    Color? textMuted,
-    Color? textCritical,
-    Color? bgCard,
-    Color? bgRecessed,
-    Color? accentBrand,
-    Color? accentMint,
-    Color? accentSky,
-    Color? accentCoral,
-    Color? accentPlum,
-    Color? accentMintFill,
-    Color? accentMintText,
-    Color? accentBlushFill,
-    Color? accentBlushText,
-    Color? accentAmberFill,
-    Color? accentAmberText,
+    Color? textSecondary, Color? textMuted, Color? textCritical,
+    Color? bgCard, Color? bgRecessed, Color? accentBrand,
+    Color? accentMint, Color? accentSky, Color? accentCoral, Color? accentPlum,
+    Color? accentMintFill, Color? accentMintText, Color? accentBlushFill,
+    Color? accentBlushText, Color? accentAmberFill, Color? accentAmberText,
     Color? accentSkyFill,
   }) {
     return EcColors(
@@ -463,22 +421,14 @@ class EcColors extends ThemeExtension<EcColors> {
   }
 }
 
-/// Glass surface tokens — neutral white-tinted depth system.
-/// Glass fills are intentionally colorless; the ambient depth scene provides
-/// the color that bleeds through via BackdropFilter blur.
+// ─────────────────────────────────────── EcGlass surface tokens ──
+
 class EcGlass extends ThemeExtension<EcGlass> {
   const EcGlass({
-    required this.fill,
-    required this.fillElevated,
-    required this.fillSubtle,
-    required this.fillFloat,
-    required this.border,
-    required this.borderStrong,
-    required this.specularTop,
-    required this.specularSide,
-    required this.navFill,
-    required this.tintBrand,
-    required this.shadowColor,
+    required this.fill, required this.fillElevated, required this.fillSubtle,
+    required this.fillFloat, required this.border, required this.borderStrong,
+    required this.specularTop, required this.specularSide, required this.navFill,
+    required this.tintBrand, required this.shadowColor,
   });
 
   final Color fill;
@@ -496,30 +446,29 @@ class EcGlass extends ThemeExtension<EcGlass> {
   static EcGlass of(BuildContext context) =>
       Theme.of(context).extension<EcGlass>()!;
 
-  // Light mode: higher white opacity (glass on light background)
+  /// Light mode: solid white cards with very subtle border — matches GH.
   static final EcGlass light = EcGlass(
-    fill: Colors.white.withValues(alpha: 0.72),
-    fillElevated: Colors.white.withValues(alpha: 0.85),
-    fillSubtle: Colors.white.withValues(alpha: 0.50),
-    fillFloat: Colors.white.withValues(alpha: 0.90),
+    fill: const Color(0xFFFFFFFF),
+    fillElevated: const Color(0xFFFFFFFF),
+    fillSubtle: const Color(0xFFF8FAFF),
+    fillFloat: const Color(0xFFFFFFFF),
     border: Colors.black.withValues(alpha: 0.06),
-    borderStrong: Colors.black.withValues(alpha: 0.12),
+    borderStrong: Colors.black.withValues(alpha: 0.10),
     specularTop: Colors.white,
-    specularSide: Colors.white.withValues(alpha: 0.70),
-    navFill: Colors.white.withValues(alpha: 0.88),
+    specularSide: Colors.white.withValues(alpha: 0.60),
+    navFill: Colors.white.withValues(alpha: 0.95),
     tintBrand: EcTokens.accentBrand,
-    shadowColor: const Color(0xFF211A4D),
+    shadowColor: const Color(0xFF1A1C2E),
   );
 
-  // Dark mode: neutral white tint on deep void background.
-  // Color comes from ambient depth blobs blurred through the glass.
+  /// Dark mode: frosted glass on deep navy.
   static final EcGlass dark = EcGlass(
     fill: Colors.white.withValues(alpha: EcTokens.glassZ2Opacity),
     fillElevated: Colors.white.withValues(alpha: EcTokens.glassZ3Opacity),
     fillSubtle: Colors.white.withValues(alpha: 0.04),
     fillFloat: Colors.white.withValues(alpha: EcTokens.glassZ4Opacity),
     border: Colors.white.withValues(alpha: EcTokens.glassBorderOpacity),
-    borderStrong: Colors.white.withValues(alpha: 0.22),
+    borderStrong: Colors.white.withValues(alpha: 0.20),
     specularTop: Colors.white.withValues(alpha: EcTokens.glassSpecularTopOpacity),
     specularSide: Colors.white.withValues(alpha: EcTokens.glassSpecularSideOpacity),
     navFill: Colors.white.withValues(alpha: EcTokens.glassZ4Opacity),
@@ -529,17 +478,9 @@ class EcGlass extends ThemeExtension<EcGlass> {
 
   @override
   EcGlass copyWith({
-    Color? fill,
-    Color? fillElevated,
-    Color? fillSubtle,
-    Color? fillFloat,
-    Color? border,
-    Color? borderStrong,
-    Color? specularTop,
-    Color? specularSide,
-    Color? navFill,
-    Color? tintBrand,
-    Color? shadowColor,
+    Color? fill, Color? fillElevated, Color? fillSubtle, Color? fillFloat,
+    Color? border, Color? borderStrong, Color? specularTop, Color? specularSide,
+    Color? navFill, Color? tintBrand, Color? shadowColor,
   }) {
     return EcGlass(
       fill: fill ?? this.fill,

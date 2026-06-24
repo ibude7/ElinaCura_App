@@ -5,12 +5,15 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/auth/auth_providers.dart';
 import '../../core/config/app_config.dart';
+import '../../core/health/dose_log.dart';
 import '../../core/theme/ec_theme.dart';
 import '../../core/theme/ec_tokens.dart';
 import '../../shared/models/models.dart';
 import '../../shared/utils/health_overview_builder.dart';
 import '../../shared/widgets/ec_glass.dart';
+import '../../shared/widgets/ec_sparkline.dart';
 import '../../shared/widgets/ec_widgets.dart';
+import 'insights_section.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -138,15 +141,15 @@ class _DashboardContent extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
           child: _ClockSection(profile: data.profile),
-        ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.06, end: 0),
+        ).animate().fadeIn(duration: 260.ms).slideY(begin: 0.05, end: 0),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
 
-        // ── Stat strip
+        // ── Activity ring + stats (Google Health Today card)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: _StatStrip(data: data),
-        ).animate().fadeIn(delay: 60.ms, duration: 280.ms),
+          child: _ActivityRow(data: data),
+        ).animate().fadeIn(delay: 60.ms, duration: 260.ms),
 
         const SizedBox(height: 20),
 
@@ -158,10 +161,10 @@ class _DashboardContent extends StatelessWidget {
               title: "Today's medications",
               action: TextButton(
                 onPressed: () => context.push('/reminders'),
-                child: Text(
+                child: const Text(
                   'See all',
                   style: TextStyle(
-                    color: EcColors.of(context).accentBrand,
+                    color: EcTokens.categoryNutrition,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -170,8 +173,7 @@ class _DashboardContent extends StatelessWidget {
             ),
           ),
           _MedRail(medications: data.medications)
-              .animate()
-              .fadeIn(delay: 100.ms, duration: 280.ms),
+              .animate().fadeIn(delay: 100.ms, duration: 260.ms),
           const SizedBox(height: 20),
         ],
 
@@ -179,7 +181,16 @@ class _DashboardContent extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _CareRhythm(medCount: data.medications.length),
-        ).animate().fadeIn(delay: 140.ms, duration: 280.ms),
+        ).animate().fadeIn(delay: 140.ms, duration: 260.ms),
+
+        // ── Real adherence chart
+        if (data.medications.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const InsightsSection(),
+          ).animate().fadeIn(delay: 160.ms, duration: 260.ms),
+        ],
 
         const SizedBox(height: 20),
 
@@ -187,7 +198,7 @@ class _DashboardContent extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: _QuickActions(),
-        ).animate().fadeIn(delay: 180.ms, duration: 280.ms),
+        ).animate().fadeIn(delay: 180.ms, duration: 260.ms),
 
         // ── Conditions
         if (data.conditions.isNotEmpty) ...[
@@ -195,8 +206,127 @@ class _DashboardContent extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: _ConditionsCard(conditions: data.conditions),
-          ).animate().fadeIn(delay: 200.ms, duration: 280.ms),
+          ).animate().fadeIn(delay: 200.ms, duration: 260.ms),
         ],
+      ],
+    );
+  }
+}
+
+// ──────────────────────── Activity ring + stats row ──
+
+class _ActivityRow extends ConsumerWidget {
+  const _ActivityRow({required this.data});
+  final HealthOverview data;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final log = ref.watch(doseLogProvider).valueOrNull ?? const {};
+    final adherence = computeAdherence(log, data.medications);
+    final ec = EcColors.of(context);
+
+    return EcGlassSurface(
+      variant: EcGlassVariant.elevated,
+      borderRadius: EcTokens.radiusCard,
+      padding: const EdgeInsets.all(18),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          EcActivityRing(
+            value: adherence.hasSchedule ? adherence.todayRatio : 0,
+            label: adherence.hasSchedule ? 'Adherence' : 'Today',
+            subLabel: adherence.hasSchedule
+                ? '${adherence.todayTaken}/${adherence.todayScheduled} doses'
+                : 'No schedule yet',
+            color: EcTokens.categoryActivity,
+            size: 110,
+          ),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _StatRow(
+                  icon: Icons.medication_rounded,
+                  color: EcTokens.categoryNutrition,
+                  label: 'Medications',
+                  value: '${data.medications.length}',
+                ),
+                const SizedBox(height: 12),
+                _StatRow(
+                  icon: Icons.monitor_heart_rounded,
+                  color: EcTokens.categoryHeart,
+                  label: 'Conditions',
+                  value: '${data.conditions.length}',
+                ),
+                const SizedBox(height: 12),
+                _StatRow(
+                  icon: Icons.task_alt_rounded,
+                  color: adherence.todayRatio >= 0.8
+                      ? EcTokens.statusPositive
+                      : adherence.todayRatio >= 0.5
+                          ? EcTokens.statusCaution
+                          : ec.textMuted,
+                  label: 'Adherence',
+                  value: adherence.hasSchedule
+                      ? '${adherence.todayPercent}%'
+                      : '—',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatRow extends StatelessWidget {
+  const _StatRow({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.value,
+  });
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final ec = EcColors.of(context);
+    return Row(
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: color, size: 14),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.5,
+              color: ec.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.4,
+            fontFamily: EcTokens.fontFamily,
+          ),
+        ),
       ],
     );
   }
@@ -234,50 +364,6 @@ class _ClockSection extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────── Stat strip ──
-
-class _StatStrip extends StatelessWidget {
-  const _StatStrip({required this.data});
-
-  final HealthOverview data;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: EcMetricTile(
-            label: 'Meds',
-            value: '${data.medications.length}',
-            icon: Icons.medication_rounded,
-            tone: data.medications.isEmpty
-                ? EcPillTone.neutral
-                : EcPillTone.positive,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: EcMetricTile(
-            label: 'Conditions',
-            value: '${data.conditions.length}',
-            icon: Icons.monitor_heart_rounded,
-            tone: EcPillTone.info,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: EcMetricTile(
-            label: 'Alerts',
-            value: '${data.openIssues.length}',
-            icon: Icons.shield_rounded,
-            tone:                   data.openIssues.isNotEmpty
-                      ? EcPillTone.caution
-                      : EcPillTone.positive,
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 // ─────────────────────────────────────────────────── Med rail ──
 

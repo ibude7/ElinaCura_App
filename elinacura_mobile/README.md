@@ -37,9 +37,12 @@ flutter run
 
 ## MVP features
 
-- Firebase auth (email, Google, guest) with role selection
-- Dashboard with health overview states
+- Firebase auth (email, Google, Apple, guest) with role selection
+- Onboarding story flow and dashboard with health overview states
+- Care AI chat, voice assistant, weekly digest, and provider health report
 - OCR medication capture, barcode scanner, reminders, refill calendar
+- Meals, grocery list, smart shopping list, travel mode, telehealth handoff
 - Health, profile, settings (PIPEDA consent, biometrics)
-- Emergency screen, messages (Firestore), caregiver dashboard
+- Emergency screen, messages (Firestore), family circle, moments, connections
+- Caregiver dashboard and profile picker
 - FCM device registration + local medication notifications

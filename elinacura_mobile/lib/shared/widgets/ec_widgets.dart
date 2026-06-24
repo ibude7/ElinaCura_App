@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -139,19 +140,26 @@ class EcClockHero extends StatefulWidget {
 }
 
 class _EcClockHeroState extends State<EcClockHero> {
-  late String _time;
+  late String _time = _formatTime(DateTime.now());
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _time = _formatTime(DateTime.now());
-    // Tick every second
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(seconds: 1));
-      if (!mounted) return false;
-      setState(() => _time = _formatTime(DateTime.now()));
-      return true;
+    // Tick on a steady cadence but only rebuild when the visible minute
+    // actually changes — far cheaper than a per-second setState loop, and
+    // it stops cleanly when the widget leaves the tree.
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted) return;
+      final next = _formatTime(DateTime.now());
+      if (next != _time) setState(() => _time = next);
     });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   String _formatTime(DateTime dt) {
@@ -228,35 +236,39 @@ class _EmergencyBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: EcTokens.statusCritical.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(EcTokens.radiusFull),
-          border: Border.all(
-            color: EcTokens.statusCritical.withValues(alpha: 0.35),
-            width: 0.8,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.emergency_rounded,
-                color: EcTokens.statusCritical, size: 14),
-            SizedBox(width: 5),
-            Text(
-              'SOS',
-              style: TextStyle(
-                color: EcTokens.statusCritical,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.8,
-                fontFamily: EcTokens.fontFamily,
-              ),
+    return Semantics(
+      button: true,
+      label: 'Emergency SOS',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: EcTokens.statusCritical.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(EcTokens.radiusFull),
+            border: Border.all(
+              color: EcTokens.statusCritical.withValues(alpha: 0.35),
+              width: 0.8,
             ),
-          ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.emergency_rounded,
+                  color: EcTokens.statusCritical, size: 14),
+              SizedBox(width: 5),
+              Text(
+                'SOS',
+                style: TextStyle(
+                  color: EcTokens.statusCritical,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
+                  fontFamily: EcTokens.fontFamily,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

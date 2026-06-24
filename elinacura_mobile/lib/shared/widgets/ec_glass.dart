@@ -10,12 +10,12 @@ import '../../core/theme/ec_theme.dart';
 
 // ─────────────────────────────────────────────────────── Background system ──
 
-/// App-wide void background — a pure deep dark canvas with three ambient
-/// depth blobs painted in [EcDepthScenePainter]. Glass surfaces BackdropFilter
-/// these blobs to produce their tinted look; the glass itself is neutral white.
+/// App-wide canvas — a solid, neutral near-black (dark) or paper (light)
+/// surface with a single colorless light highlight painted in
+/// [EcDepthScenePainter]. Glass surfaces BackdropFilter this neutral canvas;
+/// there are no colored ambient blobs. The glass itself stays achromatic.
 ///
-/// Use this for all post-auth screens. [EcLiquidBackground] below remains
-/// only for onboarding / auth compatibility.
+/// Use this for all post-auth screens.
 class EcVoidBackground extends StatelessWidget {
   const EcVoidBackground({super.key, required this.child});
 
@@ -44,9 +44,8 @@ class EcVoidBackground extends StatelessWidget {
   }
 }
 
-/// Paints three ambient color blobs at fixed positions.
-/// These are scene-level objects — the glass blur reveals them as color.
-/// Uses RadialGradient only in CustomPaint (scene lighting, not UI fills).
+/// Paints a single colorless light highlight + a soft vignette.
+/// Monochrome only — premium depth comes from luminance, never hue.
 class EcDepthScenePainter extends CustomPainter {
   const EcDepthScenePainter({required this.isDark});
 
@@ -57,65 +56,33 @@ class EcDepthScenePainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    if (isDark) {
-      // Blob 1 — violet, top-right (large)
-      _blob(canvas, size,
-          center: Offset(w * 0.90, h * 0.08),
-          radius: w * 0.88,
-          color: EcTokens.auroraViolet,
-          opacity: 0.30);
-      // Blob 2 — mint, bottom-left (medium)
-      _blob(canvas, size,
-          center: Offset(w * 0.05, h * 0.84),
-          radius: w * 0.62,
-          color: EcTokens.auroraMint,
-          opacity: 0.20);
-      // Blob 3 — sky, mid-right (small accent)
-      _blob(canvas, size,
-          center: Offset(w * 0.96, h * 0.52),
-          radius: w * 0.42,
-          color: EcTokens.auroraBlue,
-          opacity: 0.16);
-    } else {
-      // Light mode — subtler blobs
-      _blob(canvas, size,
-          center: Offset(w * 0.88, h * 0.06),
-          radius: w * 0.80,
-          color: EcTokens.auroraViolet,
-          opacity: 0.09);
-      _blob(canvas, size,
-          center: Offset(w * 0.06, h * 0.82),
-          radius: w * 0.58,
-          color: EcTokens.auroraMint,
-          opacity: 0.07);
-      _blob(canvas, size,
-          center: Offset(w * 0.94, h * 0.50),
-          radius: w * 0.38,
-          color: EcTokens.auroraBlue,
-          opacity: 0.06);
-    }
-  }
-
-  void _blob(
-    Canvas canvas,
-    Size size, {
-    required Offset center,
-    required double radius,
-    required Color color,
-    required double opacity,
-  }) {
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    final paint = Paint()
-      ..blendMode = BlendMode.plus
+    // A single, colorless top-center highlight gives floating glass something
+    // neutral to refract. No hues anywhere.
+    final highlight = Paint()
+      ..blendMode = isDark ? BlendMode.plus : BlendMode.srcOver
       ..shader = RadialGradient(
         colors: [
-          color.withValues(alpha: opacity),
-          color.withValues(alpha: opacity * 0.28),
-          color.withValues(alpha: 0),
+          (isDark ? Colors.white : Colors.black)
+              .withValues(alpha: isDark ? 0.05 : 0.035),
+          (isDark ? Colors.white : Colors.black).withValues(alpha: 0),
         ],
-        stops: const [0.0, 0.48, 1.0],
-      ).createShader(rect);
-    canvas.drawRect(Offset.zero & size, paint);
+        stops: const [0.0, 1.0],
+      ).createShader(
+        Rect.fromCircle(center: Offset(w * 0.5, h * -0.04), radius: w * 1.05),
+      );
+    canvas.drawRect(Offset.zero & size, highlight);
+
+    // Subtle bottom vignette seats content and adds gravity (monochrome).
+    final vignette = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.center,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.black.withValues(alpha: 0),
+          Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
+        ],
+      ).createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, vignette);
   }
 
   @override
@@ -314,85 +281,97 @@ class EcGlassSurface extends StatelessWidget {
       EcGlassVariant.regular => (glass.fill, blur),
     };
 
-    final isElevated = variant == EcGlassVariant.elevated ||
-        variant == EcGlassVariant.float;
-    final shadowOpacity = isElevated
-        ? (isDark ? 0.46 : 0.18)
-        : (isDark ? 0.28 : 0.10);
+    final isElevated = variant == EcGlassVariant.elevated || variant == EcGlassVariant.float;
 
-    Widget surface = Container(
-      margin: margin,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: glass.shadowColor.withValues(alpha: shadowOpacity),
-            blurRadius: isElevated ? 44 : 22,
-            spreadRadius: isElevated ? -14 : -6,
-            offset: Offset(0, isElevated ? 24 : 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: effectiveBlur,
-            sigmaY: effectiveBlur,
-          ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(
-                color: glass.border,
-                width: 0.8,
-              ),
-              color: fill,
+    // Light mode: solid white card with a soft Material shadow — matches GH.
+    // Dark mode: frosted glass with BackdropFilter blur as before.
+    Widget surface;
+    if (!isDark) {
+      surface = Container(
+        margin: margin,
+        decoration: BoxDecoration(
+          color: fill,
+          borderRadius: BorderRadius.circular(borderRadius),
+          border: Border.all(color: glass.border, width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: glass.shadowColor.withValues(alpha: isElevated ? 0.07 : 0.04),
+              blurRadius: isElevated ? 20 : 10,
+              spreadRadius: 0,
+              offset: Offset(0, isElevated ? 6 : 3),
             ),
-            child: Stack(
-              children: [
-                // Specular top-edge — 1px white line (directional light catch)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  height: 1,
-                  child: IgnorePointer(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(borderRadius),
-                        topRight: Radius.circular(borderRadius),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: Padding(
+            padding: padding ?? const EdgeInsets.all(16),
+            child: child,
+          ),
+        ),
+      );
+    } else {
+      // Dark mode: frosted glass with BackdropFilter.
+      surface = Container(
+        margin: margin,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(borderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: glass.shadowColor.withValues(alpha: isElevated ? 0.46 : 0.28),
+              blurRadius: isElevated ? 44 : 22,
+              spreadRadius: isElevated ? -14 : -6,
+              offset: Offset(0, isElevated ? 24 : 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: effectiveBlur, sigmaY: effectiveBlur),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(borderRadius),
+                border: Border.all(color: glass.border, width: 0.8),
+                color: fill,
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 0, right: 0, top: 0, height: 1,
+                    child: IgnorePointer(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(borderRadius),
+                          topRight: Radius.circular(borderRadius),
+                        ),
+                        child: ColoredBox(color: glass.specularTop),
                       ),
-                      child: ColoredBox(color: glass.specularTop),
                     ),
                   ),
-                ),
-                // Specular left-edge — 0.5px white line
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 0.5,
-                  child: IgnorePointer(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(borderRadius),
-                        bottomLeft: Radius.circular(borderRadius),
+                  Positioned(
+                    left: 0, top: 0, bottom: 0, width: 0.5,
+                    child: IgnorePointer(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(borderRadius),
+                          bottomLeft: Radius.circular(borderRadius),
+                        ),
+                        child: ColoredBox(color: glass.specularSide),
                       ),
-                      child: ColoredBox(color: glass.specularSide),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: padding ?? const EdgeInsets.all(16),
-                  child: child,
-                ),
-              ],
+                  Padding(
+                    padding: padding ?? const EdgeInsets.all(16),
+                    child: child,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
 
     if (onTap != null) {
       surface = Material(
@@ -660,6 +639,7 @@ class _AddOrb extends StatelessWidget {
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onAccent = isDark ? EcTokens.onAccentDark : EcTokens.onAccentLight;
 
     return Container(
       width: _size,
@@ -695,10 +675,14 @@ class _AddOrb extends StatelessWidget {
                     width: 1.2,
                   ),
                 ),
-                child: const Icon(
-                  Icons.add_rounded,
-                  color: Colors.white,
-                  size: 26,
+                child: Semantics(
+                  button: true,
+                  label: 'Quick add',
+                  child: Icon(
+                    Icons.add_rounded,
+                    color: onAccent,
+                    size: 26,
+                  ),
                 ),
               ),
             ),
@@ -908,6 +892,8 @@ class EcGlassButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onAccent = isDark ? EcTokens.onAccentDark : EcTokens.onAccentLight;
     final radius = BorderRadius.circular(EcTokens.radiusMd);
 
     if (outlined) {
@@ -966,25 +952,25 @@ class EcGlassButton extends StatelessWidget {
           ),
           child: Center(
             child: loading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 22,
                     height: 22,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: onAccent,
                     ),
                   )
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (icon != null) ...[
-                        Icon(icon, color: Colors.white, size: 20),
+                        Icon(icon, color: onAccent, size: 20),
                         const SizedBox(width: 8),
                       ],
                       Text(
                         label,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: onAccent,
                           fontWeight: FontWeight.w700,
                           fontSize: 14.5,
                           letterSpacing: -0.2,
@@ -1042,6 +1028,8 @@ class _EcGradientButtonState extends State<EcGradientButton>
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onAccent = isDark ? EcTokens.onAccentDark : EcTokens.onAccentLight;
     // Use solid brand color — no gradient fill — for the "gradient" button.
     final primaryColor = ec.accentBrand;
     final glowColor = widget.glow ?? primaryColor;
@@ -1092,12 +1080,12 @@ class _EcGradientButtonState extends State<EcGradientButton>
                 width: double.infinity,
                 child: Center(
                   child: widget.loading
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.4,
-                            color: Colors.white,
+                            color: onAccent,
                           ),
                         )
                       : Padding(
@@ -1110,8 +1098,8 @@ class _EcGradientButtonState extends State<EcGradientButton>
                               children: [
                                 Text(
                                   widget.label,
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: onAccent,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 16,
                                     letterSpacing: -0.3,
@@ -1120,7 +1108,7 @@ class _EcGradientButtonState extends State<EcGradientButton>
                                 if (widget.icon != null) ...[
                                   const SizedBox(width: 10),
                                   Icon(widget.icon,
-                                      color: Colors.white, size: 20),
+                                      color: onAccent, size: 20),
                                 ],
                               ],
                             ),
@@ -1258,6 +1246,8 @@ class EcGlassFab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ec = EcColors.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onAccent = isDark ? EcTokens.onAccentDark : EcTokens.onAccentLight;
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -1278,7 +1268,7 @@ class EcGlassFab extends StatelessWidget {
           child: SizedBox(
             width: 58,
             height: 58,
-            child: Icon(icon, color: Colors.white, size: 27),
+            child: Icon(icon, color: onAccent, size: 27),
           ),
         ),
       ),

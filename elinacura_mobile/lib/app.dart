@@ -9,6 +9,7 @@ import 'core/theme/ec_tokens.dart';
 import 'core/theme/theme_provider.dart';
 import 'features/auth/auth_screens.dart';
 import 'shared/widgets/ec_glass.dart';
+import 'shared/widgets/ec_offline_banner.dart';
 
 class ElinaCuraApp extends ConsumerStatefulWidget {
   const ElinaCuraApp({super.key});
@@ -41,7 +42,7 @@ class _ElinaCuraAppState extends ConsumerState<ElinaCuraApp> {
         debugPrint('Notifications init skipped: $e');
       }
     }
-    _syncActiveProfile();
+    await _syncActiveProfile();
   }
 
   Future<void> _syncActiveProfile() async {
@@ -82,7 +83,19 @@ class _ElinaCuraAppState extends ConsumerState<ElinaCuraApp> {
         } else if (auth.valueOrNull != null) {
           content = BiometricGate(child: content);
         }
-        return EcVoidBackground(child: content);
+        return EcVoidBackground(
+          child: Stack(
+            children: [
+              content,
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: EcOfflineBanner(),
+              ),
+            ],
+          ),
+        );
       },
     );
   }

@@ -29,11 +29,11 @@ class _AuthPalette {
   const _AuthPalette(this.dark);
   final bool dark;
 
-  Color get bg => dark ? const Color(0xFF0A0B0F) : const Color(0xFFEDEAE2);
-  Color get surface => dark ? const Color(0xFF14161C) : const Color(0xFFFCFAF8);
-  Color get surfaceRaised => dark ? const Color(0xFF1A1D26) : const Color(0xFFFFFFFF);
-  Color get ink => dark ? const Color(0xFFF4F5F8) : const Color(0xFF14161C);
-  Color get muted => dark ? const Color(0xFF8A90A0) : const Color(0xFF6C7178);
+  Color get bg => dark ? const Color(0xFF0A0A0B) : const Color(0xFFF4F4F2);
+  Color get surface => dark ? const Color(0xFF161618) : const Color(0xFFFAFAF8);
+  Color get surfaceRaised => dark ? const Color(0xFF1C1C1F) : const Color(0xFFFFFFFF);
+  Color get ink => dark ? const Color(0xFFF4F4F2) : const Color(0xFF161617);
+  Color get muted => dark ? const Color(0xFF8C8C86) : const Color(0xFF6C6C66);
   Color get faint => dark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.04);
   Color get hairline => dark ? Colors.white.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.08);
   Color get shadow => dark ? Colors.black.withValues(alpha: 0.35) : Colors.black.withValues(alpha: 0.06);
@@ -43,8 +43,9 @@ class _AuthPalette {
 }
 
 Color _roleAccent(UserRole? role, BuildContext context) {
-  final ec = EcColors.of(context);
-  return role == UserRole.caregiver ? ec.accentMint : ec.accentBrand;
+  // Monochrome system — both roles share the single ink/paper accent.
+  // Role is differentiated by label and icon, not by hue.
+  return EcColors.of(context).accentBrand;
 }
 
 // ──────────────────────────────────────────────────────── Backdrop ──
@@ -181,18 +182,14 @@ class _PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = _AuthPalette.of(context);
+    final onAccent = p.dark ? EcTokens.onAccentDark : EcTokens.onAccentLight;
+    final disabled = onPressed == null && !loading;
     return _Pressable(
       onTap: loading ? null : onPressed,
       child: Container(
         height: 54,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: (onPressed == null && !loading)
-                ? [accent.withValues(alpha: 0.4), accent.withValues(alpha: 0.4)]
-                : [Color.alphaBlend(Colors.white.withValues(alpha: 0.16), accent), accent],
-          ),
+          color: disabled ? accent.withValues(alpha: 0.4) : accent,
           borderRadius: BorderRadius.circular(EcTokens.radiusMd),
           boxShadow: [
             BoxShadow(
@@ -205,12 +202,12 @@ class _PrimaryButton extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: loading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(onAccent),
                 ),
               )
             : Row(
@@ -218,8 +215,8 @@ class _PrimaryButton extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: onAccent,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.2,
@@ -227,7 +224,7 @@ class _PrimaryButton extends StatelessWidget {
                   ),
                   if (icon != null) ...[
                     const SizedBox(width: 8),
-                    Icon(icon, color: Colors.white, size: 18),
+                    Icon(icon, color: onAccent, size: 18),
                   ],
                 ],
               ),
@@ -424,7 +421,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _submit() async {
-    HapticFeedback.lightImpact();
+    await HapticFeedback.lightImpact();
     setState(() {
       _loading = true;
       _error = null;
@@ -452,7 +449,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _google() async {
-    HapticFeedback.lightImpact();
+    await HapticFeedback.lightImpact();
     setState(() {
       _loading = true;
       _error = null;
@@ -483,7 +480,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _apple() async {
-    HapticFeedback.lightImpact();
+    await HapticFeedback.lightImpact();
     setState(() {
       _loading = true;
       _error = null;
@@ -515,7 +512,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       messenger.showSnackBar(const SnackBar(content: Text('Enter your email above, then tap reset.')));
       return;
     }
-    HapticFeedback.selectionClick();
+    await HapticFeedback.selectionClick();
     try {
       await ref.read(authServiceProvider).sendPasswordReset(email);
       if (!mounted) return;
@@ -633,7 +630,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               icon: Icons.diversity_1_rounded,
               title: 'Care for someone I love',
               subtitle: 'Coordinate routines, see the right updates, and step in when it matters.',
-              accent: ec.accentMint,
+              accent: EcTokens.categoryNutrition,
               features: const ['Live updates', 'Coordinate', 'SOS alerts'],
               onTap: () {
                 HapticFeedback.selectionClick();

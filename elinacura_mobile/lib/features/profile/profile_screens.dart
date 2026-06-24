@@ -1,214 +1,329 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/auth/auth_providers.dart';
 import '../../core/config/app_config.dart';
+import '../../core/health/vitals_store.dart';
 import '../../core/theme/ec_theme.dart';
 import '../../core/theme/ec_tokens.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/ec_glass.dart';
+import '../../shared/widgets/ec_sparkline.dart';
 import '../../shared/widgets/ec_theme_picker.dart';
 import '../../shared/widgets/ec_widgets.dart';
 
 // ═══════════════════════════════════════════════════════════ HEALTH SCREEN ══
 
+/// Google-Health-style health dashboard: health-status badge, key-metrics
+/// 2-column grid with sparkline cards, conditions, and goals.
 class HealthScreen extends ConsumerWidget {
   const HealthScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final overview = ref.watch(healthOverviewProvider);
+    final vitals = ref.watch(vitalsProvider);
+    final vitalsNotifier = ref.read(vitalsProvider.notifier);
+    final top = MediaQuery.paddingOf(context).top;
+
     return overview.when(
-      loading: () => const _HealthSkeleton(),
+      loading: () => _HealthSkeleton(top: top),
       error: (e, _) => Center(
         child: EcErrorState(
           message: formatApiError(e),
           onRetry: () => ref.read(healthOverviewProvider.notifier).retry(),
         ),
       ),
-      data: (data) => _HealthContent(data: data),
+      data: (data) => _HealthContent(
+        data: data,
+        vitalsNotifier: vitalsNotifier,
+        vitalsLoaded: vitals.valueOrNull != null,
+      ),
     );
   }
 }
 
 class _HealthSkeleton extends StatelessWidget {
-  const _HealthSkeleton();
+  const _HealthSkeleton({required this.top});
+  final double top;
 
   @override
-  Widget build(BuildContext context) {
-    final top = MediaQuery.paddingOf(context).top;
-    return ListView(
-      padding: EdgeInsets.fromLTRB(20, top + 16, 20, kEcNavBottomPadding),
-      children: const [
-        EcSkeleton(height: 200, radius: 999),
-        SizedBox(height: 24),
-        EcSkeleton(height: 100, radius: 28),
-        SizedBox(height: 16),
-        EcSkeleton(height: 180, radius: 28),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => ListView(
+        padding: EdgeInsets.fromLTRB(16, top + 16, 16, kEcNavBottomPadding),
+        children: const [
+          EcSkeleton(height: 72, radius: 22),
+          SizedBox(height: 20),
+          EcSkeleton(height: 16, radius: 8),
+          SizedBox(height: 12),
+          EcSkeleton(height: 160, radius: 20),
+          SizedBox(height: 12),
+          EcSkeleton(height: 160, radius: 20),
+        ],
+      );
 }
 
-class _HealthContent extends StatelessWidget {
-  const _HealthContent({required this.data});
+class _HealthContent extends ConsumerWidget {
+  const _HealthContent({
+    required this.data,
+    required this.vitalsNotifier,
+    required this.vitalsLoaded,
+  });
 
   final HealthOverview data;
+  final VitalsNotifier vitalsNotifier;
+  final bool vitalsLoaded;
 
-  double get _healthScore {
-    int score = 50;
-    if (data.medications.isNotEmpty) score += 20;
-    if (data.conditions.isNotEmpty) score += 10;
-    if (data.keyVitals.isNotEmpty) score += 20;
-    return (score / 100).clamp(0.0, 1.0);
-  }
+  static const _displayTypes = [
+    VitalType.heartRate,
+    VitalType.bloodPressureSystolic,
+    VitalType.bloodOxygen,
+    VitalType.weight,
+    VitalType.restingHR,
+    VitalType.hrv,
+  ];
 
   @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
     final top = MediaQuery.paddingOf(context).top;
+    final ec = EcColors.of(context);
+    final trackedCount = vitalsNotifier.trackedCount;
 
-    return ListView(
-      padding: EdgeInsets.fromLTRB(20, top + 16, 20, kEcNavBottomPadding),
+    return Stack(
       children: [
-        // ── Screen header
-        _HealthHeader(),
-        const SizedBox(height: 28),
+        ListView(
+          padding: EdgeInsets.fromLTRB(16, top + 16, 16, kEcNavBottomPadding + 72),
+          children: [
+            // ── Header row
+            _HealthHeader(
+              onLog: () => _logVitals(context, ref),
+            ).animate().fadeIn(duration: 260.ms),
+            const SizedBox(height: 16),
 
-        // ── Health ring
-        Center(
-          child: EcHealthRing(
-            score: _healthScore,
-            size: 180,
-            label: 'Health',
-            accentColor: ec.accentMint,
-          ),
-        ).animate().fadeIn(duration: 400.ms).scale(
-              begin: const Offset(0.88, 0.88),
-              end: const Offset(1, 1),
-              curve: Curves.easeOutBack,
-            ),
-        const SizedBox(height: 28),
+            // ── Health status badge (GH style)
+            EcGlassSurface(
+              variant: EcGlassVariant.elevated,
+              borderRadius: EcTokens.radiusCard,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: trackedCount > 0
+                          ? EcTokens.statusPositiveLight
+                          : EcTokens.categoryActivityLight,
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: Icon(
+                      trackedCount > 0
+                          ? Icons.check_circle_rounded
+                          : Icons.favorite_rounded,
+                      color: trackedCount > 0
+                          ? EcTokens.statusPositive
+                          : EcTokens.categoryHeart,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Health status',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            letterSpacing: -0.2,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        Text(
+                          trackedCount == 0
+                              ? 'No vitals logged yet'
+                              : '$trackedCount of ${_displayTypes.length} vitals tracked',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: ec.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (trackedCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: EcTokens.statusPositiveLight,
+                        borderRadius: BorderRadius.circular(EcTokens.radiusFull),
+                      ),
+                      child: Text(
+                        '$trackedCount / ${_displayTypes.length}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: EcTokens.statusPositive,
+                          fontFamily: EcTokens.fontFamily,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ).animate().fadeIn(delay: 60.ms, duration: 260.ms),
+            const SizedBox(height: 20),
 
-        // ── Vitals grid
-        if (data.keyVitals.isNotEmpty) ...[
-          EcSectionTitle(title: 'Vitals'),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 1.4,
-            ),
-            itemCount: data.keyVitals.length.clamp(0, 6),
-            itemBuilder: (context, i) {
-              final v = data.keyVitals[i];
-              return EcGlassEntrance(
-                index: i,
-                child: _VitalCard(
-                  label: v['label'] ?? '',
-                  value: v['value'] ?? '—',
-                  unit: v['unit'],
+            // ── Key metrics header
+            Row(
+              children: [
+                Text(
+                  'Key metrics',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.4,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontFamily: EcTokens.fontFamily,
+                  ),
                 ),
-              );
-            },
-          ),
-          const SizedBox(height: 20),
-        ],
-
-        // ── Conditions
-        if (data.conditions.isNotEmpty) ...[
-          EcSectionTitle(title: 'Conditions'),
-          EcGlassSurface(
-            variant: EcGlassVariant.elevated,
-            borderRadius: EcTokens.radiusGlass,
-            padding: const EdgeInsets.all(16),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: data.conditions.map((c) {
-                return EcPill(
-                  label: c.name,
-                  tone: _conditionTone(c.status),
-                );
-              }).toList(),
+                const Spacer(),
+                TextButton(
+                  onPressed: () => _logVitals(context, ref),
+                  child: const Text('+ Log'),
+                ),
+              ],
             ),
-          ).animate().fadeIn(delay: 120.ms),
-          const SizedBox(height: 20),
-        ],
+            const SizedBox(height: 10),
 
-        // ── Goals
-        if (data.goals.isNotEmpty) ...[
-          EcSectionTitle(title: 'Goals'),
-          EcGlassSurface(
-            variant: EcGlassVariant.elevated,
-            borderRadius: EcTokens.radiusGlass,
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              children: data.goals.asMap().entries.map((e) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: e.key < data.goals.length - 1 ? 14 : 0,
-                  ),
-                  child: EcGlassProgressBar(
-                    label: e.value.label,
-                    value: e.value.priority == 'high'
-                        ? 0.72
-                        : e.value.priority == 'medium'
-                            ? 0.48
-                            : 0.25,
-                    color: ec.accentBrand,
+            // ── 2-column sparkline metric grid
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 0.90,
+              ),
+              itemCount: _displayTypes.length,
+              itemBuilder: (context, i) {
+                final type = _displayTypes[i];
+                return EcGlassEntrance(
+                  index: i,
+                  child: EcSparklineCard(
+                    type: type,
+                    latestEntry: vitalsNotifier.latest(type),
+                    sparkValues: vitalsNotifier
+                        .lastN(type)
+                        .map((e) => e.value)
+                        .toList(),
+                    onTap: () => _logSingleVital(context, ref, type),
                   ),
                 );
-              }).toList(),
+              },
             ),
-          ).animate().fadeIn(delay: 160.ms),
-          const SizedBox(height: 20),
-        ],
 
-        // ── Empty state
-        if (data.keyVitals.isEmpty &&
-            data.conditions.isEmpty &&
-            data.goals.isEmpty)
-          EcEmptyState(
-            icon: Icons.favorite_rounded,
-            title: 'No health data yet',
-            message:
-                'Add vitals, conditions, and goals through your care profile to see them here.',
-            action: EcGlassButton(
-              label: 'Set up profile',
-              onPressed: () => context.push('/profile'),
-            ),
-          ),
+            // ── Conditions
+            if (data.conditions.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              Text(
+                'Conditions',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.4,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontFamily: EcTokens.fontFamily,
+                ),
+              ),
+              const SizedBox(height: 10),
+              EcGlassSurface(
+                variant: EcGlassVariant.elevated,
+                borderRadius: EcTokens.radiusCard,
+                padding: const EdgeInsets.all(16),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: data.conditions.map((c) {
+                    final tone = switch (c.status.toLowerCase()) {
+                      'managed' => EcPillTone.positive,
+                      'monitoring' => EcPillTone.caution,
+                      'active' => EcPillTone.info,
+                      _ => EcPillTone.neutral,
+                    };
+                    return EcPill(label: c.name, tone: tone);
+                  }).toList(),
+                ),
+              ).animate().fadeIn(delay: 80.ms),
+            ],
+          ],
+        ),
+
+        // ── Floating log-vitals FAB
+        Positioned(
+          right: 16,
+          bottom: kEcNavBottomPadding + 12,
+          child: FloatingActionButton.extended(
+            onPressed: () => _logVitals(context, ref),
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Log vitals'),
+          ).animate().fadeIn(delay: 200.ms),
+        ),
       ],
     );
   }
 
-  EcPillTone _conditionTone(String status) {
-    switch (status.toLowerCase()) {
-      case 'managed':
-        return EcPillTone.positive;
-      case 'monitoring':
-        return EcPillTone.caution;
-      case 'active':
-        return EcPillTone.info;
-      default:
-        return EcPillTone.neutral;
+  Future<void> _logVitals(BuildContext context, WidgetRef ref) async {
+    final result = await showModalBottomSheet<Map<VitalType, double>>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => EcLogVitalsSheet(types: _displayTypes),
+    );
+    if (result == null || !context.mounted) return;
+    final notifier = ref.read(vitalsProvider.notifier);
+    for (final entry in result.entries) {
+      await notifier.log(entry.key, entry.value);
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Saved ${result.length} reading${result.length == 1 ? '' : 's'}')),
+      );
+    }
+  }
+
+  Future<void> _logSingleVital(
+    BuildContext context,
+    WidgetRef ref,
+    VitalType type,
+  ) async {
+    final result = await showModalBottomSheet<Map<VitalType, double>>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => EcLogVitalsSheet(types: [type]),
+    );
+    if (result == null || !context.mounted) return;
+    final notifier = ref.read(vitalsProvider.notifier);
+    for (final entry in result.entries) {
+      await notifier.log(entry.key, entry.value);
     }
   }
 }
 
 class _HealthHeader extends StatelessWidget {
+  const _HealthHeader({required this.onLog});
+  final VoidCallback onLog;
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor =
-        isDark ? Colors.white : EcTokens.textPrimaryLight;
+    final textColor = isDark ? Colors.white : EcTokens.textPrimaryLight;
     final ec = EcColors.of(context);
 
     return Row(
@@ -217,22 +332,22 @@ class _HealthHeader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'VITALS',
+              'HEALTH',
               style: TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
+                letterSpacing: 1.4,
                 color: ec.textMuted,
                 fontFamily: EcTokens.fontFamily,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
-              'Health',
+              'Your vitals',
               style: TextStyle(
-                fontSize: EcTokens.fontSizeDisplayLg * 0.7,
+                fontSize: 28,
                 fontWeight: FontWeight.w800,
-                letterSpacing: -2.0,
+                letterSpacing: -1.0,
                 color: textColor,
                 fontFamily: EcTokens.fontFamily,
               ),
@@ -240,83 +355,23 @@ class _HealthHeader extends StatelessWidget {
           ],
         ),
         const Spacer(),
-        IconButton.filledTonal(
-          icon: const Icon(
-            Icons.emergency_rounded,
-            color: EcTokens.statusCritical,
-            size: 20,
-          ),
-          onPressed: () => context.push('/emergency'),
-          style: IconButton.styleFrom(
-            backgroundColor:
-                EcTokens.statusCritical.withValues(alpha: 0.10),
+        Semantics(
+          label: 'Emergency ID',
+          button: true,
+          child: IconButton.filledTonal(
+            icon: const Icon(
+              Icons.emergency_rounded,
+              color: EcTokens.statusCritical,
+              size: 20,
+            ),
+            tooltip: 'Emergency ID',
+            onPressed: () => context.push('/emergency'),
+            style: IconButton.styleFrom(
+              backgroundColor: EcTokens.statusCritical.withValues(alpha: 0.10),
+            ),
           ),
         ),
       ],
-    );
-  }
-}
-
-class _VitalCard extends StatelessWidget {
-  const _VitalCard({
-    required this.label,
-    required this.value,
-    this.unit,
-  });
-
-  final String label;
-  final String value;
-  final String? unit;
-
-  @override
-  Widget build(BuildContext context) {
-    final ec = EcColors.of(context);
-    return EcGlassSurface(
-      variant: EcGlassVariant.elevated,
-      borderRadius: EcTokens.radiusCard,
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              fontSize: 9.5,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
-              color: ec.textMuted,
-              fontFamily: EcTokens.fontFamily,
-            ),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                value,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      letterSpacing: -1.0,
-                      fontWeight: FontWeight.w800,
-                    ),
-              ),
-              if (unit != null) ...[
-                const SizedBox(width: 3),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Text(
-                    unit!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: ec.textMuted,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
@@ -392,7 +447,7 @@ class _ProfileContent extends StatelessWidget {
             subtitle: profile == null
                 ? 'Not set up'
                 : '${profile!.medications.length} medications tracked',
-            iconColor: EcColors.of(context).accentMint,
+            iconColor: EcTokens.categoryNutrition,
             onTap: () => context.push('/reminders'),
           ),
         ),
@@ -400,13 +455,22 @@ class _ProfileContent extends StatelessWidget {
           index: 3,
           child: EcGlassListTile(
             icon: Icons.people_rounded,
-            title: 'Care circle',
-            subtitle: 'Invite and manage caregivers',
-            onTap: () => context.push('/connections'),
+            title: 'Family circle',
+            subtitle: 'Members, moments, and privacy',
+            onTap: () => context.push('/family-circle'),
           ),
         ),
         EcGlassEntrance(
           index: 4,
+          child: EcGlassListTile(
+            icon: Icons.link_rounded,
+            title: 'Connections',
+            subtitle: 'Manage caregiver access',
+            onTap: () => context.push('/connections'),
+          ),
+        ),
+        EcGlassEntrance(
+          index: 5,
           child: EcGlassListTile(
             icon: Icons.emergency_rounded,
             title: 'Emergency ID',
@@ -416,17 +480,17 @@ class _ProfileContent extends StatelessWidget {
           ),
         ),
         EcGlassEntrance(
-          index: 5,
+          index: 6,
           child: EcGlassListTile(
             icon: Icons.apps_rounded,
             title: 'More tools',
-            subtitle: 'Scanner, refill calendar, safety',
+            subtitle: 'Chat, meals, travel, telehealth, and more',
             onTap: () => context.push('/more'),
           ),
         ),
         const SizedBox(height: 6),
         EcGlassEntrance(
-          index: 6,
+          index: 7,
           child: EcGlassListTile(
             icon: Icons.settings_rounded,
             title: 'Settings',
@@ -452,13 +516,13 @@ class _ProfileSummaryRow extends StatelessWidget {
         _SummaryItem(
           icon: Icons.monitor_heart_rounded,
           label: '${profile.conditions.length} conditions',
-          color: ec.accentSky,
+          color: EcTokens.categoryActivity,
         ),
       if (profile.medications.isNotEmpty)
         _SummaryItem(
           icon: Icons.medication_rounded,
           label: '${profile.medications.length} meds',
-          color: ec.accentMint,
+          color: EcTokens.categoryNutrition,
         ),
       if (profile.allergies.isNotEmpty)
         _SummaryItem(
@@ -575,13 +639,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     Row(
                       children: [
                         Icon(Icons.shield_rounded,
-                            color: ec.accentSky, size: 20),
+                            color: EcTokens.categoryActivity, size: 20),
                         const SizedBox(width: 8),
                         Text(
                           'Privacy consent',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
-                            color: ec.accentSky,
+                            color: EcTokens.categoryActivity,
                           ),
                         ),
                       ],
@@ -923,7 +987,7 @@ class _EmergencyBody extends StatelessWidget {
                 icon: Icons.person_rounded,
                 title: e.value.name,
                 subtitle: e.value.phone ?? e.value.relationship ?? '',
-                iconColor: EcColors.of(context).accentMint,
+                iconColor: EcTokens.categoryNutrition,
                 onTap: e.value.phone != null
                     ? () => launchUrl(Uri.parse('tel:${e.value.phone}'))
                     : null,
@@ -965,14 +1029,14 @@ class _EmergencyBody extends StatelessWidget {
                     label: 'Conditions',
                     value: profile!.conditions.join(', '),
                     icon: Icons.monitor_heart_rounded,
-                    color: EcColors.of(context).accentSky,
+                    color: EcTokens.categoryActivity,
                   ),
                 if (profile?.medications.isNotEmpty ?? false)
                   _MedIdRow(
                     label: 'Medications',
                     value: profile!.medications.take(5).join(', '),
                     icon: Icons.medication_rounded,
-                    color: EcColors.of(context).accentMint,
+                    color: EcTokens.categoryNutrition,
                     isLast: true,
                   ),
                 if (profile == null)

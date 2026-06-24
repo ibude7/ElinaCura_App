@@ -60,7 +60,6 @@ class ApiClient {
       final response = await _dio.get<T>(
         path,
         queryParameters: queryParameters,
-        options: Options(headers: await authHeaders()),
         cancelToken: cancelToken,
       );
       return response.data as T;
@@ -77,7 +76,36 @@ class ApiClient {
         path,
         data: data,
         queryParameters: queryParameters,
-        options: Options(headers: await authHeaders()),
+      );
+      return response.data as T;
+    });
+  }
+
+  Future<T> put<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return _withRetry(() async {
+      final response = await _dio.put<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+      );
+      return response.data as T;
+    });
+  }
+
+  Future<T> patch<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return _withRetry(() async {
+      final response = await _dio.patch<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
       );
       return response.data as T;
     });
@@ -91,10 +119,7 @@ class ApiClient {
       final response = await _dio.post<T>(
         path,
         data: formData,
-        options: Options(
-          headers: await authHeaders(),
-          contentType: 'multipart/form-data',
-        ),
+        options: Options(contentType: 'multipart/form-data'),
       );
       return response.data as T;
     });
@@ -104,7 +129,6 @@ class ApiClient {
     return _withRetry(() async {
       final response = await _dio.delete<T>(
         path,
-        options: Options(headers: await authHeaders()),
       );
       return response.data as T;
     });

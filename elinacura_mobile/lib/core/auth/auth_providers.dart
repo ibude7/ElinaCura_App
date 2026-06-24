@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../api/api_client.dart';
+import '../data/health_repository.dart';
 import '../../shared/models/models.dart';
 import '../../shared/utils/health_overview_builder.dart';
 import 'secure_token_store.dart';
@@ -230,9 +231,7 @@ class HealthOverviewNotifier extends AsyncNotifier<HealthOverview> {
 
   Future<HealthOverview> _load() async {
     await ref.read(authServiceProvider).ensureBackendSession();
-    final api = ref.read(apiClientProvider);
-    final raw = await api.get<dynamic>('/profiles');
-    final profiles = normalizeProfiles(raw);
+    final profiles = await ref.read(healthRepositoryProvider).getProfiles();
     final cachedId = await ProfileCache.readActiveProfileId();
     HealthProfile? profile;
     if (profiles.isNotEmpty) {
@@ -262,11 +261,7 @@ class CaregiverDashboardNotifier
     extends FamilyAsyncNotifier<CaregiverDashboardData, String> {
   @override
   Future<CaregiverDashboardData> build(String profileId) async {
-    final api = ref.read(apiClientProvider);
-    final data = await api.get<Map<String, dynamic>>(
-      '/caregiver-dashboard/$profileId',
-    );
-    return CaregiverDashboardData.fromJson(data);
+    return ref.read(healthRepositoryProvider).getCaregiverDashboard(profileId);
   }
 
   Future<void> retry() async {
